@@ -30,3 +30,5 @@ pub mod nand16;
 pub use nand16::*;
 pub mod not16;
 pub use not16::*;
+pub mod and16;
+pub use and16::*;
