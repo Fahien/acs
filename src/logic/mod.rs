@@ -22,3 +22,9 @@ pub mod mux;
 pub use mux::*;
 pub mod demux;
 pub use demux::*;
+
+pub mod signal16;
+pub use signal16::*;
+
+pub mod nand16;
+pub use nand16::*;
