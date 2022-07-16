@@ -32,3 +32,5 @@ pub mod not16;
 pub use not16::*;
 pub mod and16;
 pub use and16::*;
+pub mod or16;
+pub use or16::*;
