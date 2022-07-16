@@ -28,3 +28,5 @@ pub use signal16::*;
 
 pub mod nand16;
 pub use nand16::*;
+pub mod not16;
+pub use not16::*;
