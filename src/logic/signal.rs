@@ -53,6 +53,18 @@ impl From<u8> for Signal {
     }
 }
 
+impl From<u16> for Signal {
+    fn from(value: u16) -> Self {
+        Self::new(value as i8)
+    }
+}
+
+impl From<i16> for Signal {
+    fn from(value: i16) -> Self {
+        Self::new(value as i8)
+    }
+}
+
 impl From<i32> for Signal {
     fn from(value: i32) -> Self {
         Self::new(value as i8)
@@ -62,6 +74,18 @@ impl From<i32> for Signal {
 impl From<&Signal> for bool {
     fn from(signal: &Signal) -> Self {
         *signal == Signal::HI
+    }
+}
+
+impl From<&Signal> for i8 {
+    fn from(signal: &Signal) -> Self {
+        *signal as i8
+    }
+}
+
+impl From<Signal> for u16 {
+    fn from(signal: Signal) -> Self {
+        signal as u16
     }
 }
 
