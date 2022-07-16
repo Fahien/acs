@@ -16,3 +16,5 @@ pub mod and;
 pub use and::*;
 pub mod or;
 pub use or::*;
+pub mod xor;
+pub use xor::*;
