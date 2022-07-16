@@ -10,3 +10,5 @@ pub use unit::*;
 
 pub mod nand;
 pub use nand::*;
+pub mod not;
+pub use not::*;
