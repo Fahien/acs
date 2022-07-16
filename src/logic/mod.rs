@@ -20,3 +20,5 @@ pub mod xor;
 pub use xor::*;
 pub mod mux;
 pub use mux::*;
+pub mod demux;
+pub use demux::*;
