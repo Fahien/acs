@@ -12,3 +12,5 @@ pub mod nand;
 pub use nand::*;
 pub mod not;
 pub use not::*;
+pub mod and;
+pub use and::*;
