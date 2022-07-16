@@ -18,3 +18,5 @@ pub mod or;
 pub use or::*;
 pub mod xor;
 pub use xor::*;
+pub mod mux;
+pub use mux::*;
