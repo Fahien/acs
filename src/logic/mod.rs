@@ -34,3 +34,5 @@ pub mod and16;
 pub use and16::*;
 pub mod or16;
 pub use or16::*;
+pub mod mux16;
+pub use mux16::*;
