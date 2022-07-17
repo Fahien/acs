@@ -7,6 +7,8 @@ use std::{
     ops::*,
 };
 
+use crate::Signal3;
+
 /// 2 signals into one
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Signal2 {
@@ -68,6 +70,12 @@ impl From<i32> for Signal2 {
 impl From<&Signal2> for i8 {
     fn from(signal: &Signal2) -> Self {
         *signal as i8
+    }
+}
+
+impl From<Signal3> for Signal2 {
+    fn from(signal3: Signal3) -> Self {
+        Signal2::new(i8::from(signal3))
     }
 }
 
