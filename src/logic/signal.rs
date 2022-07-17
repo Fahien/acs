@@ -43,6 +43,12 @@ impl From<bool> for Signal {
     }
 }
 
+impl From<i8> for Signal {
+    fn from(value: i8) -> Self {
+        Self::new(value)
+    }
+}
+
 impl From<u8> for Signal {
     fn from(value: u8) -> Self {
         if value == 0 {
