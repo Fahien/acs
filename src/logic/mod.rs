@@ -37,8 +37,12 @@ pub use or16::*;
 pub mod mux16;
 pub use mux16::*;
 
+pub mod signal2;
+pub use signal2::*;
 pub mod signal8;
 pub use signal8::*;
 
 pub mod or8way;
 pub use or8way::*;
+pub mod mux4way16;
+pub use mux4way16::*;
