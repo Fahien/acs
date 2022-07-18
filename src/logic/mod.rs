@@ -54,3 +54,6 @@ pub mod demux4way;
 pub use demux4way::*;
 pub mod demux8way;
 pub use demux8way::*;
+
+pub mod halfadder;
+pub use halfadder::*;
