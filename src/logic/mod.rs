@@ -52,3 +52,5 @@ pub mod mux8way16;
 pub use mux8way16::*;
 pub mod demux4way;
 pub use demux4way::*;
+pub mod demux8way;
+pub use demux8way::*;
