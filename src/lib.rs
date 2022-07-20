@@ -7,3 +7,5 @@
 
 pub mod logic;
 pub use logic::*;
+pub mod mem;
+pub use mem::*;
