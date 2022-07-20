@@ -54,6 +54,8 @@ pub mod demux4way;
 pub use demux4way::*;
 pub mod demux8way;
 pub use demux8way::*;
+pub mod or16way;
+pub use or16way::*;
 
 pub mod halfadder;
 pub use halfadder::*;
@@ -63,3 +65,5 @@ pub mod add16;
 pub use add16::*;
 pub mod inc16;
 pub use inc16::*;
+pub mod alu;
+pub use alu::*;

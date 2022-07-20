@@ -47,6 +47,12 @@ impl Signal16 {
     }
 }
 
+impl From<i32> for Signal16 {
+    fn from(value: i32) -> Self {
+        Self::new(value as i16)
+    }
+}
+
 impl From<u16> for Signal16 {
     fn from(value: u16) -> Self {
         let value = unsafe { std::mem::transmute(value) };
@@ -84,6 +90,51 @@ impl Not for Signal16 {
     fn not(self) -> Self::Output {
         let values = !self.values;
         Signal16::new(values)
+    }
+}
+
+impl Neg for Signal16 {
+    type Output = Signal16;
+
+    fn neg(self) -> Self::Output {
+        let neg_value = i16::from(self);
+        Self::from(-neg_value)
+    }
+}
+
+impl Add<i16> for Signal16 {
+    type Output = Signal16;
+
+    fn add(self, rhs: i16) -> Self::Output {
+        let add_value = i16::from(self);
+        // Ignore overflow
+        let (sum, _) = add_value.overflowing_add(rhs);
+        Self::from(sum)
+    }
+}
+
+impl Add<Signal16> for Signal16 {
+    type Output = Signal16;
+
+    fn add(self, rhs: Signal16) -> Self::Output {
+        self.add(i16::from(rhs))
+    }
+}
+
+impl Sub<i16> for Signal16 {
+    type Output = Signal16;
+
+    fn sub(self, rhs: i16) -> Self::Output {
+        let sub_value = i16::from(self);
+        Self::from(sub_value - rhs)
+    }
+}
+
+impl Sub<Signal16> for Signal16 {
+    type Output = Signal16;
+
+    fn sub(self, rhs: Signal16) -> Self::Output {
+        self.sub(i16::from(rhs))
     }
 }
 
