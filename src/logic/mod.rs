@@ -61,3 +61,5 @@ pub mod fulladder;
 pub use fulladder::*;
 pub mod add16;
 pub use add16::*;
+pub mod inc16;
+pub use inc16::*;
