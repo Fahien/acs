@@ -8,3 +8,5 @@ pub mod dff;
 pub use dff::*;
 pub mod bit;
 pub use bit::*;
+pub mod register16;
+pub use register16::*;

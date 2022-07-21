@@ -33,6 +33,10 @@ impl Bit {
         self.tick();
         self.out
     }
+
+    pub fn get_out(&self) -> Signal {
+        self.out
+    }
 }
 
 impl Unit for Bit {
