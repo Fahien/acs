@@ -48,6 +48,10 @@ impl Mux8Way16 {
         self.eval();
         self.out
     }
+
+    pub fn sel(&self) -> Signal3 {
+        self.sel
+    }
 }
 
 impl Unit for Mux8Way16 {
