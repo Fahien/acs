@@ -41,6 +41,8 @@ pub mod signal2;
 pub use signal2::*;
 pub mod signal3;
 pub use signal3::*;
+pub mod signal6;
+pub use signal6::*;
 pub mod signal8;
 pub use signal8::*;
 
