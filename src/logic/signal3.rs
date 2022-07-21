@@ -7,6 +7,8 @@ use std::{
     ops::*,
 };
 
+use crate::Signal6;
+
 /// 3 signals into one
 #[derive(Copy, Clone, Default, PartialEq, Eq)]
 pub struct Signal3 {
@@ -33,6 +35,18 @@ impl Signal3 {
     }
 }
 
+impl From<i8> for Signal3 {
+    fn from(value: i8) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<u8> for Signal3 {
+    fn from(value: u8) -> Self {
+        Self::new(unsafe { std::mem::transmute(value) })
+    }
+}
+
 impl From<u16> for Signal3 {
     fn from(value: u16) -> Self {
         Self::new(value as i8)
@@ -45,6 +59,12 @@ impl From<i32> for Signal3 {
     }
 }
 
+impl From<Signal6> for Signal3 {
+    fn from(signal6: Signal6) -> Self {
+        Self::new(signal6.values)
+    }
+}
+
 impl From<Signal3> for i8 {
     fn from(signal: Signal3) -> Self {
         signal.values
@@ -54,6 +74,12 @@ impl From<Signal3> for i8 {
 impl From<Signal3> for u8 {
     fn from(signal: Signal3) -> Self {
         signal.values as u8
+    }
+}
+
+impl From<Signal3> for usize {
+    fn from(signal: Signal3) -> Self {
+        signal.values as Self
     }
 }
 

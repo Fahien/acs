@@ -63,6 +63,12 @@ impl From<&Signal6> for i8 {
     }
 }
 
+impl From<Signal6> for u8 {
+    fn from(signal: Signal6) -> Self {
+        unsafe { std::mem::transmute(signal.values) }
+    }
+}
+
 impl Not for Signal6 {
     type Output = Signal6;
 

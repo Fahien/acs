@@ -13,3 +13,5 @@ pub mod register16;
 pub use register16::*;
 pub mod ram8;
 pub use ram8::*;
+pub mod ram64;
+pub use ram64::*;

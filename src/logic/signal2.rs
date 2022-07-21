@@ -75,7 +75,7 @@ impl From<&Signal2> for i8 {
 
 impl From<Signal3> for Signal2 {
     fn from(signal3: Signal3) -> Self {
-        Signal2::new(i8::from(signal3))
+        Signal2::new(signal3.into())
     }
 }
 
