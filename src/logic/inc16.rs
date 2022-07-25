@@ -20,6 +20,10 @@ impl Inc16 {
         self.eval();
         self.out
     }
+
+    pub fn get_out(&self) -> Signal16 {
+        self.out
+    }
 }
 
 impl Unit for Inc16 {

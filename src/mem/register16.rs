@@ -35,6 +35,10 @@ impl Register16 {
         self.tick();
         self.out
     }
+
+    pub fn get_out(&self) -> Signal16 {
+        self.out
+    }
 }
 
 impl Unit for Register16 {
