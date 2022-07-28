@@ -14,3 +14,5 @@ pub mod ram64;
 pub use ram64::*;
 pub mod ram512;
 pub use ram512::*;
+pub mod ram4k;
+pub use ram4k::*;
