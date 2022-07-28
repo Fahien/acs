@@ -7,6 +7,8 @@ use std::{
     ops::*,
 };
 
+use crate::{Signal14, Signal15};
+
 /// 12 signals into one
 #[derive(Copy, Clone, Default)]
 pub struct Signal12 {
@@ -26,10 +28,6 @@ impl Signal12 {
         Self {
             values: values & 0b1111_1111_1111,
         }
-    }
-
-    pub fn as_usize(&self) -> usize {
-        self.values as usize
     }
 
     pub fn get(&self, index: Range<usize>) -> i16 {
@@ -54,9 +52,33 @@ impl From<i32> for Signal12 {
     }
 }
 
+impl From<Signal14> for Signal12 {
+    fn from(signal14: Signal14) -> Self {
+        Self::new(signal14.into())
+    }
+}
+
+impl From<Signal15> for Signal12 {
+    fn from(signal15: Signal15) -> Self {
+        Self::new(signal15.into())
+    }
+}
+
 impl From<Signal12> for i16 {
     fn from(signal: Signal12) -> i16 {
         signal.values
+    }
+}
+
+impl From<Signal12> for u16 {
+    fn from(signal: Signal12) -> Self {
+        unsafe { std::mem::transmute(signal.values) }
+    }
+}
+
+impl From<Signal12> for usize {
+    fn from(signal: Signal12) -> Self {
+        signal.values as Self
     }
 }
 

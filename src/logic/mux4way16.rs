@@ -36,6 +36,10 @@ impl Mux4Way16 {
         self.eval();
         self.out
     }
+
+    pub fn sel(&self) -> Signal2 {
+        self.sel
+    }
 }
 
 impl Unit for Mux4Way16 {

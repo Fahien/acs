@@ -24,3 +24,5 @@ pub mod ram512;
 pub use ram512::*;
 pub mod ram4k;
 pub use ram4k::*;
+pub mod ram16k;
+pub use ram16k::*;
