@@ -7,6 +7,8 @@ use std::{
     ops::*,
 };
 
+use crate::Signal15;
+
 /// 13 signals into one
 #[derive(Copy, Clone, Default)]
 pub struct Signal13 {
@@ -47,6 +49,12 @@ impl From<i16> for Signal13 {
 impl From<i32> for Signal13 {
     fn from(value: i32) -> Self {
         Self::from(value as i16)
+    }
+}
+
+impl From<Signal15> for Signal13 {
+    fn from(signal: Signal15) -> Self {
+        Self::new(signal.values)
     }
 }
 

@@ -7,6 +7,8 @@ use std::{
     ops::*,
 };
 
+use crate::Signal15;
+
 use super::Signal;
 
 /// 16 signals into one
@@ -87,6 +89,12 @@ impl From<Signal16> for i16 {
 impl From<Signal> for Signal16 {
     fn from(signal: Signal) -> Self {
         Self::new((signal as i16) * !0i16) // splat
+    }
+}
+
+impl From<Signal15> for Signal16 {
+    fn from(signal: Signal15) -> Self {
+        Self::new(signal.into())
     }
 }
 
