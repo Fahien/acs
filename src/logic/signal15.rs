@@ -70,6 +70,12 @@ impl From<Signal15> for i16 {
     }
 }
 
+impl From<Signal15> for usize {
+    fn from(signal: Signal15) -> Self {
+        u16::from(signal) as usize
+    }
+}
+
 impl Not for Signal15 {
     type Output = Signal15;
 

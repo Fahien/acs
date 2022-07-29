@@ -7,7 +7,7 @@ use std::{
     ops::*,
 };
 
-use crate::Signal15;
+use crate::{instruction::AsmInstruction, Signal15};
 
 use super::Signal;
 
@@ -95,6 +95,12 @@ impl From<Signal> for Signal16 {
 impl From<Signal15> for Signal16 {
     fn from(signal: Signal15) -> Self {
         Self::new(signal.into())
+    }
+}
+
+impl From<&AsmInstruction> for Signal16 {
+    fn from(instr: &AsmInstruction) -> Self {
+        Self::from(u16::from(instr))
     }
 }
 
