@@ -88,12 +88,12 @@ impl BitAnd for Signal15 {
 
 impl Debug for Signal15 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.values, f)
+        f.write_fmt(format_args!("{:015b}", self.values))
     }
 }
 
 impl Display for Signal15 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.values, f)
+        f.write_fmt(format_args!("{:015b}", self.values))
     }
 }

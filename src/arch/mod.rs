@@ -6,3 +6,5 @@ pub mod screen;
 pub use screen::*;
 pub mod keyboard;
 pub use keyboard::*;
+pub mod memory;
+pub use memory::*;
