@@ -8,3 +8,5 @@ pub mod keyboard;
 pub use keyboard::*;
 pub mod memory;
 pub use memory::*;
+pub mod rom32k;
+pub use rom32k::*;
