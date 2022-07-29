@@ -66,6 +66,12 @@ impl From<i16> for Signal16 {
     }
 }
 
+impl From<Signal16> for u16 {
+    fn from(signal: Signal16) -> Self {
+        unsafe { std::mem::transmute(signal.values) }
+    }
+}
+
 impl From<&Signal16> for i16 {
     fn from(signal: &Signal16) -> i16 {
         signal.values
