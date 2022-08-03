@@ -93,6 +93,14 @@ impl Alu {
         (self.out, self.zr, self.ng)
     }
 
+    pub fn set_x(&mut self, x: Signal16) {
+        self.x = x;
+    }
+
+    pub fn set_y(&mut self, y: Signal16) {
+        self.y = y;
+    }
+
     pub fn out(&self) -> Signal16 {
         self.out
     }
