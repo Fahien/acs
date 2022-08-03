@@ -45,7 +45,7 @@ impl Counter {
         self.out
     }
 
-    pub fn get_out(&self) -> Signal16 {
+    pub fn out(&self) -> Signal16 {
         self.out
     }
 }

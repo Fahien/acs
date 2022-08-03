@@ -10,3 +10,5 @@ pub mod memory;
 pub use memory::*;
 pub mod rom32k;
 pub use rom32k::*;
+pub mod cpu;
+pub use cpu::*;
