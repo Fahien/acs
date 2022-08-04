@@ -10,9 +10,9 @@ use crate::{
 /// Package of three 16-bit chip parts: `Ram16k`, `Screen`, and `Keyboard`
 #[derive(Default)]
 pub struct Memory {
-    inp: Signal16,
-    load: Signal,
-    address: Signal15,
+    pub inp: Signal16,
+    pub load: Signal,
+    pub address: Signal15,
     out: Signal16,
 
     ram: Ram16k,
@@ -52,6 +52,10 @@ impl Memory {
         self.load = load;
         self.address = address;
         self.tick();
+        self.out
+    }
+
+    pub fn out(&self) -> Signal16 {
         self.out
     }
 }
