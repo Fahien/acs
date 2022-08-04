@@ -12,3 +12,5 @@ pub mod rom32k;
 pub use rom32k::*;
 pub mod cpu;
 pub use cpu::*;
+pub mod computer;
+pub use computer::*;

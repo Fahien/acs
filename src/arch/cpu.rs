@@ -82,6 +82,22 @@ impl Cpu {
         self.tick();
         (self.write_m, self.out_m, self.address_m, self.pc)
     }
+
+    pub fn get_pc(&self) -> Signal16 {
+        self.pc
+    }
+
+    pub fn get_address_m(&self) -> Signal15 {
+        self.address_m
+    }
+
+    pub fn get_out_m(&self) -> Signal16 {
+        self.out_m
+    }
+
+    pub fn get_write_m(&self) -> Signal {
+        self.write_m
+    }
 }
 
 impl Unit for Cpu {
