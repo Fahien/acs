@@ -7,7 +7,7 @@ use std::{
     ops::*,
 };
 
-use crate::{instruction::AsmInstruction, Signal15};
+use crate::{asm::instruction::AsmInstruction, Signal15};
 
 use super::Signal;
 
@@ -65,6 +65,16 @@ impl From<u16> for Signal16 {
 impl From<i16> for Signal16 {
     fn from(value: i16) -> Self {
         Self::new(value)
+    }
+}
+
+impl From<bool> for Signal16 {
+    fn from(value: bool) -> Self {
+        if value {
+            Self::TRUE
+        } else {
+            Self::FALSE
+        }
     }
 }
 
