@@ -14,3 +14,5 @@ pub mod cpu;
 pub use cpu::*;
 pub mod computer;
 pub use computer::*;
+
+pub mod fast;

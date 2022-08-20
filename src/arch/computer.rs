@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use crate::{
-    arch::{Cpu, Memory},
+    arch::fast::{Cpu, Memory},
     asm::instruction::AsmInstruction,
     Keyboard, Rom32k, Screen, Signal, Time, Unit,
 };
