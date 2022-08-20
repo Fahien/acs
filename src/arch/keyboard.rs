@@ -11,6 +11,10 @@ pub struct Keyboard {
 }
 
 impl Keyboard {
+    pub fn set(&mut self, value: Signal16) {
+        self.out = value;
+    }
+
     /// Returns the 16-bit character code of the currently pressed key on the
     /// physical board, or `0` if no key is pressed
     pub fn out(&self) -> Signal16 {

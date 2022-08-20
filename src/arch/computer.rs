@@ -5,7 +5,7 @@
 use crate::{
     arch::{Cpu, Memory},
     asm::instruction::AsmInstruction,
-    Rom32k, Signal, Time, Unit,
+    Keyboard, Rom32k, Screen, Signal, Time, Unit,
 };
 
 /// The computer consists of three parts:
@@ -39,6 +39,14 @@ impl Computer {
 
     pub fn reset(&mut self) {
         self.reset = Signal::HI;
+    }
+
+    pub fn get_screen(&self) -> &Screen {
+        self.memory.get_screen()
+    }
+
+    pub fn get_keyboard_mut(&mut self) -> &mut Keyboard {
+        self.memory.get_keyboard_mut()
     }
 }
 
