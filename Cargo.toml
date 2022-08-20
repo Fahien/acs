@@ -7,3 +7,4 @@ license = "MIT"
 
 [dependencies]
 png = "0.17.6"
+sdl2 = "0.35.2"

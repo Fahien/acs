@@ -58,6 +58,14 @@ impl Memory {
     pub fn out(&self) -> Signal16 {
         self.out
     }
+
+    pub fn get_screen(&self) -> &Screen {
+        &self.screen
+    }
+
+    pub fn get_keyboard_mut(&mut self) -> &mut Keyboard {
+        &mut self.keyboard
+    }
 }
 
 impl Unit for Memory {
