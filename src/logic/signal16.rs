@@ -47,6 +47,14 @@ impl Signal16 {
         let value = (signal as i16) << index;
         self.values |= value;
     }
+
+    pub fn get_values(&self) -> &i16 {
+        &self.values
+    }
+
+    pub fn get_values_mut(&mut self) -> &mut i16 {
+        &mut self.values
+    }
 }
 
 impl From<i32> for Signal16 {
@@ -93,6 +101,23 @@ impl From<&Signal16> for i16 {
 impl From<Signal16> for i16 {
     fn from(signal: Signal16) -> i16 {
         i16::from(&signal)
+    }
+}
+impl From<&mut Signal16> for usize {
+    fn from(signal: &mut Signal16) -> Self {
+        signal.values as usize
+    }
+}
+
+impl From<&Signal16> for usize {
+    fn from(signal: &Signal16) -> Self {
+        signal.values as usize
+    }
+}
+
+impl From<Signal16> for usize {
+    fn from(signal: Signal16) -> Self {
+        usize::from(&signal)
     }
 }
 
@@ -151,6 +176,12 @@ impl Add<Signal16> for Signal16 {
     }
 }
 
+impl AddAssign<i16> for Signal16 {
+    fn add_assign(&mut self, rhs: i16) {
+        (self.values, _) = self.values.overflowing_add(rhs);
+    }
+}
+
 impl Sub<i16> for Signal16 {
     type Output = Signal16;
 
@@ -160,11 +191,23 @@ impl Sub<i16> for Signal16 {
     }
 }
 
+impl SubAssign<i16> for Signal16 {
+    fn sub_assign(&mut self, rhs: i16) {
+        (self.values, _) = self.values.overflowing_sub(rhs);
+    }
+}
+
 impl Sub<Signal16> for Signal16 {
     type Output = Signal16;
 
     fn sub(self, rhs: Signal16) -> Self::Output {
         self.sub(i16::from(rhs))
+    }
+}
+
+impl PartialOrd for Signal16 {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.values.partial_cmp(&other.values)
     }
 }
 
