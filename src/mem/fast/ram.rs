@@ -5,6 +5,7 @@
 macro_rules! impl_fast_ram {
     ($ram:ident, $size:expr, $address:ty) => {
         use crate::{Signal, Signal16, Unit};
+        use std::ops::{Index, IndexMut};
 
         /// Fast RAM which, as opposed to the other RAMs,
         /// it does not carries out the simulation with other building blocks,
@@ -16,7 +17,7 @@ macro_rules! impl_fast_ram {
             out: Signal16,
 
             selected: usize,
-            data: Vec<Signal16>,
+            pub data: Vec<Signal16>,
         }
 
         impl Default for $ram {
@@ -84,6 +85,20 @@ macro_rules! impl_fast_ram {
                 if self.load.as_bool() {
                     self.data[self.selected] = self.inp;
                 }
+            }
+        }
+
+        impl Index<usize> for $ram {
+            type Output = i16;
+
+            fn index(&self, index: usize) -> &Self::Output {
+                self.data[index].get_values()
+            }
+        }
+
+        impl IndexMut<usize> for $ram {
+            fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+                self.data[index].get_values_mut()
             }
         }
 
