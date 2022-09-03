@@ -11,3 +11,5 @@ pub mod mem;
 pub use mem::*;
 pub mod arch;
 pub use arch::*;
+pub mod asm;
+pub use asm::*;
