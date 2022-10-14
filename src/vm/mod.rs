@@ -8,3 +8,5 @@ pub mod instruction;
 pub mod preprocessor;
 pub mod segment;
 pub use emulator::*;
+pub mod translator;
+pub use translator::*;
