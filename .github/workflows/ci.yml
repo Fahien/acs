@@ -24,7 +24,9 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Deps
-      run: sudo apt install libsdl2-dev -y
+      run: |
+        sudo apt update
+        sudo apt install libsdl2-dev -y
 
     - name: Check
       run: cargo check --release
