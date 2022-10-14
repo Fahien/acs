@@ -187,7 +187,26 @@ impl Sub<i16> for Signal16 {
 
     fn sub(self, rhs: i16) -> Self::Output {
         let sub_value = i16::from(self);
-        Self::from(sub_value - rhs)
+        let (sub, _) = sub_value.overflowing_sub(rhs as i16);
+        Self::from(sub)
+    }
+}
+
+impl Sub<i32> for Signal16 {
+    type Output = Signal16;
+
+    fn sub(self, rhs: i32) -> Self::Output {
+        self.sub(rhs as i16)
+    }
+}
+
+impl Sub<u16> for Signal16 {
+    type Output = Signal16;
+
+    fn sub(self, rhs: u16) -> Self::Output {
+        let sub_value = u16::from(self);
+        let (sub, _) = sub_value.overflowing_sub(rhs);
+        Self::from(sub)
     }
 }
 
