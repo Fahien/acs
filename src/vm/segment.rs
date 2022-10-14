@@ -48,6 +48,9 @@ impl Segment {
             Segment::This | Segment::Pointer => 3,
             Segment::That => 4,
             Segment::Temp => 5,
+            Segment::R13 => 13,
+            Segment::R14 => 14,
+            Segment::R15 => 15,
             Segment::Static => 16,
             _ => panic!("Can not get base address for this segment '{:?}'", self),
         }

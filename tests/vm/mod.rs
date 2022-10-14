@@ -1,1 +1,2 @@
 mod emulator;
+mod translator;
