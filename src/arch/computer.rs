@@ -48,6 +48,20 @@ impl Computer {
     pub fn get_keyboard_mut(&mut self) -> &mut Keyboard {
         self.memory.get_keyboard_mut()
     }
+
+    pub fn get_memory(&self) -> &Memory {
+        &self.memory
+    }
+
+    pub fn get_memory_mut(&mut self) -> &mut Memory {
+        &mut self.memory
+    }
+
+    /// Advances one cicle
+    pub fn ticktock(&mut self) {
+        self.tick();
+        self.tock();
+    }
 }
 
 impl Unit for Computer {

@@ -4,6 +4,8 @@
 
 use std::{ops::BitOrAssign, str::FromStr};
 
+use crate::{vm::instruction::VmInstruction, VmTranslator};
+
 #[repr(u16)]
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 pub enum AsmInstruction {
@@ -18,6 +20,12 @@ pub enum AsmInstruction {
     C(Dest, Comp, Jump),
     Label(String),
     Symbol(String),
+}
+
+impl AsmInstruction {
+    pub fn parse(code: &str) -> Vec<AsmInstruction> {
+        VmTranslator::default().translate(VmInstruction::parse(code))
+    }
 }
 
 impl Default for AsmInstruction {
