@@ -10,7 +10,7 @@ use crate::{code::VmCode, preprocessor::VmPreprocessedCode, segment::Segment};
 /// [stack machine](https://en.wikipedia.org/wiki/Stack_machine).
 /// Part of a two-tier compilation model, where a high level language is
 /// first translated to this representation and then to machine language.
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub enum VmInstruction {
     /// Pushes `segment[index]` on top of the stack
     Push(Segment, u16),
@@ -44,6 +44,28 @@ pub enum VmInstruction {
 
     /// Pops `x`, and pushes `~x` (bitwise not)
     Not,
+
+    /// Marks current code location for jumping
+    Label(String),
+
+    /// Unconditional jump to the location marked by the label
+    Goto(String),
+
+    /// Pops topmost value from stack and, if it is not `0`,
+    /// jumps to the location marked by the label
+    IfGoto(String),
+
+    /// Marks the beginning of a function with a name and the number of
+    /// local variables
+    Function(String, u16),
+
+    /// Calls the function with that name with the number of arguments
+    /// pushed onto the stack before calling.
+    Call(String, u16),
+
+    /// Jumps to the command following the `Call` command that called
+    /// the current function
+    Return,
 }
 
 impl VmInstruction {
@@ -71,7 +93,10 @@ impl FromStr for VmInstruction {
             }
             "pop" => {
                 let segment = words.next().unwrap().parse().unwrap();
-                let value = words.next().unwrap().parse().unwrap();
+
+                let value = words.next().unwrap();
+                let parse_err = format!("Failed to parse pop value: `{}`", value);
+                let value = value.parse().expect(&parse_err);
                 Ok(VmInstruction::Pop(segment, value))
             }
             "add" => Ok(VmInstruction::Add),
@@ -83,7 +108,30 @@ impl FromStr for VmInstruction {
             "and" => Ok(VmInstruction::And),
             "or" => Ok(VmInstruction::Or),
             "not" => Ok(VmInstruction::Not),
-            _ => Err(format!("Invalid command {}", command)),
+            "label" => {
+                let label = words.next().unwrap().into();
+                Ok(VmInstruction::Label(label))
+            }
+            "if-goto" => {
+                let label = words.next().unwrap().into();
+                Ok(VmInstruction::IfGoto(label))
+            }
+            "goto" => {
+                let label = words.next().unwrap().into();
+                Ok(VmInstruction::Goto(label))
+            }
+            "function" => {
+                let function = words.next().unwrap().into();
+                let param_count = words.next().unwrap().parse().unwrap();
+                Ok(VmInstruction::Function(function, param_count))
+            }
+            "return" => Ok(VmInstruction::Return),
+            "call" => {
+                let function = words.next().unwrap().into();
+                let arg_count = words.next().unwrap().parse().unwrap();
+                Ok(VmInstruction::Call(function, arg_count))
+            }
+            _ => Err(format!("Invalid command: `{}`", command)),
         }
     }
 }

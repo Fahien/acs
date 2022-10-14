@@ -266,6 +266,12 @@ impl VmTranslator {
             VmInstruction::And => Self::gen_and(),
             VmInstruction::Or => Self::gen_or(),
             VmInstruction::Not => Self::gen_not(),
+            VmInstruction::Label(label) => vec![I::Label(label)],
+            VmInstruction::IfGoto(_label) => todo!(),
+            VmInstruction::Goto(_label) => todo!(),
+            VmInstruction::Function(_function, _param_count) => todo!(),
+            VmInstruction::Return => todo!(),
+            VmInstruction::Call(_function, _arg_count) => todo!(),
         }
     }
 
