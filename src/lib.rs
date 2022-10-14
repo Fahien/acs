@@ -13,3 +13,5 @@ pub mod arch;
 pub use arch::*;
 pub mod asm;
 pub use asm::*;
+pub mod vm;
+pub use vm::*;
