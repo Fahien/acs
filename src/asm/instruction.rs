@@ -255,6 +255,19 @@ impl From<u16> for AsmInstruction {
     }
 }
 
+impl From<i16> for AsmInstruction {
+    fn from(i: i16) -> Self {
+        Self::from(unsafe { std::mem::transmute::<i16, u16>(i) })
+    }
+}
+
+impl From<i32> for AsmInstruction {
+    fn from(i: i32) -> Self {
+        let words: [u16; 2] = unsafe { std::mem::transmute(i) };
+        Self::from(words[1])
+    }
+}
+
 impl std::fmt::Binary for AsmInstruction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Binary::fmt(&u16::from(self), f)
