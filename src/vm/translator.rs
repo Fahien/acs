@@ -252,6 +252,150 @@ impl VmTranslator {
         ]
     }
 
+    fn gen_goto(label: String) -> Vec<I> {
+        vec![I::Symbol(label), I::C(Dest::D, Comp::D, Jump::Jump)]
+    }
+
+    fn gen_if_goto(label: String) -> Vec<I> {
+        vec![
+            // Pop into D
+            I::A(0),
+            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            // Put label address into A
+            I::Symbol(label),
+            // Jump if D!=0
+            I::C(Dest::D, Comp::D, Jump::Ne),
+        ]
+    }
+
+    fn gen_function(function: String, local_count: u16) -> Vec<I> {
+        let mut ret = vec![I::Label(function)];
+        for _ in 0..local_count {
+            ret.extend([
+                I::A(0),
+                I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+                I::C(Dest::A, Comp::AMinusOne, Jump::No),
+                I::C(Dest::M, Comp::Zero, Jump::No),
+            ]);
+        }
+        ret
+    }
+
+    fn gen_call(&mut self, function: String, arg_count: u16) -> Vec<I> {
+        let return_label = self.next_label();
+        vec![
+            // Push return address onto the stack
+            I::Symbol(return_label.clone()),
+            I::C(Dest::D, Comp::A, Jump::No),
+            I::A(0),
+            I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+            I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // Push local pointer
+            I::A(Segment::Local.get_base_address() as u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(0),
+            I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+            I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // Push arg pointer
+            I::A(Segment::Argument.get_base_address() as u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(0),
+            I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+            I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // Push this pointer
+            I::A(Segment::This.get_base_address() as u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(0),
+            I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+            I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // Push that pointer
+            I::A(Segment::That.get_base_address() as u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(0),
+            I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+            I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // Update arg pointer
+            I::A(0),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(5 + arg_count),
+            I::C(Dest::D, Comp::DMinusA, Jump::No),
+            I::A(Segment::Argument.get_base_address() as u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // Update local pointer
+            I::A(0),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::Local.get_base_address() as u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // Jump to function
+            I::Symbol(function),
+            I::C(Dest::D, Comp::D, Jump::Jump),
+            // Save return address
+            I::Label(return_label),
+        ]
+    }
+
+    fn gen_return() -> Vec<I> {
+        vec![
+            // Put frame on R13, A and D
+            I::A(Segment::Local.get_base_address() as u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::R13.get_base_address() as u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // Put return address in R14
+            I::A(5),
+            I::C(Dest::A, Comp::DMinusA, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::R14.get_base_address() as u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // Pop from stack into *ARG
+            I::A(0),
+            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::Argument.get_base_address() as u16),
+            I::C(Dest::A, Comp::M, Jump::No),
+            // A is ARG address now
+            I::C(Dest::M, Comp::D, Jump::No),
+            // SP = ARG+1
+            I::C(Dest::D, Comp::A, Jump::No),
+            I::A(0),
+            I::C(Dest::M, Comp::DPlusOne, Jump::No),
+            // That = *(frame-1)
+            I::A(Segment::R13.get_base_address() as u16),
+            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::That.get_base_address() as u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // This = *(frame-2)
+            I::A(Segment::R13.get_base_address() as u16),
+            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::This.get_base_address() as u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // ARG = *(frame-3)
+            I::A(Segment::R13.get_base_address() as u16),
+            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::Argument.get_base_address() as u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // LCL = *(frame-4)
+            I::A(Segment::R13.get_base_address() as u16),
+            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::Local.get_base_address() as u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            // goto return address *(frame-5)
+            I::A(Segment::R14.get_base_address() as u16),
+            I::C(Dest::A, Comp::M, Jump::No),
+            I::C(Dest::D, Comp::D, Jump::Jump),
+        ]
+    }
+
     /// Translates a VM instruction into a sequence of assembly instructions
     fn vm_to_asm(&mut self, vm_instruction: VmInstruction) -> Vec<I> {
         match vm_instruction {
@@ -267,11 +411,11 @@ impl VmTranslator {
             VmInstruction::Or => Self::gen_or(),
             VmInstruction::Not => Self::gen_not(),
             VmInstruction::Label(label) => vec![I::Label(label)],
-            VmInstruction::IfGoto(_label) => todo!(),
-            VmInstruction::Goto(_label) => todo!(),
-            VmInstruction::Function(_function, _param_count) => todo!(),
-            VmInstruction::Return => todo!(),
-            VmInstruction::Call(_function, _arg_count) => todo!(),
+            VmInstruction::Goto(label) => Self::gen_goto(label),
+            VmInstruction::IfGoto(label) => Self::gen_if_goto(label),
+            VmInstruction::Function(func, local_count) => Self::gen_function(func, local_count),
+            VmInstruction::Call(function, arg_count) => self.gen_call(function, arg_count),
+            VmInstruction::Return => Self::gen_return(),
         }
     }
 
@@ -292,4 +436,8 @@ impl VmTranslator {
         let mut assembler = Assembler::default();
         assembler.resolve(asm_instructions)
     }
+}
+
+pub fn translate(vm_instructions: Vec<VmInstruction>) -> Vec<I> {
+    VmTranslator::default().translate(vm_instructions)
 }
