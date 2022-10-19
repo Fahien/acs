@@ -1,3 +1,0 @@
-(function() {var implementors = {};
-implementors["cacs"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.64.0/core/fmt/trait.Binary.html\" title=\"trait core::fmt::Binary\">Binary</a> for <a class=\"enum\" href=\"cacs/asm/instruction/enum.AsmInstruction.html\" title=\"enum cacs::asm::instruction::AsmInstruction\">AsmInstruction</a>","synthetic":false,"types":["cacs::asm::instruction::AsmInstruction"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

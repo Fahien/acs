@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["bit",""],["dff",""],["fast",""],["pc",""],["ram16k",""],["ram4k",""],["ram512",""],["ram64",""],["ram8",""],["register16",""],["time",""]]};

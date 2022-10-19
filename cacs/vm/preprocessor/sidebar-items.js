@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["VmPreprocessedCode","Processes one or more VM code units into a vector of processed string lines"],["VmPreprocessedCodeBuilder",""]]};

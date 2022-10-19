@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["AsmInstruction",""],["Comp","Format is this: `***a cccc cc** ****`"],["Dest",""],["Jump",""]]};
