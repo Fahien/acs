@@ -41,12 +41,29 @@
 <span id="39">39</span>
 <span id="40">40</span>
 <span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Signal</span>, <span class="ident">Unit</span>};
 
+<span class="doccomment">/// The NAND gate is the only built-in logic component</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// | a | b |out|</span>
+<span class="doccomment">/// |---|---|---|</span>
+<span class="doccomment">/// | 0 | 0 | 1 |</span>
+<span class="doccomment">/// | 0 | 1 | 1 |</span>
+<span class="doccomment">/// | 1 | 0 | 1 |</span>
+<span class="doccomment">/// | 1 | 1 | 0 |</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Nand</span> {
     <span class="ident">a</span>: <span class="ident">Signal</span>,
@@ -55,6 +72,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Nand</span> {
+    <span class="doccomment">/// Carries out the simulation and returns `a NAND b`</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sim</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">a</span>: <span class="ident">Signal</span>, <span class="ident">b</span>: <span class="ident">Signal</span>) -&gt; <span class="ident">Signal</span> {
         <span class="self">self</span>.<span class="ident">a</span> <span class="op">=</span> <span class="ident">a</span>;
         <span class="self">self</span>.<span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>;
