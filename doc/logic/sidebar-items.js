@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["and",""],["mux",""],["nand",""],["not",""],["or",""],["signal",""],["unit",""],["xor",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["and",""],["demux",""],["mux",""],["nand",""],["not",""],["or",""],["signal",""],["unit",""],["xor",""]]};
