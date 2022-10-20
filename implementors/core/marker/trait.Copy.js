@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["acs"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.64.0/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"struct\" href=\"acs/logic/signal/struct.Signal.html\" title=\"struct acs::logic::signal::Signal\">Signal</a>","synthetic":false,"types":["acs::logic::signal::Signal"]}];
+implementors["acs"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.64.0/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"acs/logic/signal/enum.Signal.html\" title=\"enum acs::logic::signal::Signal\">Signal</a>","synthetic":false,"types":["acs::logic::signal::Signal"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
