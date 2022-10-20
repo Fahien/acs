@@ -113,6 +113,14 @@
 <span id="111">111</span>
 <span id="112">112</span>
 <span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -121,6 +129,8 @@
     <span class="ident">fmt</span>::{<span class="ident">Debug</span>, <span class="ident">Display</span>},
     <span class="ident">ops</span>::<span class="kw-2">*</span>,
 };
+
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Signal3</span>;
 
 <span class="doccomment">/// 2 signals into one</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
@@ -183,6 +193,12 @@
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Signal2</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">i8</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">signal</span>: <span class="kw-2">&amp;</span><span class="ident">Signal2</span>) -&gt; <span class="self">Self</span> {
         <span class="kw-2">*</span><span class="ident">signal</span> <span class="kw">as</span> <span class="ident">i8</span>
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Signal3</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Signal2</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">signal3</span>: <span class="ident">Signal3</span>) -&gt; <span class="self">Self</span> {
+        <span class="ident">Signal2::new</span>(<span class="ident">i8::from</span>(<span class="ident">signal3</span>))
     }
 }
 
