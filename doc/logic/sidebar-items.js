@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["and",""],["and16",""],["demux",""],["mux",""],["mux16",""],["nand",""],["nand16",""],["not",""],["not16",""],["or",""],["or16",""],["signal",""],["signal16",""],["unit",""],["xor",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["and",""],["and16",""],["demux",""],["mux",""],["mux16",""],["nand",""],["nand16",""],["not",""],["not16",""],["or",""],["or16",""],["or8way",""],["signal",""],["signal16",""],["signal8",""],["unit",""],["xor",""]]};
