@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["nand",""],["signal",""],["unit",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["nand",""],["not",""],["signal",""],["unit",""]]};
