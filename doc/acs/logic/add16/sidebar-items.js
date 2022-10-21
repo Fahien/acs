@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["Add16","The Add16 chip is able to add two 16-bit numbers."]]};
+window.SIDEBAR_ITEMS = {"struct":[["Add16","The Add16 chip is able to add two 16-bit numbers"]]};
