@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Signal2","2 signals into one"]]};
