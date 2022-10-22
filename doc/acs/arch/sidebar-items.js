@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["keyboard",""],["memory",""],["rom32k",""],["screen",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["cpu",""],["keyboard",""],["memory",""],["rom32k",""],["screen",""]]};
