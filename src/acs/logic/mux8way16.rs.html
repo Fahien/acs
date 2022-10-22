@@ -134,6 +134,10 @@
 <span id="132">132</span>
 <span id="133">133</span>
 <span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -183,6 +187,10 @@
         <span class="self">self</span>.<span class="ident">sel</span> <span class="op">=</span> <span class="ident">sel</span>;
         <span class="self">self</span>.<span class="ident">eval</span>();
         <span class="self">self</span>.<span class="ident">out</span>
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sel</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Signal3</span> {
+        <span class="self">self</span>.<span class="ident">sel</span>
     }
 }
 
