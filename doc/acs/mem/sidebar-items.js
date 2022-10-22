@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["bit",""],["dff",""],["register16",""],["time",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["bit",""],["dff",""],["fast",""],["ram8",""],["register16",""],["time",""]]};
