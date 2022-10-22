@@ -14,6 +14,12 @@ impl From<i32> for Time {
     }
 }
 
+impl From<&Time> for usize {
+    fn from(t: &Time) -> Self {
+        t.time
+    }
+}
+
 impl AddAssign<usize> for Time {
     fn add_assign(&mut self, rhs: usize) {
         self.time += rhs;

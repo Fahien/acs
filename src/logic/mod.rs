@@ -47,6 +47,8 @@ pub mod signal8;
 pub use signal8::*;
 pub mod signal9;
 pub use signal9::*;
+pub mod signal12;
+pub use signal12::*;
 
 pub mod or8way;
 pub use or8way::*;
