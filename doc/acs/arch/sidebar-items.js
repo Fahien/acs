@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["screen",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["keyboard",""],["screen",""]]};
