@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["logic",""],["mem",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["arch",""],["logic",""],["mem",""]]};
