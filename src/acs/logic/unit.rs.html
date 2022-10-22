@@ -19,13 +19,21 @@
 <span id="17">17</span>
 <span id="18">18</span>
 <span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
 
-<span class="doccomment">/// Common operations for a logic unit</span>
+<span class="doccomment">/// Common operations for a logic unit.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Calling `tick()` and `tock()` determines a cycle,</span>
+<span class="doccomment">/// and each cycle is one discrete time unit `t`.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Unit</span> {
     <span class="doccomment">/// Evaluates the logic expression as we do with arithmetic</span>
+    <span class="doccomment">/// without advancing the time.</span>
     <span class="kw">fn</span> <span class="ident">eval</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>);
 
     <span class="doccomment">/// Carries out the tick-phase of a clock cycle: LOW</span>

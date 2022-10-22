@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Time","Helper class for keeping track of time, advancing every `tick` and `tock`."]]};
