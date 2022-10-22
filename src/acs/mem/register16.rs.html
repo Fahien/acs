@@ -108,6 +108,10 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -143,6 +147,10 @@
         <span class="self">self</span>.<span class="ident">inp</span> <span class="op">=</span> <span class="ident">inp</span>;
         <span class="self">self</span>.<span class="ident">load</span> <span class="op">=</span> <span class="ident">load</span>;
         <span class="self">self</span>.<span class="ident">tick</span>();
+        <span class="self">self</span>.<span class="ident">out</span>
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">out</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Signal16</span> {
         <span class="self">self</span>.<span class="ident">out</span>
     }
 }
