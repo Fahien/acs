@@ -53,6 +53,12 @@ impl From<u16> for Signal3 {
     }
 }
 
+impl From<i16> for Signal3 {
+    fn from(value: i16) -> Self {
+        Self::new(value as i8)
+    }
+}
+
 impl From<i32> for Signal3 {
     fn from(value: i32) -> Self {
         Self::new(value as i8)

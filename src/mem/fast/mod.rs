@@ -10,3 +10,5 @@ pub mod ram;
 pub use ram::*;
 pub mod ram8;
 pub use ram8::*;
+pub mod ram64;
+pub use ram64::*;
