@@ -99,6 +99,7 @@
 <span id="97">97</span>
 <span id="98">98</span>
 <span id="99">99</span>
+<span id="100">100</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -108,11 +109,11 @@
 <span class="doccomment">/// A Random Access Memory consisting of 4k 16-bit registers</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Ram4k</span> {
-    <span class="kw">pub</span> <span class="ident">time</span>: <span class="ident">Time</span>,
-    <span class="kw">pub</span> <span class="ident">inp</span>: <span class="ident">Signal16</span>,
-    <span class="kw">pub</span> <span class="ident">load</span>: <span class="ident">Signal</span>,
-    <span class="kw">pub</span> <span class="ident">address</span>: <span class="ident">Signal12</span>,
-    <span class="kw">pub</span> <span class="ident">out</span>: <span class="ident">Signal16</span>,
+    <span class="ident">time</span>: <span class="ident">Time</span>,
+    <span class="ident">inp</span>: <span class="ident">Signal16</span>,
+    <span class="ident">load</span>: <span class="ident">Signal</span>,
+    <span class="ident">address</span>: <span class="ident">Signal12</span>,
+    <span class="ident">out</span>: <span class="ident">Signal16</span>,
 
     <span class="ident">demux</span>: <span class="ident">Demux8Way</span>,
     <span class="ident">mux</span>: <span class="ident">Mux8Way16</span>,
@@ -141,17 +142,18 @@
 <span class="kw">impl</span> <span class="ident">Unit</span> <span class="kw">for</span> <span class="ident">Ram4k</span> {
     <span class="kw">fn</span> <span class="ident">tick</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
         <span class="self">self</span>.<span class="ident">time</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-
         <span class="kw">let</span> <span class="ident">mux_signal</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">address</span>.<span class="ident">get</span>(<span class="number">9</span>..<span class="number">12</span>).<span class="ident">into</span>();
-
         <span class="kw">let</span> <span class="ident">ram_loads</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">demux</span>.<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">load</span>, <span class="ident">mux_signal</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ram_outs</span> <span class="op">=</span> [<span class="ident">Signal16::FALSE</span>; <span class="number">8</span>];
-
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">8</span> {
             <span class="ident">ram_outs</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="self">self</span>.<span class="ident">rams</span>[<span class="ident">i</span>].<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">inp</span>, <span class="ident">ram_loads</span>[<span class="ident">i</span>], <span class="self">self</span>.<span class="ident">address</span>);
         }
-
         <span class="self">self</span>.<span class="ident">out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">ram_outs</span>, <span class="ident">mux_signal</span>);
+    }
+
+    <span class="kw">fn</span> <span class="ident">tock</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">time</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        <span class="self">self</span>.<span class="ident">eval</span>();
     }
 
     <span class="kw">fn</span> <span class="ident">eval</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {

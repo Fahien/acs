@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Signal9","9 signals into one"]]};
