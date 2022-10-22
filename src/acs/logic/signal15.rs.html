@@ -99,6 +99,12 @@
 <span id="97">97</span>
 <span id="98">98</span>
 <span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -168,6 +174,12 @@
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Signal15</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">i16</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">signal</span>: <span class="ident">Signal15</span>) -&gt; <span class="ident">i16</span> {
         <span class="ident">signal</span>.<span class="ident">values</span> <span class="kw">as</span> <span class="ident">i16</span>
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Signal15</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">signal</span>: <span class="ident">Signal15</span>) -&gt; <span class="self">Self</span> {
+        <span class="ident">u16::from</span>(<span class="ident">signal</span>) <span class="kw">as</span> <span class="ident">usize</span>
     }
 }
 
