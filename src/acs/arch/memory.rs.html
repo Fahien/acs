@@ -148,6 +148,10 @@
 <span id="146">146</span>
 <span id="147">147</span>
 <span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -160,9 +164,9 @@
 <span class="doccomment">/// Package of three 16-bit chip parts: `Ram16k`, `Screen`, and `Keyboard`</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Memory</span> {
-    <span class="ident">inp</span>: <span class="ident">Signal16</span>,
-    <span class="ident">load</span>: <span class="ident">Signal</span>,
-    <span class="ident">address</span>: <span class="ident">Signal15</span>,
+    <span class="kw">pub</span> <span class="ident">inp</span>: <span class="ident">Signal16</span>,
+    <span class="kw">pub</span> <span class="ident">load</span>: <span class="ident">Signal</span>,
+    <span class="kw">pub</span> <span class="ident">address</span>: <span class="ident">Signal15</span>,
     <span class="ident">out</span>: <span class="ident">Signal16</span>,
 
     <span class="ident">ram</span>: <span class="ident">Ram16k</span>,
@@ -202,6 +206,10 @@
         <span class="self">self</span>.<span class="ident">load</span> <span class="op">=</span> <span class="ident">load</span>;
         <span class="self">self</span>.<span class="ident">address</span> <span class="op">=</span> <span class="ident">address</span>;
         <span class="self">self</span>.<span class="ident">tick</span>();
+        <span class="self">self</span>.<span class="ident">out</span>
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">out</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Signal16</span> {
         <span class="self">self</span>.<span class="ident">out</span>
     }
 }
