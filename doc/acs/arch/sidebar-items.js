@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["computer",""],["cpu",""],["keyboard",""],["memory",""],["rom32k",""],["screen",""]]};

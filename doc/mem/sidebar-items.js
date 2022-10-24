@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["bit",""],["counter",""],["dff",""],["fast",""],["ram4k",""],["ram512",""],["ram64",""],["ram8",""],["register16",""],["time",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["bit",""],["counter",""],["dff",""],["fast",""],["ram16k",""],["ram4k",""],["ram512",""],["ram64",""],["ram8",""],["register16",""],["time",""]]};

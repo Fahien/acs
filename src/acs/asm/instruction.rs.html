@@ -310,33 +310,133 @@
 <span id="308">308</span>
 <span id="309">309</span>
 <span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
 
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">ops</span>::{<span class="ident">BitOr</span>, <span class="ident">BitOrAssign</span>},
-    <span class="ident">str::FromStr</span>,
-};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">ops::BitOrAssign</span>, <span class="ident">str::FromStr</span>};
 
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">u16</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Kind</span> {
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">AsmInstruction</span> {
     <span class="doccomment">/// A-instructions start with `0`</span>
     <span class="doccomment">/// - symbolic: `@n` where `n` is value in range `[0, 32767]`</span>
-    <span class="ident">A</span> <span class="op">=</span> <span class="number">0</span>,
+    <span class="ident">A</span>(<span class="ident">u16</span>),
     <span class="doccomment">/// C-instructions start with `111`</span>
     <span class="doccomment">/// - symbolic: `dest = comp; jump`</span>
     <span class="doccomment">///   - `comp` is mandatory</span>
     <span class="doccomment">///   - `dest` can be empty and `=` is omitted</span>
     <span class="doccomment">///   - `jump` can be empty and `;` is omitted</span>
-    <span class="ident">C</span> <span class="op">=</span> <span class="number">0b111</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">13</span>,
+    <span class="ident">C</span>(<span class="ident">Dest</span>, <span class="ident">Comp</span>, <span class="ident">Jump</span>),
+    <span class="ident">Label</span>(<span class="ident">String</span>),
+    <span class="ident">Symbol</span>(<span class="ident">String</span>),
+}
+
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident"><span class="self">Self</span>::A</span>(<span class="number">0</span>)
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">u16</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">inst</span>: <span class="kw-2">&amp;</span><span class="ident">AsmInstruction</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">match</span> <span class="ident">inst</span> {
+            <span class="ident">AsmInstruction::A</span>(<span class="ident">value</span>) =&gt; <span class="ident">value</span> <span class="op">&amp;</span> <span class="number">0b0111_1111_1111_1111</span>,
+            <span class="ident">AsmInstruction::C</span>(<span class="ident">dest</span>, <span class="ident">comp</span>, <span class="ident">jump</span>) =&gt; {
+                <span class="number">0b1110_0000_0000_0000</span> <span class="op">|</span> <span class="kw-2">*</span><span class="ident">dest</span> <span class="kw">as</span> <span class="ident">u16</span> <span class="op">|</span> <span class="kw-2">*</span><span class="ident">comp</span> <span class="kw">as</span> <span class="ident">u16</span> <span class="op">|</span> <span class="kw-2">*</span><span class="ident">jump</span> <span class="kw">as</span> <span class="ident">u16</span>
+            }
+            <span class="ident">AsmInstruction::Label</span>(<span class="ident">label</span>) =&gt; {
+                <span class="macro">panic!</span>(<span class="string">&quot;Can not convert label to machine instruction: {}&quot;</span>, <span class="ident">label</span>)
+            }
+            <span class="ident">AsmInstruction::Symbol</span>(<span class="ident">symbol</span>) =&gt; {
+                <span class="macro">panic!</span>(<span class="string">&quot;Can not convert symbol to machine instruction: {}&quot;</span>, <span class="ident">symbol</span>)
+            }
+        }
+    }
 }
 
 <span class="doccomment">/// Where to store `Comp`.</span>
 <span class="doccomment">/// Format is this: `**** **** **dd d***`</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">u16</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Dest</span> {
     <span class="doccomment">/// Value is not stored</span>
     <span class="ident">Null</span> <span class="op">=</span> <span class="number">0</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>,
@@ -363,13 +463,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Dest</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">dest_raw</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">match</span> <span class="ident">dest_raw</span> {
-            <span class="number">0b1000</span> <span class="op">|</span> <span class="number">0b10000</span> <span class="op">|</span> <span class="number">0b11000</span> <span class="op">|</span> <span class="number">0b100000</span> <span class="op">|</span> <span class="number">0b1000000</span> <span class="op">|</span> <span class="number">0b101000</span> <span class="op">|</span> <span class="number">0b110000</span> <span class="op">|</span> <span class="number">0b111000</span> =&gt; <span class="kw">unsafe</span> {
-                <span class="ident">std::mem::transmute</span>(<span class="ident">dest_raw</span>)
-            },
-            <span class="kw">_</span> =&gt; <span class="ident">Dest::Null</span>,
-        }
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">n</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">n</span> <span class="op">&amp;</span> <span class="number">0b0000_0000_0011_1000</span>) }
     }
 }
 
@@ -400,7 +495,7 @@
 <span class="doccomment">/// Comp part of a C-instruction.</span>
 <span class="doccomment">/// Format is this: `***a cccc cc** ****`</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">u16</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Comp</span> {
     <span class="ident">Zero</span> <span class="op">=</span> <span class="number">0b0_1010_10</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
     <span class="ident">One</span> <span class="op">=</span> <span class="number">0b0_1111_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
@@ -430,6 +525,12 @@
     <span class="ident">DAndM</span> <span class="op">=</span> <span class="number">0b1_0000_00</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
     <span class="ident">DOrA</span> <span class="op">=</span> <span class="number">0b0_0101_01</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
     <span class="ident">DOrM</span> <span class="op">=</span> <span class="number">0b1_0101_01</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Comp</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">n</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">n</span> <span class="op">&amp;</span> <span class="number">0b0001_1111_1100_0000</span>) }
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">Comp</span> {
@@ -472,24 +573,30 @@
 
 <span class="doccomment">/// Jump part of a C-instruction.</span>
 <span class="doccomment">/// Format is: `**** **** **** *jjj`</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Jump</span> {
     <span class="doccomment">/// No jump</span>
-    <span class="ident">NOP</span> <span class="op">=</span> <span class="number">0</span>,
+    <span class="ident">No</span> <span class="op">=</span> <span class="number">0</span>,
     <span class="doccomment">/// Jump if `comp &gt; 0`</span>
-    <span class="ident">JGT</span> <span class="op">=</span> <span class="number">1</span>,
+    <span class="ident">Gt</span> <span class="op">=</span> <span class="number">1</span>,
     <span class="doccomment">/// Jump if `comp == 0`</span>
-    <span class="ident">JEQ</span> <span class="op">=</span> <span class="number">2</span>,
+    <span class="ident">Eq</span> <span class="op">=</span> <span class="number">2</span>,
     <span class="doccomment">/// Jump if `comp &gt;= 0`</span>
-    <span class="ident">JGE</span> <span class="op">=</span> <span class="number">3</span>,
+    <span class="ident">Ge</span> <span class="op">=</span> <span class="number">3</span>,
     <span class="doccomment">/// Jump if `comp &lt; 0`</span>
-    <span class="ident">JLT</span> <span class="op">=</span> <span class="number">4</span>,
+    <span class="ident">Lt</span> <span class="op">=</span> <span class="number">4</span>,
     <span class="doccomment">/// Jump if `comp != 0`</span>
-    <span class="ident">JNE</span> <span class="op">=</span> <span class="number">5</span>,
+    <span class="ident">Ne</span> <span class="op">=</span> <span class="number">5</span>,
     <span class="doccomment">/// Jump if `comp &lt;= 0`</span>
-    <span class="ident">JLE</span> <span class="op">=</span> <span class="number">6</span>,
+    <span class="ident">Le</span> <span class="op">=</span> <span class="number">6</span>,
     <span class="doccomment">/// Unconditional jump</span>
-    <span class="ident">JMP</span> <span class="op">=</span> <span class="number">7</span>,
+    <span class="ident">Jump</span> <span class="op">=</span> <span class="number">7</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Jump</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">n</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">u8</span> <span class="op">&amp;</span> <span class="number">0b0000_0111</span>) }
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">Jump</span> {
@@ -497,127 +604,176 @@
 
     <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">s</span> {
-            <span class="string">&quot;&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::NOP</span>),
-            <span class="string">&quot;JGT&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::JGT</span>),
-            <span class="string">&quot;JEQ&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::JEQ</span>),
-            <span class="string">&quot;JGE&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::JGE</span>),
-            <span class="string">&quot;JLT&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::JLT</span>),
-            <span class="string">&quot;JNE&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::JNE</span>),
-            <span class="string">&quot;JLE&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::JLE</span>),
-            <span class="string">&quot;JMP&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::JMP</span>),
+            <span class="string">&quot;&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::No</span>),
+            <span class="string">&quot;JGT&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Gt</span>),
+            <span class="string">&quot;JEQ&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Eq</span>),
+            <span class="string">&quot;JGE&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Ge</span>),
+            <span class="string">&quot;JLT&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Lt</span>),
+            <span class="string">&quot;JNE&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Ne</span>),
+            <span class="string">&quot;JLE&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Le</span>),
+            <span class="string">&quot;JMP&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Jump</span>),
             <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid jump string: `{}`&quot;</span>, <span class="ident">s</span>)),
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AsmInstruction</span>(<span class="ident">u16</span>);
-
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">u16</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">inst</span>: <span class="ident">AsmInstruction</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">inst</span>.<span class="number">0</span>
-    }
-}
-
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">i</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">i</span>)
+        <span class="comment">// last bit is not set</span>
+        <span class="kw">let</span> <span class="ident">is_a_instruction</span> <span class="op">=</span> (<span class="op">!</span><span class="ident">i</span> <span class="op">&amp;</span> <span class="number">0b1000_0000_0000_0000</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>;
+
+        <span class="comment">// last 3 bits are set</span>
+        <span class="kw">let</span> <span class="ident">is_c_instruction</span> <span class="op">=</span> (<span class="ident">i</span> <span class="op">&amp;</span> <span class="number">0b10_0000_0000_0000</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>)
+            <span class="op">&amp;&amp;</span> (<span class="ident">i</span> <span class="op">&amp;</span> <span class="number">0b100_0000_0000_0000</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>)
+            <span class="op">&amp;&amp;</span> (<span class="ident">i</span> <span class="op">&amp;</span> <span class="number">0b1000_0000_0000_0000</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>);
+
+        <span class="kw">if</span> <span class="ident">is_a_instruction</span> {
+            <span class="ident"><span class="self">Self</span>::A</span>(<span class="ident">i</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">is_c_instruction</span> {
+            <span class="ident"><span class="self">Self</span>::C</span>(<span class="ident">i</span>.<span class="ident">into</span>(), <span class="ident">i</span>.<span class="ident">into</span>(), <span class="ident">i</span>.<span class="ident">into</span>())
+        } <span class="kw">else</span> {
+            <span class="macro">panic!</span>(<span class="string">&quot;Failed to convert {:b} to asm instruction&quot;</span>, <span class="ident">i</span>);
+        }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">AsmInstruction</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">builder</span>() -&gt; <span class="ident">AsmInstructionBuilder</span> {
-        <span class="ident">AsmInstructionBuilder::default</span>()
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">and</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> {
+        <span class="kw">use</span> <span class="ident">AsmInstruction</span> <span class="kw">as</span> <span class="ident">I</span>;
+        <span class="macro">vec!</span>[
+            <span class="comment">// Get stack pointer</span>
+            <span class="comment">// A=0</span>
+            <span class="ident">I::A</span>(<span class="number">0</span>),
+            <span class="comment">// AM=M[A]-1</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Pop first element from stack</span>
+            <span class="comment">// D=M[A]</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Move temp stack pointer backwards</span>
+            <span class="comment">// A=A-1</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// M[A]=D &amp; M[A]</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::DAndM</span>, <span class="ident">Jump::No</span>),
+        ]
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">a</span>(<span class="ident">value</span>: <span class="ident">u16</span>) -&gt; <span class="ident">AsmInstruction</span> {
-        <span class="ident">AsmInstructionBuilder::new</span>()
-            .<span class="ident">kind</span>(<span class="ident">Kind::A</span>)
-            .<span class="ident">value</span>(<span class="ident">value</span>)
-            .<span class="ident">build</span>()
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">or</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> {
+        <span class="kw">use</span> <span class="ident">AsmInstruction</span> <span class="kw">as</span> <span class="ident">I</span>;
+        <span class="macro">vec!</span>[
+            <span class="comment">// Get stack pointer</span>
+            <span class="comment">// A=0</span>
+            <span class="ident">I::A</span>(<span class="number">0</span>),
+            <span class="comment">// AM=M[A]-1</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Pop first element from stack</span>
+            <span class="comment">// D=M[A]</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Move temp stack pointer backwards</span>
+            <span class="comment">// A=A-1</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// M[A]=D &amp; M[A]</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::DOrM</span>, <span class="ident">Jump::No</span>),
+        ]
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assign_a_to_d</span>() -&gt; <span class="ident">AsmInstruction</span> {
-        <span class="ident">AsmInstructionBuilder::new</span>()
-            .<span class="ident">kind</span>(<span class="ident">Kind::C</span>)
-            .<span class="ident">comp</span>(<span class="ident">Comp::A</span>)
-            .<span class="ident">dest</span>(<span class="ident">Dest::D</span>)
-            .<span class="ident">build</span>()
-    }
-}
-
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AsmInstructionBuilder</span> {
-    <span class="ident">kind</span>: <span class="ident">Kind</span>,
-    <span class="ident">comp</span>: <span class="ident">Comp</span>,
-    <span class="ident">dest</span>: <span class="ident">Dest</span>,
-    <span class="ident">jump</span>: <span class="ident">Jump</span>,
-    <span class="ident">value</span>: <span class="ident">u16</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">AsmInstructionBuilder</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>()
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">AsmInstructionBuilder</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">kind</span>: <span class="ident">Kind::A</span>,
-            <span class="ident">comp</span>: <span class="ident">Comp::A</span>,
-            <span class="ident">dest</span>: <span class="ident">Dest::Null</span>,
-            <span class="ident">jump</span>: <span class="ident">Jump::NOP</span>,
-            <span class="ident">value</span>: <span class="number">0</span>,
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sub</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> {
+        <span class="kw">use</span> <span class="ident">AsmInstruction</span> <span class="kw">as</span> <span class="ident">I</span>;
+        <span class="macro">vec!</span>[
+            <span class="comment">// Get stack pointer</span>
+            <span class="comment">// A=0</span>
+            <span class="ident">I::A</span>(<span class="number">0</span>),
+            <span class="comment">// AM=M[A]-1</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Pop first element from stack</span>
+            <span class="comment">// D=M[A]</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Move temp stack pointer backwards</span>
+            <span class="comment">// A=A-1</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// M[A]=D+M[A]</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::MMinusD</span>, <span class="ident">Jump::No</span>),
+        ]
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">kind</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">kind</span>: <span class="ident">Kind</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">kind</span> <span class="op">=</span> <span class="ident">kind</span>;
-        <span class="self">self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">neg</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> {
+        <span class="kw">use</span> <span class="ident">AsmInstruction</span> <span class="kw">as</span> <span class="ident">I</span>;
+        <span class="macro">vec!</span>[
+            <span class="comment">// Get stack pointer</span>
+            <span class="comment">// A=0</span>
+            <span class="ident">I::A</span>(<span class="number">0</span>),
+            <span class="comment">// A=M[A]</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// M[A]=-M[A]</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::MinusM</span>, <span class="ident">Jump::No</span>),
+        ]
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">comp</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">comp</span>: <span class="ident">Comp</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">comp</span> <span class="op">=</span> <span class="ident">comp</span>;
-        <span class="self">self</span>
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dest</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">dest</span>: <span class="ident">Dest</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">dest</span> <span class="op">=</span> <span class="ident">dest</span>;
-        <span class="self">self</span>
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">jump</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">jump</span>: <span class="ident">Jump</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">jump</span> <span class="op">=</span> <span class="ident">jump</span>;
-        <span class="self">self</span>
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">value</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">value</span> <span class="op">=</span> <span class="ident">value</span>;
-        <span class="self">self</span>
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="ident">AsmInstruction</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind::A</span> =&gt; <span class="ident">AsmInstruction</span>(<span class="self">self</span>.<span class="ident">value</span> <span class="op">&amp;</span> <span class="number">0b0111_1111_1111_1111</span>),
-            <span class="ident">Kind::C</span> =&gt; <span class="ident">AsmInstruction</span>(
-                <span class="self">self</span>.<span class="ident">kind</span> <span class="kw">as</span> <span class="ident">u16</span> <span class="op">|</span> <span class="self">self</span>.<span class="ident">comp</span> <span class="kw">as</span> <span class="ident">u16</span> <span class="op">|</span> <span class="self">self</span>.<span class="ident">dest</span> <span class="kw">as</span> <span class="ident">u16</span> <span class="op">|</span> <span class="self">self</span>.<span class="ident">jump</span> <span class="kw">as</span> <span class="ident">u16</span>,
-            ),
-        }
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">BitOr</span><span class="op">&lt;</span><span class="ident">Dest</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">AsmInstruction</span>;
-
-    <span class="kw">fn</span> <span class="ident">bitor</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Dest</span>) -&gt; <span class="ident"><span class="self">Self</span>::Output</span> {
-        <span class="ident">AsmInstruction</span>(<span class="self">self</span>.<span class="number">0</span> <span class="op">|</span> <span class="ident">rhs</span> <span class="kw">as</span> <span class="ident">u16</span>)
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">not</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> {
+        <span class="kw">use</span> <span class="ident">AsmInstruction</span> <span class="kw">as</span> <span class="ident">I</span>;
+        <span class="macro">vec!</span>[
+            <span class="comment">// Get stack pointer</span>
+            <span class="comment">// A=0</span>
+            <span class="ident">I::A</span>(<span class="number">0</span>),
+            <span class="comment">// A=M[A]</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// M[A]=-M[A]</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::NotM</span>, <span class="ident">Jump::No</span>),
+        ]
     }
 }
 
 <span class="kw">impl</span> <span class="ident">std::fmt::Binary</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">std::fmt::Result</span> {
-        <span class="ident">std::fmt::Binary::fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>, <span class="ident">f</span>)
+        <span class="ident">std::fmt::Binary::fmt</span>(<span class="kw-2">&amp;</span><span class="ident">u16::from</span>(<span class="self">self</span>), <span class="ident">f</span>)
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
+    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">String</span>;
+
+    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">symbol_with_suffix</span>) <span class="op">=</span> <span class="ident">line</span>.<span class="ident">strip_prefix</span>(<span class="string">&#39;(&#39;</span>) {
+            <span class="comment">// Label</span>
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">symbol</span>) <span class="op">=</span> <span class="ident">symbol_with_suffix</span>.<span class="ident">strip_suffix</span>(<span class="string">&#39;)&#39;</span>) {
+                <span class="prelude-val">Ok</span>(<span class="ident">AsmInstruction::Label</span>(<span class="ident">symbol</span>.<span class="ident">into</span>()))
+            } <span class="kw">else</span> {
+                <span class="prelude-val">Err</span>(<span class="string">&quot;Missing `)` for label&quot;</span>.<span class="ident">into</span>())
+            }
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">literal_str</span>) <span class="op">=</span> <span class="ident">line</span>.<span class="ident">strip_prefix</span>(<span class="string">&#39;@&#39;</span>) {
+            <span class="comment">// A instruction</span>
+            <span class="comment">// Check whether there is a number to the right of the @</span>
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">literal</span>) <span class="op">=</span> <span class="ident">literal_str</span>.<span class="ident">parse</span>() {
+                <span class="prelude-val">Ok</span>(<span class="ident">AsmInstruction::A</span>(<span class="ident">literal</span>))
+            } <span class="kw">else</span> {
+                <span class="prelude-val">Ok</span>(<span class="ident">AsmInstruction::Symbol</span>(<span class="ident">literal_str</span>.<span class="ident">into</span>()))
+            }
+        } <span class="kw">else</span> {
+            <span class="comment">// C instruction: dest = comp ; jump</span>
+            <span class="kw">let</span> (<span class="ident">equal_index</span>, <span class="ident">comp_start</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">index</span>) <span class="op">=</span> <span class="ident">line</span>.<span class="ident">find</span>(<span class="string">&#39;=&#39;</span>) {
+                (<span class="ident">index</span>, <span class="ident">index</span> <span class="op">+</span> <span class="number">1</span>)
+            } <span class="kw">else</span> {
+                (<span class="number">0</span>, <span class="number">0</span>)
+            };
+            <span class="kw">let</span> (<span class="ident">semicolon_index</span>, <span class="ident">jump_start</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">index</span>) <span class="op">=</span> <span class="ident">line</span>.<span class="ident">find</span>(<span class="string">&#39;;&#39;</span>) {
+                (<span class="ident">index</span>, <span class="ident">index</span> <span class="op">+</span> <span class="number">1</span>)
+            } <span class="kw">else</span> {
+                (<span class="ident">line</span>.<span class="ident">len</span>(), <span class="ident">line</span>.<span class="ident">len</span>())
+            };
+
+            <span class="comment">// Dest is optional, in that case = is omitted</span>
+            <span class="kw">let</span> <span class="ident">dest_str</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">line</span>[<span class="number">0</span>..<span class="ident">equal_index</span>];
+            <span class="kw">let</span> <span class="ident">dest</span> <span class="op">=</span> <span class="ident">dest_str</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+
+            <span class="comment">// Jump is optional, in that case ; is omitted</span>
+            <span class="kw">let</span> <span class="ident">jump_str</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">line</span>[<span class="ident">jump_start</span>..];
+            <span class="kw">let</span> <span class="ident">jump</span> <span class="op">=</span> <span class="ident">jump_str</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+
+            <span class="comment">// Comp is mandatory</span>
+            <span class="kw">let</span> <span class="ident">comp_str</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">line</span>[<span class="ident">comp_start</span>..<span class="ident">semicolon_index</span>];
+            <span class="kw">let</span> <span class="ident">comp</span>: <span class="ident">Comp</span> <span class="op">=</span> <span class="ident">comp_str</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+
+            <span class="prelude-val">Ok</span>(<span class="ident">AsmInstruction::C</span>(<span class="ident">dest</span>, <span class="ident">comp</span>, <span class="ident">jump</span>))
+        }
     }
 }
 </code></pre></div>

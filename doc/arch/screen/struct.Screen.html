@@ -7,7 +7,8 @@
 <li><code>load</code>: whether to write <code>inp</code> into the RAM</li>
 <li><code>address</code>: which register to select</li>
 </ul>
-<p>It returns the value stored at <code>address. Furthermore, when </code>load<code>is</code>HI<code>, </code>inp<code>is written at location</code>address`, and the loaded value will
+<p>It returns the value stored at <code>address</code>. Furthermore, when <code>load</code> is
+<code>HI</code>, <code>inp</code> is written at location <code>address</code>, and the loaded value will
 be emitted from the next time step onward.</p>
 <p>The pixel at row <em>r</em> from the top and column <em>c</em> from the left, is mapped
 onto the <code>c % 16</code> bit (from LSB to MSB) of the 16-bit word stored at
