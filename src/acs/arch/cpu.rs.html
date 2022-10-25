@@ -226,12 +226,14 @@
 <span id="224">224</span>
 <span id="225">225</span>
 <span id="226">226</span>
+<span id="227">227</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">fast::Register16</span>, <span class="ident">Alu</span>, <span class="ident">And</span>, <span class="ident">Counter</span>, <span class="ident">Mux16</span>, <span class="ident">Not</span>, <span class="ident">Or</span>, <span class="ident">Signal</span>, <span class="ident">Signal15</span>, <span class="ident">Signal16</span>, <span class="ident">Time</span>, <span class="ident">Unit</span>,
+    <span class="ident">mem::fast</span>::{<span class="ident">Counter</span>, <span class="ident">Register16</span>},
+    <span class="ident">Alu</span>, <span class="ident">And</span>, <span class="ident">Mux16</span>, <span class="ident">Not</span>, <span class="ident">Or</span>, <span class="ident">Signal</span>, <span class="ident">Signal15</span>, <span class="ident">Signal16</span>, <span class="ident">Time</span>, <span class="ident">Unit</span>,
 };
 
 <span class="doccomment">/// Central Processing Unit able to execute a given instruction and to determine</span>
@@ -380,7 +382,7 @@
         <span class="comment">// so to feed the ALU with the A register instead of M</span>
         <span class="kw">let</span> <span class="ident">actual_sel_m</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">actual_sel_m</span>.<span class="ident">sim</span>(<span class="ident">sel_m</span>, <span class="ident">is_c_instruction</span>);
 
-        <span class="self">self</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">counter</span>.<span class="ident">get_out</span>();
+        <span class="self">self</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">counter</span>.<span class="ident">out</span>();
 
         <span class="kw">let</span> <span class="ident">alu_input_x</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">d_register</span>.<span class="ident">out</span>();
         <span class="kw">let</span> <span class="ident">alu_input_y</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mux_a_m</span>.<span class="ident">sim</span>(<span class="ident">a_register_out</span>, <span class="self">self</span>.<span class="ident">in_m</span>, <span class="ident">actual_sel_m</span>);
@@ -449,7 +451,7 @@
         <span class="self">self</span>.<span class="ident">out_m</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">alu</span>.<span class="ident">out</span>();
 
         <span class="self">self</span>.<span class="ident">counter</span>.<span class="ident">eval</span>();
-        <span class="self">self</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">counter</span>.<span class="ident">get_out</span>();
+        <span class="self">self</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">counter</span>.<span class="ident">out</span>();
     }
 }
 </code></pre></div>
