@@ -216,10 +216,6 @@
 <span id="214">214</span>
 <span id="215">215</span>
 <span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -246,35 +242,31 @@
 <span class="kw">impl</span> <span class="ident">Assembler</span> {
     <span class="doccomment">/// Returns a symbol table with predefined symbols</span>
     <span class="kw">fn</span> <span class="ident">default_symbol_table</span>() -&gt; <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">u16</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">u16</span><span class="op">&gt;</span><span class="ident">::new</span>();
-
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R0&quot;</span>.<span class="ident">into</span>(), <span class="number">0</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R1&quot;</span>.<span class="ident">into</span>(), <span class="number">1</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R2&quot;</span>.<span class="ident">into</span>(), <span class="number">2</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R3&quot;</span>.<span class="ident">into</span>(), <span class="number">3</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R4&quot;</span>.<span class="ident">into</span>(), <span class="number">4</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R5&quot;</span>.<span class="ident">into</span>(), <span class="number">5</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R6&quot;</span>.<span class="ident">into</span>(), <span class="number">6</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R7&quot;</span>.<span class="ident">into</span>(), <span class="number">7</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R8&quot;</span>.<span class="ident">into</span>(), <span class="number">8</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R9&quot;</span>.<span class="ident">into</span>(), <span class="number">9</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R10&quot;</span>.<span class="ident">into</span>(), <span class="number">10</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R11&quot;</span>.<span class="ident">into</span>(), <span class="number">11</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R12&quot;</span>.<span class="ident">into</span>(), <span class="number">12</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R13&quot;</span>.<span class="ident">into</span>(), <span class="number">13</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R14&quot;</span>.<span class="ident">into</span>(), <span class="number">14</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;R15&quot;</span>.<span class="ident">into</span>(), <span class="number">15</span>);
-
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;SP&quot;</span>.<span class="ident">into</span>(), <span class="number">0</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;LCL&quot;</span>.<span class="ident">into</span>(), <span class="number">1</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;ARG&quot;</span>.<span class="ident">into</span>(), <span class="number">2</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;THIS&quot;</span>.<span class="ident">into</span>(), <span class="number">3</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;THAT&quot;</span>.<span class="ident">into</span>(), <span class="number">4</span>);
-
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;SCREEN&quot;</span>.<span class="ident">into</span>(), <span class="number">16384</span>);
-        <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="string">&quot;KBD&quot;</span>.<span class="ident">into</span>(), <span class="number">24576</span>);
-
-        <span class="ident">ret</span>
+        <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">u16</span><span class="op">&gt;</span><span class="ident">::from</span>([
+            (<span class="string">&quot;R0&quot;</span>.<span class="ident">into</span>(), <span class="number">0</span>),
+            (<span class="string">&quot;R1&quot;</span>.<span class="ident">into</span>(), <span class="number">1</span>),
+            (<span class="string">&quot;R2&quot;</span>.<span class="ident">into</span>(), <span class="number">2</span>),
+            (<span class="string">&quot;R3&quot;</span>.<span class="ident">into</span>(), <span class="number">3</span>),
+            (<span class="string">&quot;R4&quot;</span>.<span class="ident">into</span>(), <span class="number">4</span>),
+            (<span class="string">&quot;R5&quot;</span>.<span class="ident">into</span>(), <span class="number">5</span>),
+            (<span class="string">&quot;R6&quot;</span>.<span class="ident">into</span>(), <span class="number">6</span>),
+            (<span class="string">&quot;R7&quot;</span>.<span class="ident">into</span>(), <span class="number">7</span>),
+            (<span class="string">&quot;R8&quot;</span>.<span class="ident">into</span>(), <span class="number">8</span>),
+            (<span class="string">&quot;R9&quot;</span>.<span class="ident">into</span>(), <span class="number">9</span>),
+            (<span class="string">&quot;R10&quot;</span>.<span class="ident">into</span>(), <span class="number">10</span>),
+            (<span class="string">&quot;R11&quot;</span>.<span class="ident">into</span>(), <span class="number">11</span>),
+            (<span class="string">&quot;R12&quot;</span>.<span class="ident">into</span>(), <span class="number">12</span>),
+            (<span class="string">&quot;R13&quot;</span>.<span class="ident">into</span>(), <span class="number">13</span>),
+            (<span class="string">&quot;R14&quot;</span>.<span class="ident">into</span>(), <span class="number">14</span>),
+            (<span class="string">&quot;R15&quot;</span>.<span class="ident">into</span>(), <span class="number">15</span>),
+            (<span class="string">&quot;SP&quot;</span>.<span class="ident">into</span>(), <span class="number">0</span>),
+            (<span class="string">&quot;LCL&quot;</span>.<span class="ident">into</span>(), <span class="number">1</span>),
+            (<span class="string">&quot;ARG&quot;</span>.<span class="ident">into</span>(), <span class="number">2</span>),
+            (<span class="string">&quot;THIS&quot;</span>.<span class="ident">into</span>(), <span class="number">3</span>),
+            (<span class="string">&quot;THAT&quot;</span>.<span class="ident">into</span>(), <span class="number">4</span>),
+            (<span class="string">&quot;SCREEN&quot;</span>.<span class="ident">into</span>(), <span class="number">16384</span>),
+            (<span class="string">&quot;KBD&quot;</span>.<span class="ident">into</span>(), <span class="number">24576</span>),
+        ])
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
@@ -299,6 +291,13 @@
             }
         }
         <span class="ident">lines</span>
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">translate</span>(<span class="ident">lines</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> {
+        <span class="ident">lines</span>
+            .<span class="ident">into_iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> <span class="ident">line</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>())
+            .<span class="ident">collect</span>()
     }
 
     <span class="doccomment">/// Resolves symbols in the assembly to physical memory addresses.</span>
@@ -339,13 +338,6 @@
         }
 
         <span class="ident">instructions</span>
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">translate</span>(<span class="ident">lines</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> {
-        <span class="ident">lines</span>
-            .<span class="ident">into_iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> <span class="ident">line</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>())
-            .<span class="ident">collect</span>()
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assemble</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">asm</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> {
