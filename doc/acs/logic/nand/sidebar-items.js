@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Nand","The NAND gate is the only built-in logic component"]]};
