@@ -68,6 +68,14 @@
 <span id="66">66</span>
 <span id="67">67</span>
 <span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -100,6 +108,11 @@
     <span class="doccomment">/// 8-place segment from RAM[5] to RAM[12]</span>
     <span class="ident">Temp</span>,
 
+    <span class="doccomment">/// Helper registers for the VM translator</span>
+    <span class="ident">R13</span>,
+    <span class="ident">R14</span>,
+    <span class="ident">R15</span>,
+
     <span class="doccomment">/// Fixed memory segment pushing only 0 or 1 (THIS, THAT)</span>
     <span class="ident">Pointer</span>,
 }
@@ -113,6 +126,9 @@
             <span class="ident">Segment::This</span> <span class="op">|</span> <span class="ident">Segment::Pointer</span> =&gt; <span class="number">3</span>,
             <span class="ident">Segment::That</span> =&gt; <span class="number">4</span>,
             <span class="ident">Segment::Temp</span> =&gt; <span class="number">5</span>,
+            <span class="ident">Segment::R13</span> =&gt; <span class="number">13</span>,
+            <span class="ident">Segment::R14</span> =&gt; <span class="number">14</span>,
+            <span class="ident">Segment::R15</span> =&gt; <span class="number">15</span>,
             <span class="ident">Segment::Static</span> =&gt; <span class="number">16</span>,
             <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Can not get base address for this segment &#39;{:?}&#39;&quot;</span>, <span class="self">self</span>),
         }

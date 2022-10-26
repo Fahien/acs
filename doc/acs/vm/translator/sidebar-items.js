@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["VmTranslator","Translates VM instructions into a sequence of low-level instructions that can execute on the target platform. It represents the VM stack abstraction using the `RAM`. The stack pointer, or `SP`, is stored at `RAM[0]` and defaults to `256`."]]};

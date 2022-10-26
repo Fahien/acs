@@ -88,13 +88,15 @@
 <span id="86">86</span>
 <span id="87">87</span>
 <span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
 
-<span class="kw">use</span> <span class="ident">std::str</span>::{<span class="ident">FromStr</span>, <span class="ident">Lines</span>};
+<span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::segment::Segment</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">preprocessor::VmPreprocessedCode</span>, <span class="ident">segment::Segment</span>};
 
 <span class="doccomment">/// Sort of _intermediate code_ designed to run on a</span>
 <span class="doccomment">/// [stack machine](https://en.wikipedia.org/wiki/Stack_machine).</span>
@@ -136,14 +138,6 @@
     <span class="ident">Not</span>,
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">vm_instructions_str</span>: <span class="ident">Lines</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VmInstruction</span><span class="op">&gt;</span> {
-    <span class="ident">vm_instructions_str</span>
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> <span class="ident">line</span>.<span class="ident">trim_matches</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39; &#39;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;\n&#39;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;\r&#39;</span>))
-        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> <span class="op">!</span><span class="ident">line</span>.<span class="ident">is_empty</span>())
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">instruction</span><span class="op">|</span> <span class="ident">instruction</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>())
-        .<span class="ident">collect</span>()
-}
-
 <span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">VmInstruction</span> {
     <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">String</span>;
 
@@ -174,6 +168,16 @@
             <span class="string">&quot;not&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Not</span>),
             <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid command {}&quot;</span>, <span class="ident">command</span>)),
         }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">VmPreprocessedCode</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VmInstruction</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">preprocessed_code</span>: <span class="ident">VmPreprocessedCode</span>) -&gt; <span class="self">Self</span> {
+        <span class="ident">preprocessed_code</span>
+            .<span class="ident">get_lines</span>()
+            .<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> <span class="ident">line</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>())
+            .<span class="ident">collect</span>()
     }
 }
 </code></pre></div>
