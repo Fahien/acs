@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Not","The NOT gate is built using a NAND gate"]]};

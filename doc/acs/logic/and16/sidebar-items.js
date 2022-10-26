@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["And16","Similar to the AND gate, but it operates in bunches of 16 signals"]]};

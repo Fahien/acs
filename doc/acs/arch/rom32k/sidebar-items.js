@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Rom32k","Instruction memory, preloaded with the required program."]]};

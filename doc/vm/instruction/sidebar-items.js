@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["VmInstruction","Sort of intermediate code designed to run on a stack machine. Part of a two-tier compilation model, where a high level language is first translated to this representation and then to machine language."]],"fn":[["parse",""]]};

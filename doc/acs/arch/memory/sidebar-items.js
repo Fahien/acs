@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Memory","Package of three 16-bit chip parts: `Ram16k`, `Screen`, and `Keyboard`"]]};

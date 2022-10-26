@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Not16","Similar to the Not gate, but it operates in bunches of 16 signals"]]};
