@@ -84,28 +84,28 @@
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Segment</span> {
-    <span class="doccomment">/// Stack pointer address is at RAM[0]</span>
+    <span class="doccomment">/// Stack pointer address is at `RAM[0]`</span>
     <span class="ident">Stack</span>,
 
-    <span class="doccomment">/// Local address in RAM[1]</span>
+    <span class="doccomment">/// Local address is at `RAM[1]`</span>
     <span class="ident">Local</span>,
 
-    <span class="doccomment">/// Arg address in RAM[2]</span>
+    <span class="doccomment">/// Arg address is at `RAM[2]`</span>
     <span class="ident">Argument</span>,
 
-    <span class="doccomment">/// This address in RAM[3]</span>
+    <span class="doccomment">/// This address is at `RAM[3]`</span>
     <span class="ident">This</span>,
 
-    <span class="doccomment">/// That address in RAM[4]</span>
+    <span class="doccomment">/// That address is at `RAM[4]`</span>
     <span class="ident">That</span>,
 
     <span class="doccomment">/// Actually not a memory segment</span>
     <span class="ident">Constant</span>,
 
-    <span class="doccomment">/// Starts at RAM[16], ends at RAM[255] included</span>
+    <span class="doccomment">/// Starts at `RAM[16]`, ends at `RAM[255]` included</span>
     <span class="ident">Static</span>,
 
-    <span class="doccomment">/// 8-place segment from RAM[5] to RAM[12]</span>
+    <span class="doccomment">/// 8-place segment from `RAM[5]` to `RAM[12]`</span>
     <span class="ident">Temp</span>,
 
     <span class="doccomment">/// Helper registers for the VM translator</span>
@@ -113,7 +113,7 @@
     <span class="ident">R14</span>,
     <span class="ident">R15</span>,
 
-    <span class="doccomment">/// Fixed memory segment pushing only 0 or 1 (THIS, THAT)</span>
+    <span class="doccomment">/// Fixed memory segment pushing only `0` or `1` (`This`, `That`)</span>
     <span class="ident">Pointer</span>,
 }
 
