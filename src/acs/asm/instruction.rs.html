@@ -303,11 +303,21 @@
 <span id="301">301</span>
 <span id="302">302</span>
 <span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">ops::BitOrAssign</span>, <span class="ident">str::FromStr</span>};
+
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">vm::instruction::VmInstruction</span>, <span class="ident">VmTranslator</span>};
 
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">u16</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
@@ -323,6 +333,12 @@
     <span class="ident">C</span>(<span class="ident">Dest</span>, <span class="ident">Comp</span>, <span class="ident">Jump</span>),
     <span class="ident">Label</span>(<span class="ident">String</span>),
     <span class="ident">Symbol</span>(<span class="ident">String</span>),
+}
+
+<span class="kw">impl</span> <span class="ident">AsmInstruction</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">code</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> {
+        <span class="ident">VmTranslator::default</span>().<span class="ident">translate</span>(<span class="ident">VmInstruction::parse</span>(<span class="ident">code</span>))
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
