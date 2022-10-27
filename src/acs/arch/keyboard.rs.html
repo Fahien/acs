@@ -161,7 +161,7 @@
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unset</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">keycode</span>: <span class="ident">sdl2::keyboard::Keycode</span>) {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">out</span> <span class="op">==</span> <span class="ident">to_ascii</span>(<span class="ident">keycode</span>).<span class="ident">into</span>() {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">out</span> <span class="op">==</span> <span class="ident">to_ascii</span>(<span class="ident">keycode</span>) {
             <span class="self">self</span>.<span class="ident">out</span> <span class="op">=</span> <span class="ident">Signal16::FALSE</span>;
         }
     }
@@ -171,7 +171,7 @@
     <span class="kw">fn</span> <span class="ident">eval</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {}
 }
 
-<span class="kw">fn</span> <span class="ident">to_ascii</span>(<span class="ident">keycode</span>: <span class="ident">sdl2::keyboard::Keycode</span>) -&gt; <span class="ident">u16</span> {
+<span class="kw">fn</span> <span class="ident">to_ascii</span>(<span class="ident">keycode</span>: <span class="ident">sdl2::keyboard::Keycode</span>) -&gt; <span class="ident">i16</span> {
     <span class="kw">use</span> <span class="ident">sdl2::keyboard::Keycode</span>;
     <span class="kw">match</span> <span class="ident">keycode</span> {
         <span class="ident">Keycode::Space</span> =&gt; <span class="number">32</span>,
@@ -267,7 +267,7 @@
         <span class="ident">Keycode::F10</span> =&gt; <span class="number">150</span>,
         <span class="ident">Keycode::F11</span> =&gt; <span class="number">151</span>,
         <span class="ident">Keycode::F12</span> =&gt; <span class="number">152</span>,
-        <span class="kw">_</span> =&gt; <span class="ident">keycode</span> <span class="kw">as</span> <span class="ident">u16</span>,
+        <span class="kw">_</span> =&gt; <span class="ident">keycode</span> <span class="kw">as</span> <span class="ident">i16</span>,
     }
 }
 </code></pre></div>
