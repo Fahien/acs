@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["VmEmulator","This emulator implements all the VM commands with Rust operating on its own instance of a memory"]]};

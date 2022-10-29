@@ -289,6 +289,12 @@
 <span id="287">287</span>
 <span id="288">288</span>
 <span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -557,6 +563,12 @@
             <span class="ident">VmInstruction::And</span> =&gt; <span class="ident"><span class="self">Self</span>::gen_and</span>(),
             <span class="ident">VmInstruction::Or</span> =&gt; <span class="ident"><span class="self">Self</span>::gen_or</span>(),
             <span class="ident">VmInstruction::Not</span> =&gt; <span class="ident"><span class="self">Self</span>::gen_not</span>(),
+            <span class="ident">VmInstruction::Label</span>(<span class="ident">label</span>) =&gt; <span class="macro">vec!</span>[<span class="ident">I::Label</span>(<span class="ident">label</span>)],
+            <span class="ident">VmInstruction::IfGoto</span>(<span class="ident">_label</span>) =&gt; <span class="macro">todo!</span>(),
+            <span class="ident">VmInstruction::Goto</span>(<span class="ident">_label</span>) =&gt; <span class="macro">todo!</span>(),
+            <span class="ident">VmInstruction::Function</span>(<span class="ident">_function</span>, <span class="ident">_param_count</span>) =&gt; <span class="macro">todo!</span>(),
+            <span class="ident">VmInstruction::Return</span> =&gt; <span class="macro">todo!</span>(),
+            <span class="ident">VmInstruction::Call</span>(<span class="ident">_function</span>, <span class="ident">_arg_count</span>) =&gt; <span class="macro">todo!</span>(),
         }
     }
 

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["emulator",""],["instruction",""],["segment",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["code",""],["emulator",""],["instruction",""],["preprocessor",""],["segment",""],["translator",""]]};
