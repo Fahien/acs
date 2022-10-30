@@ -311,6 +311,19 @@
 <span id="309">309</span>
 <span id="310">310</span>
 <span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -565,6 +578,19 @@
         } <span class="kw">else</span> {
             <span class="macro">panic!</span>(<span class="string">&quot;Failed to convert {:b} to asm instruction&quot;</span>, <span class="ident">i</span>);
         }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">i</span>: <span class="ident">i16</span>) -&gt; <span class="self">Self</span> {
+        <span class="ident"><span class="self">Self</span>::from</span>(<span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>::<span class="op">&lt;</span><span class="ident">i16</span>, <span class="ident">u16</span><span class="op">&gt;</span>(<span class="ident">i</span>) })
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">i</span>: <span class="ident">i32</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">words</span>: [<span class="ident">u16</span>; <span class="number">2</span>] <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">i</span>) };
+        <span class="ident"><span class="self">Self</span>::from</span>(<span class="ident">words</span>[<span class="number">1</span>])
     }
 }
 

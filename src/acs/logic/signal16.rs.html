@@ -276,6 +276,25 @@
 <span id="274">274</span>
 <span id="275">275</span>
 <span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -465,7 +484,26 @@
 
     <span class="kw">fn</span> <span class="ident">sub</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">i16</span>) -&gt; <span class="ident"><span class="self">Self</span>::Output</span> {
         <span class="kw">let</span> <span class="ident">sub_value</span> <span class="op">=</span> <span class="ident">i16::from</span>(<span class="self">self</span>);
-        <span class="ident"><span class="self">Self</span>::from</span>(<span class="ident">sub_value</span> <span class="op">-</span> <span class="ident">rhs</span>)
+        <span class="kw">let</span> (<span class="ident">sub</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">sub_value</span>.<span class="ident">overflowing_sub</span>(<span class="ident">rhs</span> <span class="kw">as</span> <span class="ident">i16</span>);
+        <span class="ident"><span class="self">Self</span>::from</span>(<span class="ident">sub</span>)
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Sub</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Signal16</span> {
+    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Signal16</span>;
+
+    <span class="kw">fn</span> <span class="ident">sub</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">i32</span>) -&gt; <span class="ident"><span class="self">Self</span>::Output</span> {
+        <span class="self">self</span>.<span class="ident">sub</span>(<span class="ident">rhs</span> <span class="kw">as</span> <span class="ident">i16</span>)
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Sub</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Signal16</span> {
+    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Signal16</span>;
+
+    <span class="kw">fn</span> <span class="ident">sub</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">u16</span>) -&gt; <span class="ident"><span class="self">Self</span>::Output</span> {
+        <span class="kw">let</span> <span class="ident">sub_value</span> <span class="op">=</span> <span class="ident">u16::from</span>(<span class="self">self</span>);
+        <span class="kw">let</span> (<span class="ident">sub</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">sub_value</span>.<span class="ident">overflowing_sub</span>(<span class="ident">rhs</span>);
+        <span class="ident"><span class="self">Self</span>::from</span>(<span class="ident">sub</span>)
     }
 }
 

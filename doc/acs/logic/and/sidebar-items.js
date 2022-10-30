@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["And","The AND gate is built using a NOT and a NAND gate"]]};

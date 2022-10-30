@@ -212,11 +212,11 @@
 
     <span class="doccomment">/// Marks the beginning of a function with a name and the number of</span>
     <span class="doccomment">/// local variables</span>
-    <span class="ident">Function</span>(<span class="ident">String</span>, <span class="ident">u8</span>),
+    <span class="ident">Function</span>(<span class="ident">String</span>, <span class="ident">u16</span>),
 
     <span class="doccomment">/// Calls the function with that name with the number of arguments</span>
     <span class="doccomment">/// pushed onto the stack before calling.</span>
-    <span class="ident">Call</span>(<span class="ident">String</span>, <span class="ident">u8</span>),
+    <span class="ident">Call</span>(<span class="ident">String</span>, <span class="ident">u16</span>),
 
     <span class="doccomment">/// Jumps to the command following the `Call` command that called</span>
     <span class="doccomment">/// the current function</span>
