@@ -218,7 +218,7 @@ impl VmEmulator {
                 // subtract one, as it will be incremented later.
                 self.instruction_index = *function_address - 1;
             }
-            VmInstruction::Return => {
+            VmInstruction::Return(return_size_in_words) => {
                 // Get current local address
                 let lcl = self.ram[Segment::Local.get_base_address()] as usize;
 
@@ -226,13 +226,10 @@ impl VmEmulator {
                 let return_address = self.ram[lcl - 5] as usize;
                 self.instruction_index = return_address;
 
-                // Overwrite argument 0 with the return value
-                self.pop_into(Segment::Argument, Signal16::new(0));
-
-                // Stack pointer is set to argument pointer plus one (as we have stored
-                // the return value in argument 0)
+                // Stack pointer is set to argument pointer plus the size of
+                // the return value (as we have stored it at the beginning of
+                // the argument section)
                 let current_arg_address = self.ram[Segment::Argument.get_base_address()];
-                self.ram[Segment::Stack.get_base_address()] = current_arg_address + 1;
 
                 // Restore local pointer: LCL = *(lcl-4)
                 self.ram[Segment::Local.get_base_address()] = self.ram[lcl - 4];
@@ -245,6 +242,17 @@ impl VmEmulator {
 
                 // Restore that pointer: THAT = *(lcl-1)
                 self.ram[Segment::That.get_base_address()] = self.ram[lcl - 1];
+
+                // Overwrite argument section with the return value
+                for i in 0..return_size_in_words {
+                    let offset = return_size_in_words - 1 - i;
+                    let signal = self.pop();
+                    self.ram.data[current_arg_address as usize + offset as usize] = signal;
+                }
+
+                // Set stack pointer after popping return value
+                self.ram[Segment::Stack.get_base_address()] =
+                    current_arg_address + return_size_in_words as i16;
             }
         };
 
