@@ -9,3 +9,5 @@ pub mod tokenizer;
 pub mod parser;
 pub mod statement;
 pub mod structure;
+
+pub mod generator;
