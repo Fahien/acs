@@ -340,8 +340,8 @@ impl VmTranslator {
         ]
     }
 
-    fn gen_return() -> Vec<I> {
-        vec![
+    fn gen_return(return_size_in_words: u16) -> Vec<I> {
+        let mut ret = vec![
             // Put frame on R13, A and D
             I::A(Segment::Local.get_base_address() as u16),
             I::C(Dest::D, Comp::M, Jump::No),
@@ -353,18 +353,13 @@ impl VmTranslator {
             I::C(Dest::D, Comp::M, Jump::No),
             I::A(Segment::R14.get_base_address() as u16),
             I::C(Dest::M, Comp::D, Jump::No),
-            // Pop from stack into *ARG
-            I::A(0),
-            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
-            I::C(Dest::D, Comp::M, Jump::No),
+            // Put current `*ARG + return_size_in_words` in `R15`
             I::A(Segment::Argument.get_base_address() as u16),
-            I::C(Dest::A, Comp::M, Jump::No),
-            // A is ARG address now
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(return_size_in_words),
+            I::C(Dest::D, Comp::DPlusA, Jump::No),
+            I::A(Segment::R15.get_base_address() as u16),
             I::C(Dest::M, Comp::D, Jump::No),
-            // SP = ARG+1
-            I::C(Dest::D, Comp::A, Jump::No),
-            I::A(0),
-            I::C(Dest::M, Comp::DPlusOne, Jump::No),
             // That = *(frame-1)
             I::A(Segment::R13.get_base_address() as u16),
             I::C(Dest::AM, Comp::MMinusOne, Jump::No),
@@ -389,11 +384,39 @@ impl VmTranslator {
             I::C(Dest::D, Comp::M, Jump::No),
             I::A(Segment::Local.get_base_address() as u16),
             I::C(Dest::M, Comp::D, Jump::No),
+        ];
+
+        // Store return value in current argument segment
+        for _ in 0..return_size_in_words {
+            ret.extend([
+                // Pop from stack into RAM[*R15-i]
+                I::A(0),
+                // Get SP while decrementing RAM[0] at the same time
+                I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+                // D = *SP
+                I::C(Dest::D, Comp::M, Jump::No),
+                I::A(Segment::R15.get_base_address() as u16),
+                // AM = *R15 - 1
+                I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+                I::C(Dest::M, Comp::D, Jump::No),
+            ]);
+        }
+
+        ret.extend([
+            // *SP = old*ARG + return_size_in_words
+            I::A(Segment::R15.get_base_address() as u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(return_size_in_words),
+            I::C(Dest::D, Comp::DPlusA, Jump::No),
+            I::A(0),
+            I::C(Dest::M, Comp::D, Jump::No),
             // goto return address *(frame-5)
             I::A(Segment::R14.get_base_address() as u16),
             I::C(Dest::A, Comp::M, Jump::No),
             I::C(Dest::D, Comp::D, Jump::Jump),
-        ]
+        ]);
+
+        ret
     }
 
     /// Translates a VM instruction into a sequence of assembly instructions
@@ -415,7 +438,7 @@ impl VmTranslator {
             VmInstruction::IfGoto(label) => Self::gen_if_goto(label),
             VmInstruction::Function(func, local_count) => Self::gen_function(func, local_count),
             VmInstruction::Call(function, arg_count) => self.gen_call(function, arg_count),
-            VmInstruction::Return => Self::gen_return(),
+            VmInstruction::Return(return_size_in_words) => Self::gen_return(return_size_in_words),
         }
     }
 
