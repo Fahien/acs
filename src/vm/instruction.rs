@@ -63,9 +63,10 @@ pub enum VmInstruction {
     /// pushed onto the stack before calling.
     Call(String, u16),
 
-    /// Jumps to the command following the `Call` command that called
-    /// the current function
-    Return,
+    /// Jumps to the command following the `Call` command that called the
+    /// current function, copying a number of words as the return value at the
+    /// beginning of the `Argument` section.
+    Return(u16),
 }
 
 impl VmInstruction {
@@ -125,7 +126,7 @@ impl FromStr for VmInstruction {
                 let param_count = words.next().unwrap().parse().unwrap();
                 Ok(VmInstruction::Function(function, param_count))
             }
-            "return" => Ok(VmInstruction::Return),
+            "return" => Ok(VmInstruction::Return(1)),
             "call" => {
                 let function = words.next().unwrap().into();
                 let arg_count = words.next().unwrap().parse().unwrap();
