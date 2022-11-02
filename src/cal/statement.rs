@@ -2,10 +2,5 @@
 // Author: Antonio Caggiano <info@antoniocaggiano.eu>
 // SPDX-License-Identifier: MIT
 
-pub mod error;
-
-pub mod tokenizer;
-
-pub mod parser;
-pub mod statement;
-pub mod structure;
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Statement {}
