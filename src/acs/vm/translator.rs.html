@@ -439,6 +439,33 @@
 <span id="437">437</span>
 <span id="438">438</span>
 <span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -781,8 +808,8 @@
         ]
     }
 
-    <span class="kw">fn</span> <span class="ident">gen_return</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-        <span class="macro">vec!</span>[
+    <span class="kw">fn</span> <span class="ident">gen_return</span>(<span class="ident">return_size_in_words</span>: <span class="ident">u16</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="macro">vec!</span>[
             <span class="comment">// Put frame on R13, A and D</span>
             <span class="ident">I::A</span>(<span class="ident">Segment::Local</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
             <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
@@ -794,18 +821,13 @@
             <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
             <span class="ident">I::A</span>(<span class="ident">Segment::R14</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
             <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Pop from stack into *ARG</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Put current `*ARG + return_size_in_words` in `R15`</span>
             <span class="ident">I::A</span>(<span class="ident">Segment::Argument</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// A is ARG address now</span>
+            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
+            <span class="ident">I::A</span>(<span class="ident">return_size_in_words</span>),
+            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::DPlusA</span>, <span class="ident">Jump::No</span>),
+            <span class="ident">I::A</span>(<span class="ident">Segment::R15</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
             <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// SP = ARG+1</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::A</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::DPlusOne</span>, <span class="ident">Jump::No</span>),
             <span class="comment">// That = *(frame-1)</span>
             <span class="ident">I::A</span>(<span class="ident">Segment::R13</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
             <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
@@ -830,11 +852,39 @@
             <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
             <span class="ident">I::A</span>(<span class="ident">Segment::Local</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
             <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
+        ];
+
+        <span class="comment">// Store return value in current argument segment</span>
+        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">return_size_in_words</span> {
+            <span class="ident">ret</span>.<span class="ident">extend</span>([
+                <span class="comment">// Pop from stack into RAM[*R15-i]</span>
+                <span class="ident">I::A</span>(<span class="number">0</span>),
+                <span class="comment">// Get SP while decrementing RAM[0] at the same time</span>
+                <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
+                <span class="comment">// D = *SP</span>
+                <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
+                <span class="ident">I::A</span>(<span class="ident">Segment::R15</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
+                <span class="comment">// AM = *R15 - 1</span>
+                <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
+                <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
+            ]);
+        }
+
+        <span class="ident">ret</span>.<span class="ident">extend</span>([
+            <span class="comment">// *SP = old*ARG + return_size_in_words</span>
+            <span class="ident">I::A</span>(<span class="ident">Segment::R15</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
+            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
+            <span class="ident">I::A</span>(<span class="ident">return_size_in_words</span>),
+            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::DPlusA</span>, <span class="ident">Jump::No</span>),
+            <span class="ident">I::A</span>(<span class="number">0</span>),
+            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
             <span class="comment">// goto return address *(frame-5)</span>
             <span class="ident">I::A</span>(<span class="ident">Segment::R14</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
             <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
             <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::Jump</span>),
-        ]
+        ]);
+
+        <span class="ident">ret</span>
     }
 
     <span class="doccomment">/// Translates a VM instruction into a sequence of assembly instructions</span>
@@ -856,7 +906,7 @@
             <span class="ident">VmInstruction::IfGoto</span>(<span class="ident">label</span>) =&gt; <span class="ident"><span class="self">Self</span>::gen_if_goto</span>(<span class="ident">label</span>),
             <span class="ident">VmInstruction::Function</span>(<span class="ident">func</span>, <span class="ident">local_count</span>) =&gt; <span class="ident"><span class="self">Self</span>::gen_function</span>(<span class="ident">func</span>, <span class="ident">local_count</span>),
             <span class="ident">VmInstruction::Call</span>(<span class="ident">function</span>, <span class="ident">arg_count</span>) =&gt; <span class="self">self</span>.<span class="ident">gen_call</span>(<span class="ident">function</span>, <span class="ident">arg_count</span>),
-            <span class="ident">VmInstruction::Return</span> =&gt; <span class="ident"><span class="self">Self</span>::gen_return</span>(),
+            <span class="ident">VmInstruction::Return</span>(<span class="ident">return_size_in_words</span>) =&gt; <span class="ident"><span class="self">Self</span>::gen_return</span>(<span class="ident">return_size_in_words</span>),
         }
     }
 
@@ -877,6 +927,10 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">assembler</span> <span class="op">=</span> <span class="ident">Assembler::default</span>();
         <span class="ident">assembler</span>.<span class="ident">resolve</span>(<span class="ident">asm_instructions</span>)
     }
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">translate</span>(<span class="ident">vm_instructions</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VmInstruction</span><span class="op">&gt;</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="ident">VmTranslator::default</span>().<span class="ident">translate</span>(<span class="ident">vm_instructions</span>)
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>

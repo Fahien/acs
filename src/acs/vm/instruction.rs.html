@@ -153,6 +153,7 @@
 <span id="151">151</span>
 <span id="152">152</span>
 <span id="153">153</span>
+<span id="154">154</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -218,9 +219,10 @@
     <span class="doccomment">/// pushed onto the stack before calling.</span>
     <span class="ident">Call</span>(<span class="ident">String</span>, <span class="ident">u16</span>),
 
-    <span class="doccomment">/// Jumps to the command following the `Call` command that called</span>
-    <span class="doccomment">/// the current function</span>
-    <span class="ident">Return</span>,
+    <span class="doccomment">/// Jumps to the command following the `Call` command that called the</span>
+    <span class="doccomment">/// current function, copying a number of words as the return value at the</span>
+    <span class="doccomment">/// beginning of the `Argument` section.</span>
+    <span class="ident">Return</span>(<span class="ident">u16</span>),
 }
 
 <span class="kw">impl</span> <span class="ident">VmInstruction</span> {
@@ -280,7 +282,7 @@
                 <span class="kw">let</span> <span class="ident">param_count</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">parse</span>().<span class="ident">unwrap</span>();
                 <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Function</span>(<span class="ident">function</span>, <span class="ident">param_count</span>))
             }
-            <span class="string">&quot;return&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Return</span>),
+            <span class="string">&quot;return&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Return</span>(<span class="number">1</span>)),
             <span class="string">&quot;call&quot;</span> =&gt; {
                 <span class="kw">let</span> <span class="ident">function</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">into</span>();
                 <span class="kw">let</span> <span class="ident">arg_count</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">parse</span>().<span class="ident">unwrap</span>();

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Type",""]],"struct":[["Field",""],["Module",""],["StructDec",""],["SubroutineDec",""],["Variable",""]]};

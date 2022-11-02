@@ -253,6 +253,14 @@
 <span id="251">251</span>
 <span id="252">252</span>
 <span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
 <span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
 <span class="comment">// SPDX-License-Identifier: MIT</span>
@@ -473,7 +481,7 @@
                 <span class="comment">// subtract one, as it will be incremented later.</span>
                 <span class="self">self</span>.<span class="ident">instruction_index</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">function_address</span> <span class="op">-</span> <span class="number">1</span>;
             }
-            <span class="ident">VmInstruction::Return</span> =&gt; {
+            <span class="ident">VmInstruction::Return</span>(<span class="ident">return_size_in_words</span>) =&gt; {
                 <span class="comment">// Get current local address</span>
                 <span class="kw">let</span> <span class="ident">lcl</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ram</span>[<span class="ident">Segment::Local</span>.<span class="ident">get_base_address</span>()] <span class="kw">as</span> <span class="ident">usize</span>;
 
@@ -481,13 +489,10 @@
                 <span class="kw">let</span> <span class="ident">return_address</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ram</span>[<span class="ident">lcl</span> <span class="op">-</span> <span class="number">5</span>] <span class="kw">as</span> <span class="ident">usize</span>;
                 <span class="self">self</span>.<span class="ident">instruction_index</span> <span class="op">=</span> <span class="ident">return_address</span>;
 
-                <span class="comment">// Overwrite argument 0 with the return value</span>
-                <span class="self">self</span>.<span class="ident">pop_into</span>(<span class="ident">Segment::Argument</span>, <span class="ident">Signal16::new</span>(<span class="number">0</span>));
-
-                <span class="comment">// Stack pointer is set to argument pointer plus one (as we have stored</span>
-                <span class="comment">// the return value in argument 0)</span>
+                <span class="comment">// Stack pointer is set to argument pointer plus the size of</span>
+                <span class="comment">// the return value (as we have stored it at the beginning of</span>
+                <span class="comment">// the argument section)</span>
                 <span class="kw">let</span> <span class="ident">current_arg_address</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ram</span>[<span class="ident">Segment::Argument</span>.<span class="ident">get_base_address</span>()];
-                <span class="self">self</span>.<span class="ident">ram</span>[<span class="ident">Segment::Stack</span>.<span class="ident">get_base_address</span>()] <span class="op">=</span> <span class="ident">current_arg_address</span> <span class="op">+</span> <span class="number">1</span>;
 
                 <span class="comment">// Restore local pointer: LCL = *(lcl-4)</span>
                 <span class="self">self</span>.<span class="ident">ram</span>[<span class="ident">Segment::Local</span>.<span class="ident">get_base_address</span>()] <span class="op">=</span> <span class="self">self</span>.<span class="ident">ram</span>[<span class="ident">lcl</span> <span class="op">-</span> <span class="number">4</span>];
@@ -500,6 +505,17 @@
 
                 <span class="comment">// Restore that pointer: THAT = *(lcl-1)</span>
                 <span class="self">self</span>.<span class="ident">ram</span>[<span class="ident">Segment::That</span>.<span class="ident">get_base_address</span>()] <span class="op">=</span> <span class="self">self</span>.<span class="ident">ram</span>[<span class="ident">lcl</span> <span class="op">-</span> <span class="number">1</span>];
+
+                <span class="comment">// Overwrite argument section with the return value</span>
+                <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">return_size_in_words</span> {
+                    <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">return_size_in_words</span> <span class="op">-</span> <span class="number">1</span> <span class="op">-</span> <span class="ident">i</span>;
+                    <span class="kw">let</span> <span class="ident">signal</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">pop</span>();
+                    <span class="self">self</span>.<span class="ident">ram</span>.<span class="ident">data</span>[<span class="ident">current_arg_address</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">+</span> <span class="ident">offset</span> <span class="kw">as</span> <span class="ident">usize</span>] <span class="op">=</span> <span class="ident">signal</span>;
+                }
+
+                <span class="comment">// Set stack pointer after popping return value</span>
+                <span class="self">self</span>.<span class="ident">ram</span>[<span class="ident">Segment::Stack</span>.<span class="ident">get_base_address</span>()] <span class="op">=</span>
+                    <span class="ident">current_arg_address</span> <span class="op">+</span> <span class="ident">return_size_in_words</span> <span class="kw">as</span> <span class="ident">i16</span>;
             }
         };
 
