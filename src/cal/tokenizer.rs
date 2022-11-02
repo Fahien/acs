@@ -10,10 +10,12 @@ use std::{
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Keyword {
     Function,
+    Return,
 }
 
 impl Keyword {
-    pub const MAP: [(&'static str, Keyword); 1] = [("fn ", Keyword::Function)];
+    pub const MAP: [(&'static str, Keyword); 2] =
+        [("fn ", Keyword::Function), ("return", Keyword::Return)];
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -26,6 +28,10 @@ pub enum Symbol {
     LeftBrace,
     /// '}'
     RightBrace,
+    /// '->'
+    RightArrow,
+    /// `;`
+    Semicolon,
 }
 
 /// Useful for lexical analysys, with the tokenizer we transform series of
@@ -36,6 +42,7 @@ pub enum Token {
     Symbol(Symbol),
     /// Sequence of letters, digits, and underscore, not starting with digit
     Identifier(String),
+    Integer(i16),
 }
 
 /// Tries to strip a keyword from the input and, if succedes, returns
@@ -52,11 +59,20 @@ fn strip_keyword(input: &str) -> Option<(Keyword, &str)> {
 /// Tries to strip a symbol from the input and, if succedes, returns
 /// the symbol and the new string stripped of that symbol
 fn strip_symbol(input: &str) -> Option<(Symbol, &str)> {
-    match input.chars().next() {
+    let mut chars = input.chars();
+    match chars.next() {
         Some('(') => Some((Symbol::LeftParen, &input[1..])),
         Some(')') => Some((Symbol::RightParen, &input[1..])),
         Some('{') => Some((Symbol::LeftBrace, &input[1..])),
         Some('}') => Some((Symbol::RightBrace, &input[1..])),
+        Some('-') => {
+            if let Some('>') = chars.next() {
+                Some((Symbol::RightArrow, &input[2..]))
+            } else {
+                None
+            }
+        }
+        Some(';') => Some((Symbol::Semicolon, &input[1..])),
         _ => None,
     }
 }
@@ -80,6 +96,29 @@ fn strip_identifier(input: &str) -> Option<(&str, &str)> {
         }
     }
     None
+}
+
+/// Tries to strip an integer from the input and, if succedes, returns
+/// the integer and the new string stripped of that integer
+fn strip_integer(input: &str) -> Option<(i16, &str)> {
+    let mut cut_index = 0;
+    for c in input.chars() {
+        if c.is_numeric() {
+            cut_index += 1;
+        } else {
+            break;
+        }
+    }
+    if cut_index > 0 {
+        let (integer_str, stripped_input) = input.split_at(cut_index);
+        if let Ok(integer) = integer_str.parse() {
+            Some((integer, stripped_input))
+        } else {
+            None
+        }
+    } else {
+        None
+    }
 }
 
 /// This struct behaves like a peekable iterator of tokens with methods to _eat_
@@ -114,6 +153,9 @@ impl Tokens {
             } else if let Some((identifier, stripped_input)) = strip_identifier(input) {
                 input = stripped_input;
                 ret.push(Token::Identifier(identifier.into()));
+            } else if let Some((integer, stripped_input)) = strip_integer(input) {
+                input = stripped_input;
+                ret.push(Token::Integer(integer));
             } else {
                 panic!("Failed to parse {}", input)
             }
@@ -166,6 +208,18 @@ impl Tokens {
             )),
         }
     }
+
+    /// Eats an integer and advances to the next token
+    pub fn eat_integer(&mut self, int: i16) -> Result<(), String> {
+        let token = self.tokens.next();
+        match token {
+            Some(Token::Integer(i)) if i == int => Ok(()),
+            _ => Err(format!(
+                "Failed to eat integer: {:?}, found {:?}",
+                int, token
+            )),
+        }
+    }
 }
 
 impl Deref for Tokens {
@@ -192,22 +246,5 @@ pub trait Tokenize {
 impl Tokenize for str {
     fn tokenize(&self) -> Tokens {
         tokenize(self)
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn hello_void() -> Result<(), String> {
-        let mut tokens = "fn main() {}".tokenize();
-        tokens.eat_keyword(Keyword::Function)?;
-        tokens.eat_identifier("main")?;
-        tokens.eat_symbol(Symbol::LeftParen)?;
-        tokens.eat_symbol(Symbol::RightParen)?;
-        tokens.eat_symbol(Symbol::LeftBrace)?;
-        tokens.eat_symbol(Symbol::RightBrace)?;
-        Ok(())
     }
 }
