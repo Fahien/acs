@@ -6,6 +6,7 @@ pub mod error;
 
 pub mod tokenizer;
 
+pub mod expression;
 pub mod parser;
 pub mod statement;
 pub mod structure;

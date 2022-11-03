@@ -2,7 +2,7 @@
 // Author: Antonio Caggiano <info@antoniocaggiano.eu>
 // SPDX-License-Identifier: MIT
 
-use crate::statement::Statement;
+use crate::{statement::Statement, tokenizer::Keyword};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Variable {
@@ -28,6 +28,16 @@ impl From<String> for Variable {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Type {
     Void,
+    I16,
+}
+
+impl From<Keyword> for Type {
+    fn from(keyword: Keyword) -> Self {
+        match keyword {
+            Keyword::I16 => Type::I16,
+            _ => panic!("Can not convert keyword `{:?}` to a `Type`", keyword),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

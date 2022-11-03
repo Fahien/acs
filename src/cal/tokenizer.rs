@@ -31,12 +31,16 @@ impl Range {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Keyword {
     Function,
+    I16,
     Return,
 }
 
 impl Keyword {
-    pub const MAP: [(&'static str, Keyword); 2] =
-        [("fn ", Keyword::Function), ("return", Keyword::Return)];
+    pub const MAP: [(&'static str, Keyword); 3] = [
+        ("fn ", Keyword::Function),
+        ("i16", Keyword::I16),
+        ("return", Keyword::Return),
+    ];
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -292,6 +296,23 @@ impl Tokens {
                 Range::default(),
             ))
         }
+    }
+
+    /// Peeks the next token and returns whether it is that symbol
+    pub fn peek_symbol(&mut self, symbol: Symbol) -> bool {
+        if let Some(Token {
+            value: TokenKind::Symbol(sym),
+            ..
+        }) = self.tokens.peek()
+        {
+            return *sym == symbol;
+        }
+        false
+    }
+
+    /// Skips the next token
+    pub fn skip(&mut self) {
+        self.tokens.next();
     }
 }
 
