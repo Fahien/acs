@@ -27,7 +27,7 @@ fn return_zero() -> Result<(), CalError> {
     tokens.eat_symbol(Symbol::LeftParen)?;
     tokens.eat_symbol(Symbol::RightParen)?;
     tokens.eat_symbol(Symbol::RightArrow)?;
-    tokens.eat_identifier("i16")?;
+    tokens.eat_keyword(Keyword::I16)?;
     tokens.eat_symbol(Symbol::LeftBrace)?;
     tokens.eat_integer(0)?;
     tokens.eat_symbol(Symbol::RightBrace)?;
@@ -38,7 +38,7 @@ fn return_zero() -> Result<(), CalError> {
     tokens.eat_symbol(Symbol::LeftParen)?;
     tokens.eat_symbol(Symbol::RightParen)?;
     tokens.eat_symbol(Symbol::RightArrow)?;
-    tokens.eat_identifier("i16")?;
+    tokens.eat_keyword(Keyword::I16)?;
     tokens.eat_symbol(Symbol::LeftBrace)?;
     tokens.eat_keyword(Keyword::Return)?;
     tokens.eat_integer(0)?;
