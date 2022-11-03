@@ -26,6 +26,7 @@ impl Generator {
     fn get_type_size(&self, typ: &Type) -> u16 {
         match typ {
             Type::Void => 0,
+            Type::I16 => 2,
         }
     }
 
