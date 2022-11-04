@@ -7,3 +7,5 @@ mod tokenizer;
 mod parser;
 
 mod generator;
+
+mod compiler;
