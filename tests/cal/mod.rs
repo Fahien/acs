@@ -5,3 +5,5 @@
 mod tokenizer;
 
 mod parser;
+
+mod generator;
