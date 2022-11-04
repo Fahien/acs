@@ -4,6 +4,9 @@
 
 use crate::{
     error::CalError,
+    expression::{Expression, Term},
+    segment::Segment,
+    statement::Statement,
     structure::{Function, Module, Type},
     vm::instruction::VmInstruction,
 };
@@ -36,12 +39,67 @@ impl Generator {
         self.get_type_size(typ) / 2
     }
 
+    fn gen_term(&self, term: &Term) -> Vec<VmInstruction> {
+        match term {
+            Term::IntLiteral(integer) => {
+                let integer = unsafe { std::mem::transmute::<i16, u16>(*integer) };
+                vec![VmInstruction::Push(Segment::Constant, integer)]
+            }
+        }
+    }
+
+    pub fn gen_expression(&self, expr: &Expression) -> Vec<VmInstruction> {
+        self.gen_term(expr.term.as_ref())
+    }
+
+    pub fn gen_return(&mut self, expr: &Option<Expression>) -> Vec<VmInstruction> {
+        let mut ret = vec![];
+        if let Some(expr) = expr {
+            ret.extend(self.gen_expression(expr));
+        }
+        // Return is not known at this point. Let `gen_function` set it before returning.
+        ret.push(VmInstruction::Return(0));
+        ret
+    }
+
+    pub fn gen_statement(&mut self, statement: &Statement) -> Vec<VmInstruction> {
+        match statement {
+            Statement::Return(expr) => self.gen_return(expr),
+            Statement::Expression(expression) => self.gen_expression(expression),
+        }
+    }
+
+    pub fn gen_statements(&mut self, statements: &[Statement]) -> Vec<VmInstruction> {
+        let mut ret = vec![];
+        for statement in statements {
+            ret.extend(self.gen_statement(statement));
+        }
+        ret
+    }
+
     /// Generates VM instructions for a function
     pub fn gen_function(&mut self, function: &Function) -> Vec<VmInstruction> {
-        vec![
-            VmInstruction::Function(function.name.clone(), function.local_count),
-            VmInstruction::Return(self.get_type_size_in_words(&function.return_type)),
-        ]
+        let mut ret = vec![VmInstruction::Function(
+            function.name.clone(),
+            function.local_count,
+        )];
+
+        ret.extend(self.gen_statements(&function.body_statements));
+
+        // Set the return type size to all return instruction
+        let return_type_size_in_words = self.get_type_size_in_words(&function.return_type);
+
+        ret.iter_mut().for_each(|instr| {
+            if let VmInstruction::Return(size_in_words) = instr {
+                *size_in_words = return_type_size_in_words;
+            }
+        });
+
+        // Add a return if missing
+        if !matches!(ret.last(), Some(VmInstruction::Return(_))) {
+            ret.push(VmInstruction::Return(return_type_size_in_words));
+        }
+        ret
     }
 
     /// Generates VM instructions for a module
@@ -73,30 +131,5 @@ impl Generate for str {
     fn generate(&self) -> Result<Vec<VmInstruction>, CalError> {
         let module: Module = self.parse()?;
         Ok(Generator::default().gen_module(&module))
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn hello_void() -> Result<(), CalError> {
-        let module = "fn main() {}".parse()?;
-        let vm_instructions = Generator::default().gen_module(&module);
-        match &vm_instructions[0] {
-            VmInstruction::Function(name, local_count) => {
-                assert_eq!(name, "main");
-                assert_eq!(*local_count, 0);
-            }
-            _ => panic!(),
-        }
-        match &vm_instructions[1] {
-            VmInstruction::Return(return_size_in_words) => {
-                assert_eq!(*return_size_in_words, 0);
-            }
-            _ => panic!(),
-        }
-        Ok(())
     }
 }
