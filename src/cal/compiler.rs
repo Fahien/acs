@@ -24,22 +24,3 @@ impl Compile for str {
         compile(self)
     }
 }
-
-#[cfg(test)]
-mod test {
-    use crate::Computer;
-
-    use super::*;
-
-    #[test]
-    fn hello_void() -> Result<(), CalError> {
-        let asm_instructions = "fn main() {}".compile()?;
-        let mut computer = Computer::default();
-        computer.set_instructions(asm_instructions);
-        for _ in 0..128 {
-            computer.ticktock();
-        }
-        assert_eq!(computer.get_memory().ram[0], 256);
-        Ok(())
-    }
-}
