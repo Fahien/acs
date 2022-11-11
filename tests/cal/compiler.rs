@@ -52,3 +52,15 @@ fn def_local() -> Result<(), CalError> {
     assert_eq!(computer.get_memory().ram[262], 2);
     Ok(())
 }
+
+#[test]
+fn call_function() -> Result<(), CalError> {
+    let asm_instructions = "fn main() { call() } fn call() {}".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..256 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 256);
+    Ok(())
+}
