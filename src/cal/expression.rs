@@ -5,8 +5,9 @@
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Term {
     IntLiteral(i16),
-    /// Call a function
-    Call(String),
+    /// Call a function with a list of arguments
+    Call(String, Vec<Expression>),
+    Variable(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

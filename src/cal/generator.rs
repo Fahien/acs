@@ -48,9 +48,10 @@ impl Generator {
                 let integer = unsafe { std::mem::transmute::<i16, u16>(*integer) };
                 Ok(vec![VmInstruction::Push(Segment::Constant, integer)])
             }
-            Term::Call(name) => {
+            Term::Call(name, _) => {
                 vec![VmInstruction::Call(name.clone(), 0)]
             }
+            _ => unimplemented!(),
         }
     }
 
