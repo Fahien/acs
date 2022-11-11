@@ -64,3 +64,31 @@ fn call_function() -> Result<(), CalError> {
     assert_eq!(computer.get_memory().ram[0], 256);
     Ok(())
 }
+
+#[test]
+fn one_parameter() -> Result<(), CalError> {
+    let asm_instructions =
+        "fn identity(x: i16) -> i16 { x } fn main() -> i16 { identity(42) }".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..1024 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], 42);
+    Ok(())
+}
+
+#[test]
+fn multi_parameters() -> Result<(), CalError> {
+    let asm_instructions =
+        "fn ignore_x(x: i16, y: i16) -> i16 { y } fn main() -> i16 { ignore_x(4, 5) }".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..512 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], 5);
+    Ok(())
+}
