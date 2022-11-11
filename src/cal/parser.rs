@@ -58,6 +58,13 @@ impl Parser {
         if let Some(token) = self.tokens.next() {
             match &token.value {
                 TokenKind::Integer(int) => Ok(Term::IntLiteral(*int)),
+                TokenKind::Identifier(identifier) => {
+                    // Parse subroutine call
+                    self.tokens.eat_symbol(Symbol::LeftParen)?;
+                    // TODO: parse expression list
+                    self.tokens.eat_symbol(Symbol::RightParen)?;
+                    Ok(Term::Call(identifier.clone()))
+                }
                 _ => Err(CalError::new(
                     format!("Failed to parse term, found {:?}", token.value),
                     token.range,
