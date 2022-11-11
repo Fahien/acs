@@ -61,3 +61,33 @@ fn return_zero() -> Result<(), CalError> {
 
     Ok(())
 }
+
+#[test]
+fn def_local() -> Result<(), CalError> {
+    let vm_instructions = "fn def_local() { let x: i16 = 0; let y: i16 = 1; }".generate()?;
+    match &vm_instructions[0] {
+        VmInstruction::Function(name, local_count) => {
+            assert_eq!(name, "def_local");
+            assert_eq!(*local_count, 2);
+        }
+        _ => panic!(),
+    }
+    assert!(matches!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Constant, 0)
+    ));
+    assert!(matches!(
+        vm_instructions[2],
+        VmInstruction::Pop(Segment::Local, 0)
+    ));
+    assert!(matches!(
+        vm_instructions[3],
+        VmInstruction::Push(Segment::Constant, 1)
+    ));
+    assert!(matches!(
+        vm_instructions[4],
+        VmInstruction::Pop(Segment::Local, 1)
+    ));
+    assert!(matches!(vm_instructions[5], VmInstruction::Return(0)));
+    Ok(())
+}
