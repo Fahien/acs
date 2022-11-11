@@ -54,16 +54,33 @@ impl Parser {
         }
     }
 
+    fn parse_expression_list(&mut self) -> Result<Vec<Expression>, CalError> {
+        let mut expressions = vec![];
+        if self.tokens.peek_symbol(Symbol::RightParen) {
+            return Ok(expressions);
+        }
+        expressions.extend(self.parse_expression());
+        while self.tokens.peek_symbol(Symbol::Comma) {
+            self.tokens.skip();
+            expressions.push(self.parse_expression()?);
+        }
+        Ok(expressions)
+    }
+
     fn parse_term(&mut self) -> Result<Term, CalError> {
         if let Some(token) = self.tokens.next() {
             match &token.value {
                 TokenKind::Integer(int) => Ok(Term::IntLiteral(*int)),
                 TokenKind::Identifier(identifier) => {
                     // Parse subroutine call
-                    self.tokens.eat_symbol(Symbol::LeftParen)?;
-                    // TODO: parse expression list
-                    self.tokens.eat_symbol(Symbol::RightParen)?;
-                    Ok(Term::Call(identifier.clone()))
+                    if self.tokens.peek_symbol(Symbol::LeftParen) {
+                        self.tokens.skip();
+                        let expression_list = self.parse_expression_list()?;
+                        self.tokens.eat_symbol(Symbol::RightParen)?;
+                        Ok(Term::Call(identifier.clone(), expression_list))
+                    } else {
+                        Ok(Term::Variable(identifier.clone()))
+                    }
                 }
                 _ => Err(CalError::new(
                     format!("Failed to parse term, found {:?}", token.value),
@@ -146,14 +163,30 @@ impl Parser {
             .count()
     }
 
+    pub fn parse_parameters(&mut self) -> Result<Vec<Variable>, CalError> {
+        let mut ret = vec![];
+
+        while !self.tokens.peek_symbol(Symbol::RightParen) {
+            let name = self.parse_identifier()?;
+            self.tokens.eat_symbol(Symbol::Colon)?;
+            let typ = self.parse_type()?;
+            let parameter = Variable::new(name, typ);
+            ret.push(parameter);
+            if self.tokens.peek_symbol(Symbol::Comma) {
+                self.tokens.skip();
+            }
+        }
+
+        Ok(ret)
+    }
+
     pub fn parse_function(&mut self) -> Result<Function, CalError> {
         self.tokens.eat_keyword(Keyword::Function)?;
 
         let name = self.parse_identifier()?;
 
         self.tokens.eat_symbol(Symbol::LeftParen)?;
-        // TODO parse parameters
-        let parameters = vec![];
+        let parameters = self.parse_parameters()?;
         self.tokens.eat_symbol(Symbol::RightParen)?;
 
         let return_type = if self.tokens.peek_symbol(Symbol::RightArrow) {
