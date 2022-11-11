@@ -66,6 +66,7 @@ impl Generator {
         match statement {
             Statement::Return(expr) => self.gen_return(expr),
             Statement::Expression(expression) => self.gen_expression(expression),
+            _ => unimplemented!(),
         }
     }
 
