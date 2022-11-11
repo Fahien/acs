@@ -91,3 +91,24 @@ fn def_local() -> Result<(), CalError> {
     assert!(matches!(vm_instructions[5], VmInstruction::Return(0)));
     Ok(())
 }
+
+#[test]
+fn call_function() -> Result<(), CalError> {
+    let vm_instructions = "fn main() { call() }".generate()?;
+    match &vm_instructions[0] {
+        VmInstruction::Function(name, local_count) => {
+            assert_eq!(name, "main");
+            assert_eq!(*local_count, 0);
+        }
+        _ => panic!(),
+    }
+    match &vm_instructions[1] {
+        VmInstruction::Call(name, param_count) => {
+            assert_eq!(name, "call");
+            assert_eq!(*param_count, 0);
+        }
+        _ => panic!(),
+    }
+    assert!(matches!(vm_instructions[2], VmInstruction::Return(0)));
+    Ok(())
+}
