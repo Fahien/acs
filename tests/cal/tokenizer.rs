@@ -74,3 +74,18 @@ fn def_local() -> Result<(), CalError> {
     tokens.eat_symbol(Symbol::RightBrace)?;
     Ok(())
 }
+
+#[test]
+fn call_function() -> Result<(), CalError> {
+    let mut tokens = "fn main() { call() }".tokenize();
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("main")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_identifier("call")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    Ok(())
+}
