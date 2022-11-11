@@ -65,9 +65,34 @@ fn call_function() -> Result<(), CalError> {
     assert_eq!(function.return_type, Type::Void);
     let statement = &function.body_statements[0];
     if let Statement::Expression(expression) = statement {
-        assert!(matches!(expression.term.as_ref(), &Term::Call(_)));
+        assert!(matches!(expression.term.as_ref(), &Term::Call(_, _)));
     } else {
         panic!()
     }
+    Ok(())
+}
+
+#[test]
+fn one_parameter() -> Result<(), CalError> {
+    let module: Module = "fn identity(x: i16) -> i16 { x }".parse()?;
+    let function = &module.functions[0];
+    assert_eq!(function.name, "identity");
+    assert_eq!(function.parameters.len(), 1);
+    assert_eq!(function.body_statements.len(), 1);
+    assert_eq!(function.local_count, 0);
+    assert_eq!(function.return_type, Type::I16);
+    Ok(())
+}
+
+#[test]
+fn multi_parameters() -> Result<(), CalError> {
+    let module: Module =
+        "fn ignore_y(x: i16, y: i16) -> i16 { x } fn main() -> i16 { ignore_y(2, 3) }".parse()?;
+    let function = &module.functions[0];
+    assert_eq!(function.name, "ignore_y");
+    assert_eq!(function.parameters.len(), 2);
+    assert_eq!(function.body_statements.len(), 1);
+    assert_eq!(function.local_count, 0);
+    assert_eq!(function.return_type, Type::I16);
     Ok(())
 }
