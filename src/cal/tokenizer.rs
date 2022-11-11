@@ -12,13 +12,15 @@ pub enum Keyword {
     Function,
     I16,
     Return,
+    Let,
 }
 
 impl Keyword {
-    pub const MAP: [(&'static str, Keyword); 3] = [
+    pub const MAP: [(&'static str, Keyword); 4] = [
         ("fn ", Keyword::Function),
         ("i16", Keyword::I16),
         ("return", Keyword::Return),
+        ("let ", Keyword::Let),
     ];
 }
 
@@ -36,6 +38,10 @@ pub enum Symbol {
     RightArrow,
     /// `;`
     Semicolon,
+    /// `:`,
+    Colon,
+    /// `=`
+    Assign,
 }
 
 /// Useful for lexical analysys, with the tokenizer we transform series of
@@ -77,6 +83,8 @@ fn strip_symbol(input: &str) -> Option<(Symbol, &str)> {
             }
         }
         Some(';') => Some((Symbol::Semicolon, &input[1..])),
+        Some(':') => Some((Symbol::Colon, &input[1..])),
+        Some('=') => Some((Symbol::Assign, &input[1..])),
         _ => None,
     }
 }
