@@ -6,7 +6,8 @@ use crate::{
     expression::{Expression, Term},
     segment::Segment,
     statement::Statement,
-    structure::{Function, Module, Type},
+    structure::{Function, Module, Type, Variable},
+    symboltable::SymbolTable,
     vm::instruction::VmInstruction,
 };
 
@@ -22,7 +23,9 @@ fn preamble() -> Vec<VmInstruction> {
 
 /// Generates VM instructions from parsed code.
 #[derive(Default)]
-pub struct Generator {}
+pub struct Generator {
+    symbol_tables: Vec<SymbolTable>,
+}
 
 impl Generator {
     /// Returns the size in bytes of the type
@@ -61,11 +64,29 @@ impl Generator {
         ret
     }
 
+    fn get_current_symbol_table_mut(&mut self) -> &mut SymbolTable {
+        self.symbol_tables.last_mut().unwrap()
+    }
+
+    pub fn gen_let(
+        &mut self,
+        variable: &Variable,
+        assign_expression: &Expression,
+    ) -> Vec<VmInstruction> {
+        let mut ret = vec![];
+        ret.extend(self.gen_expression(assign_expression));
+        let offset = self.get_current_symbol_table_mut().insert_local(variable);
+        ret.push(VmInstruction::Pop(Segment::Local, offset));
+        ret
+    }
+
     pub fn gen_statement(&mut self, statement: &Statement) -> Vec<VmInstruction> {
         match statement {
             Statement::Return(expr) => self.gen_return(expr),
             Statement::Expression(expression) => self.gen_expression(expression),
-            _ => unimplemented!(),
+            Statement::Let(variable, assign_expression) => {
+                self.gen_let(variable, assign_expression)
+            }
         }
     }
 
@@ -79,6 +100,9 @@ impl Generator {
 
     /// Generates VM instructions for a function
     pub fn gen_function(&mut self, function: &Function) -> Vec<VmInstruction> {
+        // New symbol table
+        self.symbol_tables.push(SymbolTable::default());
+
         let mut ret = vec![VmInstruction::Function(
             function.name.clone(),
             function.local_count,
@@ -99,6 +123,10 @@ impl Generator {
         if !matches!(ret.last(), Some(VmInstruction::Return(_))) {
             ret.push(VmInstruction::Return(return_type_size_in_words));
         }
+
+        // Clear symbol table for this function
+        self.symbol_tables.pop();
+
         ret
     }
 
