@@ -42,16 +42,33 @@ impl Generator {
         self.get_type_size(typ) / 2
     }
 
+    fn get_current_symbol_table(&self) -> &SymbolTable {
+        self.symbol_tables.last().unwrap()
+    }
+
+    fn get_current_symbol_table_mut(&mut self) -> &mut SymbolTable {
+        self.symbol_tables.last_mut().unwrap()
+    }
+
     fn gen_term(&self, term: &Term) -> Vec<VmInstruction> {
         match term {
             Term::IntLiteral(integer) => {
                 let integer = unsafe { std::mem::transmute::<i16, u16>(*integer) };
                 vec![VmInstruction::Push(Segment::Constant, integer)]
             }
-            Term::Call(name, _) => {
-                vec![VmInstruction::Call(name.clone(), 0)]
+            Term::Call(name, expressions) => {
+                let mut ret = vec![];
+                for expr in expressions {
+                    ret.extend(self.gen_expression(expr));
+                }
+                ret.push(VmInstruction::Call(name.clone(), expressions.len() as u16));
+                ret
             }
-            _ => unimplemented!(),
+            Term::Variable(name) => {
+                let (segment, offset) =
+                    self.get_current_symbol_table().get_segment_and_offset(name);
+                vec![VmInstruction::Push(segment, offset)]
+            }
         }
     }
 
@@ -67,10 +84,6 @@ impl Generator {
         // Return is not known at this point. Let `gen_function` set it before returning.
         ret.push(VmInstruction::Return(0));
         ret
-    }
-
-    fn get_current_symbol_table_mut(&mut self) -> &mut SymbolTable {
-        self.symbol_tables.last_mut().unwrap()
     }
 
     pub fn gen_let(
@@ -112,6 +125,11 @@ impl Generator {
             function.name.clone(),
             function.local_count,
         )];
+
+        // Add function arguments to symbol table
+        for arg in &function.parameters {
+            self.get_current_symbol_table_mut().insert_argument(arg);
+        }
 
         ret.extend(self.gen_statements(&function.body_statements));
 

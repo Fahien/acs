@@ -114,3 +114,39 @@ fn call_function() -> Result<(), CalError> {
     assert!(matches!(vm_instructions[2], VmInstruction::Return(0)));
     Ok(())
 }
+
+#[test]
+fn one_parameter() -> Result<(), CalError> {
+    let vm_instructions = "fn identity(x: i16) -> i16 { x }".generate()?;
+    match &vm_instructions[0] {
+        VmInstruction::Function(name, local_count) => {
+            assert_eq!(name, "identity");
+            assert_eq!(*local_count, 0);
+        }
+        _ => panic!(),
+    }
+    assert!(matches!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Argument, 0)
+    ));
+    assert!(matches!(vm_instructions[2], VmInstruction::Return(1)));
+    Ok(())
+}
+
+#[test]
+fn multi_parameters() -> Result<(), CalError> {
+    let vm_instructions = "fn ignore_x(x: i16, y: i16) -> i16 { y }".generate()?;
+    match &vm_instructions[0] {
+        VmInstruction::Function(name, local_count) => {
+            assert_eq!(name, "ignore_x");
+            assert_eq!(*local_count, 0);
+        }
+        _ => panic!(),
+    }
+    assert!(matches!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Argument, 1)
+    ));
+    assert!(matches!(vm_instructions[2], VmInstruction::Return(1)));
+    Ok(())
+}
