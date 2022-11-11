@@ -48,6 +48,7 @@ impl Generator {
                 let integer = unsafe { std::mem::transmute::<i16, u16>(*integer) };
                 vec![VmInstruction::Push(Segment::Constant, integer)]
             }
+            _ => unimplemented!(),
         }
     }
 

@@ -4,6 +4,8 @@
 
 use acs::{
     error::CalError,
+    expression::Term,
+    statement::Statement,
     structure::{Module, Type},
 };
 
@@ -49,5 +51,23 @@ fn def_local() -> Result<(), CalError> {
     assert_eq!(function.body_statements.len(), 2);
     assert_eq!(function.local_count, 2);
     assert_eq!(function.return_type, Type::Void);
+    Ok(())
+}
+
+#[test]
+fn call_function() -> Result<(), CalError> {
+    let module: Module = "fn main() { call() }".parse()?;
+    let function = &module.functions[0];
+    assert_eq!(function.name, "main");
+    assert!(function.parameters.is_empty());
+    assert_eq!(function.body_statements.len(), 1);
+    assert_eq!(function.local_count, 0);
+    assert_eq!(function.return_type, Type::Void);
+    let statement = &function.body_statements[0];
+    if let Statement::Expression(expression) = statement {
+        assert!(matches!(expression.term.as_ref(), &Term::Call(_)));
+    } else {
+        panic!()
+    }
     Ok(())
 }
