@@ -71,6 +71,45 @@ fn def_local() -> Result<(), CalError> {
     tokens.eat_symbol(Symbol::Assign)?;
     tokens.eat_integer(1)?;
     tokens.eat_symbol(Symbol::Semicolon)?;
+    Ok(())
+}
+
+#[test]
+fn one_parameter() -> Result<(), CalError> {
+    let mut tokens = "fn identity(x: i16) -> i16 { x }".tokenize();
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("identity")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_identifier("x")?;
+    tokens.eat_symbol(Symbol::Colon)?;
+    tokens.eat_keyword(Keyword::I16)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::RightArrow)?;
+    tokens.eat_keyword(Keyword::I16)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_identifier("x")?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    Ok(())
+}
+
+#[test]
+fn multi_parameters() -> Result<(), CalError> {
+    let mut tokens = "fn ignore_y(x: i16, y: i16) -> i16 { x }".tokenize();
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("ignore_y")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_identifier("x")?;
+    tokens.eat_symbol(Symbol::Colon)?;
+    tokens.eat_keyword(Keyword::I16)?;
+    tokens.eat_symbol(Symbol::Comma)?;
+    tokens.eat_identifier("y")?;
+    tokens.eat_symbol(Symbol::Colon)?;
+    tokens.eat_keyword(Keyword::I16)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::RightArrow)?;
+    tokens.eat_keyword(Keyword::I16)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_identifier("x")?;
     tokens.eat_symbol(Symbol::RightBrace)?;
     Ok(())
 }
