@@ -8,7 +8,7 @@ use crate::{
     error::CalError,
     expression::{Expression, Term},
     statement::Statement,
-    structure::{Function, Module, Type},
+    structure::{Function, Module, Type, Variable},
     tokenizer::*,
 };
 
@@ -85,6 +85,18 @@ impl Parser {
         }
     }
 
+    pub fn parse_let(&mut self) -> Result<Statement, CalError> {
+        self.tokens.eat_keyword(Keyword::Let)?;
+        let variable_name = self.parse_identifier()?;
+        self.tokens.eat_symbol(Symbol::Colon)?;
+        let variable_type = self.parse_type()?;
+        let variable = Variable::new(variable_name, variable_type);
+        self.tokens.eat_symbol(Symbol::Assign)?;
+        let assign_expression = self.parse_expression()?;
+        self.tokens.eat_symbol(Symbol::Semicolon)?;
+        Ok(Statement::Let(variable, assign_expression))
+    }
+
     pub fn parse_statement(&mut self) -> Result<Option<Statement>, CalError> {
         if let Some(token) = self.tokens.peek().cloned() {
             match &token.value {
@@ -92,6 +104,7 @@ impl Parser {
                 TokenKind::Keyword(Keyword::Return) => {
                     Ok(Some(Statement::Return(self.parse_return()?)))
                 }
+                TokenKind::Keyword(Keyword::Let) => Ok(Some(self.parse_let()?)),
                 _ => {
                     let expression = self.parse_expression()?;
                     if self.tokens.peek_symbol(Symbol::Semicolon) {
@@ -118,6 +131,14 @@ impl Parser {
         Ok(statements)
     }
 
+    /// Returns the number of local variables in the `statements`
+    pub fn count_local_variables(statements: &[Statement]) -> usize {
+        statements
+            .iter()
+            .filter(|s| matches!(s, Statement::Let(_, _)))
+            .count()
+    }
+
     pub fn parse_function(&mut self) -> Result<Function, CalError> {
         self.tokens.eat_keyword(Keyword::Function)?;
 
@@ -139,8 +160,7 @@ impl Parser {
         let body_statements = self.parse_statements()?;
         self.tokens.eat_symbol(Symbol::RightBrace)?;
 
-        // TODO parse local variables count
-        let local_count = 0;
+        let local_count = Self::count_local_variables(&body_statements) as u16;
 
         Ok(Function {
             return_type,
