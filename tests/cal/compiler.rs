@@ -37,3 +37,18 @@ fn return_zero() -> Result<(), CalError> {
     assert_eq!(computer.get_memory().ram[256], 2);
     Ok(())
 }
+
+#[test]
+fn def_local() -> Result<(), CalError> {
+    let asm_instructions = "fn main() { let x: i16 = 1; let y: i16 = 2; }".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..256 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 256);
+    // 5 elements were pushed on the stack when calling main for saving previous stack frame
+    assert_eq!(computer.get_memory().ram[261], 1);
+    assert_eq!(computer.get_memory().ram[262], 2);
+    Ok(())
+}
