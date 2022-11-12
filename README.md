@@ -25,3 +25,18 @@ On Windows you will need to install `SDL2.dll` and `SDL2.lib`:
    ```sh
    .rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/x86_64-pc-windows-msvc/lib
    ```
+
+#### Wasm
+
+If you want to use wasm-pack, install it following [these instructions](https://rustwasm.github.io/wasm-pack/installer/).
+Then run `wasm-pack build` to generate a wasm pkg in the `pkg` folder.
+
+### Cal Language Server
+
+You can build the acs library for the WebAssembly target enabling the `wasm` feature.
+
+1. Make sure you have installed a wasm32 rust toolchain
+   ```sh
+   rustup target add wasm32-unknown-unknown
+   ```
+2. Build for this target enabling the `wasm` feature
