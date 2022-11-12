@@ -27,5 +27,9 @@ png = "0.17.6"
 # Sim dependencies
 sdl2 = { version = "0.35.2", optional = true }
 
+# Web dependencies
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = { version = "0.2.83" }
+
 [features]
 sim = [ "sdl2" ]
