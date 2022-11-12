@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["compiler",""],["generator",""],["parser",""],["statement",""],["structure",""],["tokenizer",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["compiler",""],["expression",""],["generator",""],["parser",""],["statement",""],["structure",""],["symboltable",""],["tokenizer",""]]};
