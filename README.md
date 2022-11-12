@@ -23,3 +23,8 @@ On Windows you will need to install `SDL2.dll` and `SDL2.lib`:
    ```sh
    .rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/x86_64-pc-windows-msvc/lib
    ```
+
+### Wasm
+
+If you want to use wasm-pack, install it following [these instructions](https://rustwasm.github.io/wasm-pack/installer/).
+Then run `wasm-pack build` to generate a wasm pkg in the `pkg` folder.

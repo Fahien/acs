@@ -15,3 +15,6 @@ pub mod generator;
 pub mod symboltable;
 
 pub mod compiler;
+
+#[cfg(target_arch = "wasm32")]
+pub mod checker;
