@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["HalfAdder","The Half-adder chip is able to add together 2 binary numbers. The result is a `sum` and a `carry` bit"]]};
