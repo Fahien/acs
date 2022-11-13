@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Assembler","The assembler translates programs written in asm language (text) to binary code"]]};
