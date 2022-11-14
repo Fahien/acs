@@ -65,6 +65,8 @@ pub enum Symbol {
     Assign,
     /// `,`
     Comma,
+    /// `+`
+    Plus,
 }
 
 /// We have various kinds of tokens
@@ -122,6 +124,7 @@ fn strip_symbol(input: &str) -> Option<(Symbol, &str)> {
         Some(':') => Some((Symbol::Colon, &input[1..])),
         Some('=') => Some((Symbol::Assign, &input[1..])),
         Some(',') => Some((Symbol::Comma, &input[1..])),
+        Some('+') => Some((Symbol::Plus, &input[1..])),
         _ => None,
     }
 }
@@ -243,10 +246,7 @@ impl Tokens {
             match &token.value {
                 TokenKind::Keyword(kw) if *kw == keyword => Ok(()),
                 _ => Err(CalError::new(
-                    format!(
-                        "Expected keyword: {:?}, found {:?}",
-                        keyword, token.value
-                    ),
+                    format!("Expected keyword: {:?}, found {:?}", keyword, token.value),
                     token.range,
                 )),
             }
@@ -264,10 +264,7 @@ impl Tokens {
             match &token.value {
                 TokenKind::Symbol(sym) if *sym == symbol => Ok(()),
                 _ => Err(CalError::new(
-                    format!(
-                        "Expected symbol: {:?}, found {:?}",
-                        symbol, token.value
-                    ),
+                    format!("Expected symbol: {:?}, found {:?}", symbol, token.value),
                     token.range,
                 )),
             }
