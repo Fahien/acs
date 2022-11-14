@@ -65,6 +65,8 @@ pub enum Symbol {
     Assign,
     /// `,`
     Comma,
+    /// `+`
+    Plus,
 }
 
 /// We have various kinds of tokens
@@ -122,6 +124,7 @@ fn strip_symbol(input: &str) -> Option<(Symbol, &str)> {
         Some(':') => Some((Symbol::Colon, &input[1..])),
         Some('=') => Some((Symbol::Assign, &input[1..])),
         Some(',') => Some((Symbol::Comma, &input[1..])),
+        Some('+') => Some((Symbol::Plus, &input[1..])),
         _ => None,
     }
 }
