@@ -51,8 +51,9 @@ impl SymbolTable {
     }
 
     /// Returns the segment and the offset of the variable with that `name`
-    pub fn get_segment_and_offset(&self, name: &str) -> (Segment, u16) {
-        let entry = self.variables.get(name).unwrap();
-        (entry.segment, entry.offset)
+    pub fn get_segment_and_offset(&self, name: &str) -> Option<(Segment, u16)> {
+        self.variables
+            .get(name)
+            .map(|entry| (entry.segment, entry.offset))
     }
 }
