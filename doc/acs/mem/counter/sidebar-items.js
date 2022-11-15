@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Counter","Memory device which can increment its value in every time unit."]]};
