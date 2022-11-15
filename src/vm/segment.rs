@@ -4,7 +4,7 @@
 
 use std::str::FromStr;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Segment {
     /// Stack pointer address is at `RAM[0]`
     Stack,

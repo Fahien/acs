@@ -4,7 +4,7 @@
 
 use crate::{
     error::CalError,
-    expression::{Expression, Term},
+    expression::{Expression, Operator, Term},
     segment::Segment,
     statement::Statement,
     structure::{Function, Module, Type, Variable},
@@ -72,8 +72,24 @@ impl Generator {
         }
     }
 
+    /// Generate a VM instruction for an operator
+    fn gen_operator(&self, op: &Operator) -> VmInstruction {
+        match op {
+            Operator::Add => VmInstruction::Add,
+        }
+    }
+
     pub fn gen_expression(&self, expr: &Expression) -> Vec<VmInstruction> {
-        self.gen_term(expr.term.as_ref())
+        // Generate instructions for the term
+        let mut ret = self.gen_term(expr.term.as_ref());
+
+        // Generate instructions for the operator and the right side expression
+        if let Some((op, expr)) = &expr.op_and_expr {
+            ret.extend(self.gen_expression(expr.as_ref()));
+            ret.push(self.gen_operator(op));
+        }
+
+        ret
     }
 
     pub fn gen_return(&mut self, expr: &Option<Expression>) -> Vec<VmInstruction> {

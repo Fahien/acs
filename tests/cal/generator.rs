@@ -150,3 +150,22 @@ fn multi_parameters() -> Result<(), CalError> {
     assert!(matches!(vm_instructions[2], VmInstruction::Return(1)));
     Ok(())
 }
+
+#[test]
+fn add() -> Result<(), CalError> {
+    let vm_instructions = "fn main() { 1 + 2; }".generate()?;
+    let VmInstruction::Function(name, 0) = &vm_instructions[0] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+    assert_eq!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    assert_eq!(
+        vm_instructions[2],
+        VmInstruction::Push(Segment::Constant, 2)
+    );
+    assert_eq!(vm_instructions[3], VmInstruction::Add);
+    Ok(())
+}
