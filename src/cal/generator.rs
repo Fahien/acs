@@ -9,6 +9,7 @@ use crate::{
     statement::Statement,
     structure::{Function, Module, Type, Variable},
     symboltable::SymbolTable,
+    tokenizer::Range,
     vm::instruction::VmInstruction,
 };
 
@@ -65,9 +66,16 @@ impl Generator {
                 Ok(ret)
             }
             Term::Variable(name) => {
-                let (segment, offset) =
-                    self.get_current_symbol_table().get_segment_and_offset(name);
-                Ok(vec![VmInstruction::Push(segment, offset)])
+                if let Some((segment, offset)) =
+                    self.get_current_symbol_table().get_segment_and_offset(name)
+                {
+                    Ok(vec![VmInstruction::Push(segment, offset)])
+                } else {
+                    Err(CalError::new(
+                        format!("Undefined variable `{}`", name),
+                        Range::default(),
+                    ))
+                }
             }
         }
     }

@@ -6,6 +6,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     error::CalError,
+    generator::generate,
     parser::Parser,
     tokenizer::{Range, Tokenize},
 };
@@ -62,6 +63,7 @@ impl From<CalError> for JsCalError {
 #[wasm_bindgen]
 pub fn check(code: &str) -> Result<(), JsCalError> {
     let tokens = code.tokenize()?;
-    Parser::new(tokens).parse_module()?;
+    let module = Parser::new(tokens).parse_module()?;
+    generate(module)?;
     Ok(())
 }
