@@ -105,3 +105,16 @@ fn add() -> Result<(), CalError> {
     assert_eq!(computer.get_memory().ram[256], 3);
     Ok(())
 }
+
+#[test]
+fn sub() -> Result<(), CalError> {
+    let asm_instructions = "fn main() -> i16 { 1 - 2 }".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], -1);
+    Ok(())
+}

@@ -67,6 +67,8 @@ pub enum Symbol {
     Comma,
     /// `+`
     Plus,
+    /// `-`
+    Minus,
 }
 
 /// We have various kinds of tokens
@@ -117,7 +119,7 @@ fn strip_symbol(input: &str) -> Option<(Symbol, &str)> {
             if let Some('>') = chars.next() {
                 Some((Symbol::RightArrow, &input[2..]))
             } else {
-                None
+                Some((Symbol::Minus, &input[1..]))
             }
         }
         Some(';') => Some((Symbol::Semicolon, &input[1..])),
@@ -331,7 +333,7 @@ impl Tokens {
             ..
         }) = self.tokens.peek()
         {
-            *sym == Symbol::Plus
+            *sym == Symbol::Plus || *sym == Symbol::Minus
         } else {
             false
         }

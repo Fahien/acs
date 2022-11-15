@@ -7,12 +7,14 @@ use crate::{error::CalError, tokenizer::Symbol};
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Operator {
     Add,
+    Sub,
 }
 
 impl Operator {
     pub fn from_symbol(sym: Symbol) -> Result<Self, CalError> {
         match sym {
             Symbol::Plus => Ok(Self::Add),
+            Symbol::Minus => Ok(Self::Sub),
             _ => Err(format!("Failed to convert `{:?}` to an operator", sym).into()),
         }
     }

@@ -159,7 +159,10 @@ impl Parser {
                         self.tokens.skip();
                     } else if !self.tokens.peek_symbol(Symbol::RightBrace) {
                         return Err(CalError::new(
-                            "Expected `}` or `;` after expression".into(),
+                            format!(
+                                "Expected `}}` or `;` after expression, found {:?}",
+                                self.tokens.peek()
+                            ),
                             token.range,
                         ));
                     }
