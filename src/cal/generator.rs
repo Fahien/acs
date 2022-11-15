@@ -76,6 +76,7 @@ impl Generator {
     fn gen_operator(&self, op: &Operator) -> VmInstruction {
         match op {
             Operator::Add => VmInstruction::Add,
+            Operator::Sub => VmInstruction::Sub,
         }
     }
 

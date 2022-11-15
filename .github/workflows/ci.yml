@@ -3,6 +3,7 @@ name: ci
 on:
   push:
     branches: [ main, ci ]
+    tags: "*.*.*"
   pull_request:
     branches: [ main ]
 
@@ -24,6 +25,9 @@ jobs:
           target
           pkg
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Rustup
+      run: rustup update
 
     - name: Deps
       run: |
