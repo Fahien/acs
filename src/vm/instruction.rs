@@ -10,7 +10,7 @@ use crate::{code::VmCode, preprocessor::VmPreprocessedCode, segment::Segment};
 /// [stack machine](https://en.wikipedia.org/wiki/Stack_machine).
 /// Part of a two-tier compilation model, where a high level language is
 /// first translated to this representation and then to machine language.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum VmInstruction {
     /// Pushes `segment[index]` on top of the stack
     Push(Segment, u16),
