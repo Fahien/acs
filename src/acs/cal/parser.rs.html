@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/cal/parser.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>parser.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/cal/parser.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>parser.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../acs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -243,248 +243,302 @@
 <span id="241">241</span>
 <span id="242">242</span>
 <span id="243">243</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
+</span><span class="kw">use </span>std::str::FromStr;
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">error::CalError</span>,
-    <span class="ident">expression</span>::{<span class="ident">Expression</span>, <span class="ident">Term</span>},
-    <span class="ident">statement::Statement</span>,
-    <span class="ident">structure</span>::{<span class="ident">Function</span>, <span class="ident">Module</span>, <span class="ident">Type</span>, <span class="ident">Variable</span>},
-    <span class="ident">tokenizer</span>::<span class="kw-2">*</span>,
+<span class="kw">use crate</span>::{
+    error::CalError,
+    expression::{Expression, Operator, Term},
+    statement::Statement,
+    structure::{Function, Module, Type, Variable},
+    tokenizer::<span class="kw-2">*</span>,
 };
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Parser</span> {
-    <span class="ident">tokens</span>: <span class="ident">Tokens</span>,
+<span class="kw">pub struct </span>Parser {
+    tokens: Tokens,
 }
 
-<span class="kw">impl</span> <span class="ident">Parser</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">tokens</span>: <span class="ident">Tokens</span>) -&gt; <span class="ident">Parser</span> {
-        <span class="self">Self</span> { <span class="ident">tokens</span> }
+<span class="kw">impl </span>Parser {
+    <span class="kw">pub fn </span>new(tokens: Tokens) -&gt; Parser {
+        <span class="self">Self </span>{ tokens }
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_identifier</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">token</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">next</span>() {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">TokenKind::Identifier</span>(<span class="ident">id</span>) <span class="op">=</span> <span class="ident">token</span>.<span class="ident">value</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">id</span>)
-            } <span class="kw">else</span> {
-                <span class="prelude-val">Err</span>(<span class="ident">CalError</span> {
-                    <span class="ident">message</span>: <span class="macro">format!</span>(<span class="string">&quot;Expected identifier, found {:?}&quot;</span>, <span class="ident">token</span>.<span class="ident">value</span>),
-                    <span class="ident">range</span>: <span class="ident">token</span>.<span class="ident">range</span>,
+    <span class="kw">fn </span>parse_identifier(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;String, CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
+            <span class="kw">if let </span>TokenKind::Identifier(id) = token.value {
+                <span class="prelude-val">Ok</span>(id)
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(CalError {
+                    message: <span class="macro">format!</span>(<span class="string">&quot;Expected identifier, found {:?}&quot;</span>, token.value),
+                    range: token.range,
                 })
             }
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">CalError::new</span>(
-                <span class="string">&quot;Expected identifier&quot;</span>.<span class="ident">into</span>(),
-                <span class="ident">Range::default</span>(),
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(CalError::new(
+                <span class="string">&quot;Expected identifier&quot;</span>.into(),
+                Range::default(),
             ))
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_type</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Type</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">token</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">next</span>() {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">TokenKind::Keyword</span>(<span class="ident">keyword</span>) <span class="op">=</span> <span class="ident">token</span>.<span class="ident">value</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">Type::from</span>(<span class="ident">keyword</span>))
-            } <span class="kw">else</span> {
-                <span class="prelude-val">Err</span>(<span class="ident">CalError::new</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;Expected type, found {:?}&quot;</span>, <span class="ident">token</span>.<span class="ident">value</span>),
-                    <span class="ident">token</span>.<span class="ident">range</span>,
+    <span class="kw">fn </span>parse_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Type, CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
+            <span class="kw">if let </span>TokenKind::Keyword(keyword) = token.value {
+                <span class="prelude-val">Ok</span>(Type::from(keyword))
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(CalError::new(
+                    <span class="macro">format!</span>(<span class="string">&quot;Expected type, found {:?}&quot;</span>, token.value),
+                    token.range,
                 ))
             }
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">CalError::new</span>(<span class="string">&quot;Expected type&quot;</span>.<span class="ident">into</span>(), <span class="ident">Range::default</span>()))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(CalError::new(<span class="string">&quot;Expected type&quot;</span>.into(), Range::default()))
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_expression_list</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Expression</span><span class="op">&gt;</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expressions</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek_symbol</span>(<span class="ident">Symbol::RightParen</span>) {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">expressions</span>);
+    <span class="kw">fn </span>parse_expression_list(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Expression&gt;, CalError&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>expressions = <span class="macro">vec!</span>[];
+        <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::RightParen) {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(expressions);
         }
-        <span class="ident">expressions</span>.<span class="ident">extend</span>(<span class="self">self</span>.<span class="ident">parse_expression</span>());
-        <span class="kw">while</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek_symbol</span>(<span class="ident">Symbol::Comma</span>) {
-            <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">skip</span>();
-            <span class="ident">expressions</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">parse_expression</span>()<span class="question-mark">?</span>);
+        expressions.extend(<span class="self">self</span>.parse_expression());
+        <span class="kw">while </span><span class="self">self</span>.tokens.peek_symbol(Symbol::Comma) {
+            <span class="self">self</span>.tokens.skip();
+            expressions.push(<span class="self">self</span>.parse_expression()<span class="question-mark">?</span>);
         }
-        <span class="prelude-val">Ok</span>(<span class="ident">expressions</span>)
+        <span class="prelude-val">Ok</span>(expressions)
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_term</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Term</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">token</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">next</span>() {
-            <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">token</span>.<span class="ident">value</span> {
-                <span class="ident">TokenKind::Integer</span>(<span class="ident">int</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Term::IntLiteral</span>(<span class="kw-2">*</span><span class="ident">int</span>)),
-                <span class="ident">TokenKind::Identifier</span>(<span class="ident">identifier</span>) =&gt; {
-                    <span class="comment">// Parse subroutine call</span>
-                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek_symbol</span>(<span class="ident">Symbol::LeftParen</span>) {
-                        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">skip</span>();
-                        <span class="kw">let</span> <span class="ident">expression_list</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_expression_list</span>()<span class="question-mark">?</span>;
-                        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_symbol</span>(<span class="ident">Symbol::RightParen</span>)<span class="question-mark">?</span>;
-                        <span class="prelude-val">Ok</span>(<span class="ident">Term::Call</span>(<span class="ident">identifier</span>.<span class="ident">clone</span>(), <span class="ident">expression_list</span>))
-                    } <span class="kw">else</span> {
-                        <span class="prelude-val">Ok</span>(<span class="ident">Term::Variable</span>(<span class="ident">identifier</span>.<span class="ident">clone</span>()))
+    <span class="kw">fn </span>parse_term(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Term, CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
+            <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
+                TokenKind::Integer(int) =&gt; <span class="prelude-val">Ok</span>(Term::IntLiteral(<span class="kw-2">*</span>int)),
+                TokenKind::Identifier(identifier) =&gt; {
+                    <span class="comment">// Parse subroutine call
+                    </span><span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::LeftParen) {
+                        <span class="self">self</span>.tokens.skip();
+                        <span class="kw">let </span>expression_list = <span class="self">self</span>.parse_expression_list()<span class="question-mark">?</span>;
+                        <span class="self">self</span>.tokens.eat_symbol(Symbol::RightParen)<span class="question-mark">?</span>;
+                        <span class="prelude-val">Ok</span>(Term::Call(identifier.clone(), expression_list))
+                    } <span class="kw">else </span>{
+                        <span class="prelude-val">Ok</span>(Term::Variable(identifier.clone()))
                     }
                 }
-                <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">CalError::new</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;Failed to parse term, found {:?}&quot;</span>, <span class="ident">token</span>.<span class="ident">value</span>),
-                    <span class="ident">token</span>.<span class="ident">range</span>,
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(CalError::new(
+                    <span class="macro">format!</span>(<span class="string">&quot;Failed to parse term, found {:?}&quot;</span>, token.value),
+                    token.range,
                 )),
             }
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">CalError::new</span>(<span class="string">&quot;Expected term&quot;</span>.<span class="ident">into</span>(), <span class="ident">Range::default</span>()))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(CalError::new(<span class="string">&quot;Expected term&quot;</span>.into(), Range::default()))
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_expression</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Expression</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">term</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_term</span>()<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">Expression::new</span>(<span class="ident">Box::new</span>(<span class="ident">term</span>)))
+    <span class="kw">fn </span>parse_operator(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Operator, CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
+            <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
+                TokenKind::Symbol(symbol) =&gt; <span class="prelude-val">Ok</span>(Operator::from_symbol(<span class="kw-2">*</span>symbol)<span class="question-mark">?</span>),
+                token_kind =&gt; <span class="prelude-val">Err</span>(CalError::new(
+                    <span class="macro">format!</span>(<span class="string">&quot;Expected operator, found {:?}&quot;</span>, token_kind),
+                    Range::default(),
+                )),
+            }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(CalError::new(<span class="string">&quot;Expected operator&quot;</span>.into(), Range::default()))
+        }
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_return</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Expression</span><span class="op">&gt;</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_keyword</span>(<span class="ident">Keyword::Return</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek_symbol</span>(<span class="ident">Symbol::Semicolon</span>) {
-            <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">skip</span>();
+    <span class="kw">pub fn </span>parse_expression(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Expression, CalError&gt; {
+        <span class="kw">let </span>term = <span class="self">self</span>.parse_term()<span class="question-mark">?</span>;
+
+        <span class="comment">// Following a term there can be an operator
+        </span><span class="kw">let </span>op_and_exprm = <span class="kw">if </span><span class="self">self</span>.tokens.peek_operator() {
+            <span class="kw">let </span>op = <span class="self">self</span>.parse_operator()<span class="question-mark">?</span>;
+            <span class="kw">let </span>expression = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+            <span class="prelude-val">Some</span>((op, Box::new(expression)))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
+
+        <span class="prelude-val">Ok</span>(Expression::new(Box::new(term), op_and_exprm))
+    }
+
+    <span class="kw">fn </span>parse_return(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Expression&gt;, CalError&gt; {
+        <span class="self">self</span>.tokens.eat_keyword(Keyword::Return)<span class="question-mark">?</span>;
+        <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::Semicolon) {
+            <span class="self">self</span>.tokens.skip();
             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">expression</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_expression</span>()<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_symbol</span>(<span class="ident">Symbol::Semicolon</span>)<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">expression</span>))
+        } <span class="kw">else </span>{
+            <span class="kw">let </span>expression = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+            <span class="self">self</span>.tokens.eat_symbol(Symbol::Semicolon)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(expression))
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_let</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Statement</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_keyword</span>(<span class="ident">Keyword::Let</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">variable_name</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_identifier</span>()<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_symbol</span>(<span class="ident">Symbol::Colon</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">variable_type</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_type</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">variable</span> <span class="op">=</span> <span class="ident">Variable::new</span>(<span class="ident">variable_name</span>, <span class="ident">variable_type</span>);
-        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_symbol</span>(<span class="ident">Symbol::Assign</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">assign_expression</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_expression</span>()<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_symbol</span>(<span class="ident">Symbol::Semicolon</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">Statement::Let</span>(<span class="ident">variable</span>, <span class="ident">assign_expression</span>))
+    <span class="kw">pub fn </span>parse_let(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Statement, CalError&gt; {
+        <span class="self">self</span>.tokens.eat_keyword(Keyword::Let)<span class="question-mark">?</span>;
+        <span class="kw">let </span>variable_name = <span class="self">self</span>.parse_identifier()<span class="question-mark">?</span>;
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::Colon)<span class="question-mark">?</span>;
+        <span class="kw">let </span>variable_type = <span class="self">self</span>.parse_type()<span class="question-mark">?</span>;
+        <span class="kw">let </span>variable = Variable::new(variable_name, variable_type);
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::Assign)<span class="question-mark">?</span>;
+        <span class="kw">let </span>assign_expression = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::Semicolon)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(Statement::Let(variable, assign_expression))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_statement</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Statement</span><span class="op">&gt;</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">token</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek</span>().<span class="ident">cloned</span>() {
-            <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">token</span>.<span class="ident">value</span> {
-                <span class="ident">TokenKind::Symbol</span>(<span class="ident">Symbol::Semicolon</span> <span class="op">|</span> <span class="ident">Symbol::RightBrace</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-                <span class="ident">TokenKind::Keyword</span>(<span class="ident">Keyword::Return</span>) =&gt; {
-                    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">Statement::Return</span>(<span class="self">self</span>.<span class="ident">parse_return</span>()<span class="question-mark">?</span>)))
+    <span class="kw">pub fn </span>parse_statement(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Statement&gt;, CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.peek().cloned() {
+            <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
+                TokenKind::Symbol(Symbol::Semicolon | Symbol::RightBrace) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+                TokenKind::Keyword(Keyword::Return) =&gt; {
+                    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(Statement::Return(<span class="self">self</span>.parse_return()<span class="question-mark">?</span>)))
                 }
-                <span class="ident">TokenKind::Keyword</span>(<span class="ident">Keyword::Let</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">parse_let</span>()<span class="question-mark">?</span>)),
-                <span class="kw">_</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">expression</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_expression</span>()<span class="question-mark">?</span>;
-                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek_symbol</span>(<span class="ident">Symbol::Semicolon</span>) {
-                        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">skip</span>();
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek_symbol</span>(<span class="ident">Symbol::RightBrace</span>) {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CalError::new</span>(
-                            <span class="string">&quot;Expected `}` or `;` after expression&quot;</span>.<span class="ident">into</span>(),
-                            <span class="ident">token</span>.<span class="ident">range</span>,
+                TokenKind::Keyword(Keyword::Let) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.parse_let()<span class="question-mark">?</span>)),
+                <span class="kw">_ </span>=&gt; {
+                    <span class="kw">let </span>expression = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+                    <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::Semicolon) {
+                        <span class="self">self</span>.tokens.skip();
+                    } <span class="kw">else if </span>!<span class="self">self</span>.tokens.peek_symbol(Symbol::RightBrace) {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(CalError::new(
+                            <span class="macro">format!</span>(
+                                <span class="string">&quot;Expected `}}` or `;` after expression, found {:?}&quot;</span>,
+                                <span class="self">self</span>.tokens.peek()
+                            ),
+                            token.range,
                         ));
                     }
-                    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">Statement::Expression</span>(<span class="ident">expression</span>)))
+                    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(Statement::Expression(expression)))
                 }
             }
-        } <span class="kw">else</span> {
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_statements</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Statement</span><span class="op">&gt;</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statements</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">statement</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_statement</span>()<span class="question-mark">?</span> {
-            <span class="ident">statements</span>.<span class="ident">push</span>(<span class="ident">statement</span>);
+    <span class="kw">pub fn </span>parse_statements(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Statement&gt;, CalError&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>statements = <span class="macro">vec!</span>[];
+        <span class="kw">while let </span><span class="prelude-val">Some</span>(statement) = <span class="self">self</span>.parse_statement()<span class="question-mark">? </span>{
+            statements.push(statement);
         }
-        <span class="prelude-val">Ok</span>(<span class="ident">statements</span>)
+        <span class="prelude-val">Ok</span>(statements)
     }
 
-    <span class="doccomment">/// Returns the number of local variables in the `statements`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">count_local_variables</span>(<span class="ident">statements</span>: <span class="kw-2">&amp;</span>[<span class="ident">Statement</span>]) -&gt; <span class="ident">usize</span> {
-        <span class="ident">statements</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="macro">matches!</span>(<span class="ident">s</span>, <span class="ident">Statement::Let</span>(<span class="kw">_</span>, <span class="kw">_</span>)))
-            .<span class="ident">count</span>()
+    <span class="doccomment">/// Returns the number of local variables in the `statements`
+    </span><span class="kw">pub fn </span>count_local_variables(statements: <span class="kw-2">&amp;</span>[Statement]) -&gt; usize {
+        statements
+            .iter()
+            .filter(|s| <span class="macro">matches!</span>(s, Statement::Let(<span class="kw">_</span>, <span class="kw">_</span>)))
+            .count()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_parameters</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Variable</span><span class="op">&gt;</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="kw">pub fn </span>parse_parameters(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Variable&gt;, CalError&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="macro">vec!</span>[];
 
-        <span class="kw">while</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek_symbol</span>(<span class="ident">Symbol::RightParen</span>) {
-            <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_identifier</span>()<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_symbol</span>(<span class="ident">Symbol::Colon</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">typ</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_type</span>()<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">parameter</span> <span class="op">=</span> <span class="ident">Variable::new</span>(<span class="ident">name</span>, <span class="ident">typ</span>);
-            <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">parameter</span>);
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek_symbol</span>(<span class="ident">Symbol::Comma</span>) {
-                <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">skip</span>();
+        <span class="kw">while </span>!<span class="self">self</span>.tokens.peek_symbol(Symbol::RightParen) {
+            <span class="kw">let </span>name = <span class="self">self</span>.parse_identifier()<span class="question-mark">?</span>;
+            <span class="self">self</span>.tokens.eat_symbol(Symbol::Colon)<span class="question-mark">?</span>;
+            <span class="kw">let </span>typ = <span class="self">self</span>.parse_type()<span class="question-mark">?</span>;
+            <span class="kw">let </span>parameter = Variable::new(name, typ);
+            ret.push(parameter);
+            <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::Comma) {
+                <span class="self">self</span>.tokens.skip();
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">ret</span>)
+        <span class="prelude-val">Ok</span>(ret)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_function</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Function</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_keyword</span>(<span class="ident">Keyword::Function</span>)<span class="question-mark">?</span>;
+    <span class="kw">pub fn </span>parse_function(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Function, CalError&gt; {
+        <span class="self">self</span>.tokens.eat_keyword(Keyword::Function)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_identifier</span>()<span class="question-mark">?</span>;
+        <span class="kw">let </span>name = <span class="self">self</span>.parse_identifier()<span class="question-mark">?</span>;
 
-        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_symbol</span>(<span class="ident">Symbol::LeftParen</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">parameters</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_parameters</span>()<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_symbol</span>(<span class="ident">Symbol::RightParen</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::LeftParen)<span class="question-mark">?</span>;
+        <span class="kw">let </span>parameters = <span class="self">self</span>.parse_parameters()<span class="question-mark">?</span>;
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::RightParen)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">return_type</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek_symbol</span>(<span class="ident">Symbol::RightArrow</span>) {
-            <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">skip</span>();
-            <span class="self">self</span>.<span class="ident">parse_type</span>()<span class="question-mark">?</span>
-        } <span class="kw">else</span> {
-            <span class="ident">Type::Void</span>
+        <span class="kw">let </span>return_type = <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::RightArrow) {
+            <span class="self">self</span>.tokens.skip();
+            <span class="self">self</span>.parse_type()<span class="question-mark">?
+        </span>} <span class="kw">else </span>{
+            Type::Void
         };
 
-        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_symbol</span>(<span class="ident">Symbol::LeftBrace</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">body_statements</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_statements</span>()<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_symbol</span>(<span class="ident">Symbol::RightBrace</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::LeftBrace)<span class="question-mark">?</span>;
+        <span class="kw">let </span>body_statements = <span class="self">self</span>.parse_statements()<span class="question-mark">?</span>;
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::RightBrace)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">local_count</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::count_local_variables</span>(<span class="kw-2">&amp;</span><span class="ident">body_statements</span>) <span class="kw">as</span> <span class="ident">u16</span>;
+        <span class="kw">let </span>local_count = <span class="self">Self</span>::count_local_variables(<span class="kw-2">&amp;</span>body_statements) <span class="kw">as </span>u16;
 
-        <span class="prelude-val">Ok</span>(<span class="ident">Function</span> {
-            <span class="ident">return_type</span>,
-            <span class="ident">name</span>,
-            <span class="ident">parameters</span>,
-            <span class="ident">local_count</span>,
-            <span class="ident">body_statements</span>,
+        <span class="prelude-val">Ok</span>(Function {
+            return_type,
+            name,
+            parameters,
+            local_count,
+            body_statements,
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_module</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Module</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">functions</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="kw">pub fn </span>parse_module(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Module, CalError&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>functions = <span class="macro">vec!</span>[];
 
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">token</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek</span>() {
-            <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">token</span>.<span class="ident">value</span> {
-                <span class="ident">TokenKind::Keyword</span>(<span class="ident">Keyword::Function</span>) =&gt; <span class="ident">functions</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">parse_function</span>()<span class="question-mark">?</span>),
-                <span class="kw">_</span> =&gt; {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CalError::new</span>(
-                        <span class="macro">format!</span>(<span class="string">&quot;Expected function, found {:?}&quot;</span>, <span class="ident">token</span>.<span class="ident">value</span>),
-                        <span class="ident">token</span>.<span class="ident">range</span>,
+        <span class="kw">while let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.peek() {
+            <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
+                TokenKind::Keyword(Keyword::Function) =&gt; functions.push(<span class="self">self</span>.parse_function()<span class="question-mark">?</span>),
+                <span class="kw">_ </span>=&gt; {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(CalError::new(
+                        <span class="macro">format!</span>(<span class="string">&quot;Expected function, found {:?}&quot;</span>, token.value),
+                        token.range,
                     ))
                 }
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">Module::new</span>(<span class="string">&quot;main&quot;</span>, <span class="ident">functions</span>))
+        <span class="prelude-val">Ok</span>(Module::new(<span class="string">&quot;main&quot;</span>, functions))
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">tokens</span>: <span class="ident">Tokens</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Module</span>, <span class="ident">CalError</span><span class="op">&gt;</span> {
-    <span class="ident">Parser::new</span>(<span class="ident">tokens</span>).<span class="ident">parse_module</span>()
+<span class="kw">pub fn </span>parse(tokens: Tokens) -&gt; <span class="prelude-ty">Result</span>&lt;Module, CalError&gt; {
+    Parser::new(tokens).parse_module()
 }
 
-<span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">Module</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">CalError</span>;
+<span class="kw">impl </span>FromStr <span class="kw">for </span>Module {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= CalError;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span><span class="op">&gt;</span> {
-        <span class="ident">parse</span>(<span class="ident">s</span>.<span class="ident">tokenize</span>()<span class="question-mark">?</span>)
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        parse(s.tokenize()<span class="question-mark">?</span>)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/asm/instruction.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>instruction.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/asm/instruction.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>instruction.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../acs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -324,329 +324,329 @@
 <span id="322">322</span>
 <span id="323">323</span>
 <span id="324">324</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">ops::BitOrAssign</span>, <span class="ident">str::FromStr</span>};
+</span><span class="kw">use </span>std::{ops::BitOrAssign, str::FromStr};
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">vm::instruction::VmInstruction</span>, <span class="ident">VmTranslator</span>};
+<span class="kw">use crate</span>::{vm::instruction::VmInstruction, VmTranslator};
 
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">u16</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">AsmInstruction</span> {
-    <span class="doccomment">/// A-instructions start with `0`</span>
-    <span class="doccomment">/// - symbolic: `@n` where `n` is value in range `[0, 32767]`</span>
-    <span class="ident">A</span>(<span class="ident">u16</span>),
-    <span class="doccomment">/// C-instructions start with `111`</span>
-    <span class="doccomment">/// - symbolic: `dest = comp; jump`</span>
-    <span class="doccomment">///   - `comp` is mandatory</span>
-    <span class="doccomment">///   - `dest` can be empty and `=` is omitted</span>
-    <span class="doccomment">///   - `jump` can be empty and `;` is omitted</span>
-    <span class="ident">C</span>(<span class="ident">Dest</span>, <span class="ident">Comp</span>, <span class="ident">Jump</span>),
-    <span class="ident">Label</span>(<span class="ident">String</span>),
-    <span class="ident">Symbol</span>(<span class="ident">String</span>),
+<span class="attribute">#[repr(u16)]
+#[derive(Clone, Hash, Eq, PartialEq, Debug)]
+</span><span class="kw">pub enum </span>AsmInstruction {
+    <span class="doccomment">/// A-instructions start with `0`
+    /// - symbolic: `@n` where `n` is value in range `[0, 32767]`
+    </span>A(u16),
+    <span class="doccomment">/// C-instructions start with `111`
+    /// - symbolic: `dest = comp; jump`
+    ///   - `comp` is mandatory
+    ///   - `dest` can be empty and `=` is omitted
+    ///   - `jump` can be empty and `;` is omitted
+    </span>C(Dest, Comp, Jump),
+    Label(String),
+    Symbol(String),
 }
 
-<span class="kw">impl</span> <span class="ident">AsmInstruction</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">code</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> {
-        <span class="ident">VmTranslator::default</span>().<span class="ident">translate</span>(<span class="ident">VmInstruction::parse</span>(<span class="ident">code</span>))
+<span class="kw">impl </span>AsmInstruction {
+    <span class="kw">pub fn </span>parse(code: <span class="kw-2">&amp;</span>str) -&gt; Vec&lt;AsmInstruction&gt; {
+        VmTranslator::default().translate(VmInstruction::parse(code))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::A</span>(<span class="number">0</span>)
+<span class="kw">impl </span>Default <span class="kw">for </span>AsmInstruction {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::A(<span class="number">0</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">AsmInstruction</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">u16</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">inst</span>: <span class="kw-2">&amp;</span><span class="ident">AsmInstruction</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">match</span> <span class="ident">inst</span> {
-            <span class="ident">AsmInstruction::A</span>(<span class="ident">value</span>) =&gt; <span class="ident">value</span> <span class="op">&amp;</span> <span class="number">0b0111_1111_1111_1111</span>,
-            <span class="ident">AsmInstruction::C</span>(<span class="ident">dest</span>, <span class="ident">comp</span>, <span class="ident">jump</span>) =&gt; {
-                <span class="number">0b1110_0000_0000_0000</span> <span class="op">|</span> <span class="kw-2">*</span><span class="ident">dest</span> <span class="kw">as</span> <span class="ident">u16</span> <span class="op">|</span> <span class="kw-2">*</span><span class="ident">comp</span> <span class="kw">as</span> <span class="ident">u16</span> <span class="op">|</span> <span class="kw-2">*</span><span class="ident">jump</span> <span class="kw">as</span> <span class="ident">u16</span>
+<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>AsmInstruction&gt; <span class="kw">for </span>u16 {
+    <span class="kw">fn </span>from(inst: <span class="kw-2">&amp;</span>AsmInstruction) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span>inst {
+            AsmInstruction::A(value) =&gt; value &amp; <span class="number">0b0111_1111_1111_1111</span>,
+            AsmInstruction::C(dest, comp, jump) =&gt; {
+                <span class="number">0b1110_0000_0000_0000 </span>| <span class="kw-2">*</span>dest <span class="kw">as </span>u16 | <span class="kw-2">*</span>comp <span class="kw">as </span>u16 | <span class="kw-2">*</span>jump <span class="kw">as </span>u16
             }
-            <span class="ident">AsmInstruction::Label</span>(<span class="ident">label</span>) =&gt; {
-                <span class="macro">panic!</span>(<span class="string">&quot;Can not convert label to machine instruction: {}&quot;</span>, <span class="ident">label</span>)
+            AsmInstruction::Label(label) =&gt; {
+                <span class="macro">panic!</span>(<span class="string">&quot;Can not convert label to machine instruction: {}&quot;</span>, label)
             }
-            <span class="ident">AsmInstruction::Symbol</span>(<span class="ident">symbol</span>) =&gt; {
-                <span class="macro">panic!</span>(<span class="string">&quot;Can not convert symbol to machine instruction: {}&quot;</span>, <span class="ident">symbol</span>)
+            AsmInstruction::Symbol(symbol) =&gt; {
+                <span class="macro">panic!</span>(<span class="string">&quot;Can not convert symbol to machine instruction: {}&quot;</span>, symbol)
             }
         }
     }
 }
 
-<span class="doccomment">/// Where to store `Comp`.</span>
-<span class="doccomment">/// Format is this: `**** **** **dd d***`</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">u16</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Dest</span> {
-    <span class="doccomment">/// Value is not stored</span>
-    <span class="ident">Null</span> <span class="op">=</span> <span class="number">0</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>,
-    <span class="doccomment">/// `RAM[A]`</span>
-    <span class="ident">M</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>,
-    <span class="doccomment">/// D register</span>
-    <span class="ident">D</span> <span class="op">=</span> <span class="number">2</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>,
-    <span class="doccomment">/// D register and `RAM[A]`</span>
-    <span class="ident">DM</span> <span class="op">=</span> <span class="number">3</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>,
-    <span class="doccomment">/// A register</span>
-    <span class="ident">A</span> <span class="op">=</span> <span class="number">4</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>,
-    <span class="doccomment">/// A register and `RAM[A]`</span>
-    <span class="ident">AM</span> <span class="op">=</span> <span class="number">5</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>,
-    <span class="doccomment">/// A and D register</span>
-    <span class="ident">AD</span> <span class="op">=</span> <span class="number">6</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>,
-    <span class="doccomment">/// A and D register and `RAM[A]`</span>
-    <span class="ident">AMD</span> <span class="op">=</span> <span class="number">7</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>,
+<span class="doccomment">/// Where to store `Comp`.
+/// Format is this: `**** **** **dd d***`
+</span><span class="attribute">#[repr(u16)]
+#[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
+</span><span class="kw">pub enum </span>Dest {
+    <span class="doccomment">/// Value is not stored
+    </span>Null = <span class="number">0 </span>&lt;&lt; <span class="number">3</span>,
+    <span class="doccomment">/// `RAM[A]`
+    </span>M = <span class="number">1 </span>&lt;&lt; <span class="number">3</span>,
+    <span class="doccomment">/// D register
+    </span>D = <span class="number">2 </span>&lt;&lt; <span class="number">3</span>,
+    <span class="doccomment">/// D register and `RAM[A]`
+    </span>DM = <span class="number">3 </span>&lt;&lt; <span class="number">3</span>,
+    <span class="doccomment">/// A register
+    </span>A = <span class="number">4 </span>&lt;&lt; <span class="number">3</span>,
+    <span class="doccomment">/// A register and `RAM[A]`
+    </span>AM = <span class="number">5 </span>&lt;&lt; <span class="number">3</span>,
+    <span class="doccomment">/// A and D register
+    </span>AD = <span class="number">6 </span>&lt;&lt; <span class="number">3</span>,
+    <span class="doccomment">/// A and D register and `RAM[A]`
+    </span>AMD = <span class="number">7 </span>&lt;&lt; <span class="number">3</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Dest</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">u16</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">dest</span>: <span class="ident">Dest</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">dest</span>) }
+<span class="kw">impl </span>From&lt;Dest&gt; <span class="kw">for </span>u16 {
+    <span class="kw">fn </span>from(dest: Dest) -&gt; <span class="self">Self </span>{
+        <span class="kw">unsafe </span>{ std::mem::transmute(dest) }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Dest</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">n</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">n</span> <span class="op">&amp;</span> <span class="number">0b0000_0000_0011_1000</span>) }
+<span class="kw">impl </span>From&lt;u16&gt; <span class="kw">for </span>Dest {
+    <span class="kw">fn </span>from(n: u16) -&gt; <span class="self">Self </span>{
+        <span class="kw">unsafe </span>{ std::mem::transmute(n &amp; <span class="number">0b0000_0000_0011_1000</span>) }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">BitOrAssign</span> <span class="kw">for</span> <span class="ident">Dest</span> {
-    <span class="kw">fn</span> <span class="ident">bitor_assign</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="self">Self</span>) {
-        <span class="kw-2">*</span><span class="self">self</span> <span class="op">=</span> <span class="ident">Dest::from</span>(<span class="ident">u16::from</span>(<span class="kw-2">*</span><span class="self">self</span>) <span class="op">|</span> <span class="ident">u16::from</span>(<span class="ident">rhs</span>));
+<span class="kw">impl </span>BitOrAssign <span class="kw">for </span>Dest {
+    <span class="kw">fn </span>bitor_assign(<span class="kw-2">&amp;mut </span><span class="self">self</span>, rhs: <span class="self">Self</span>) {
+        <span class="kw-2">*</span><span class="self">self </span>= Dest::from(u16::from(<span class="kw-2">*</span><span class="self">self</span>) | u16::from(rhs));
     }
 }
 
-<span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">Dest</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">String</span>;
+<span class="kw">impl </span>FromStr <span class="kw">for </span>Dest {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= String;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dest</span> <span class="op">=</span> <span class="ident">Dest::Null</span>;
-        <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">contains</span>(<span class="string">&#39;M&#39;</span>) {
-            <span class="ident">dest</span> <span class="op">|</span><span class="op">=</span> <span class="ident">Dest::M</span>;
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>dest = Dest::Null;
+        <span class="kw">if </span>s.contains(<span class="string">&#39;M&#39;</span>) {
+            dest |= Dest::M;
         }
-        <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">contains</span>(<span class="string">&#39;D&#39;</span>) {
-            <span class="ident">dest</span> <span class="op">|</span><span class="op">=</span> <span class="ident">Dest::D</span>;
+        <span class="kw">if </span>s.contains(<span class="string">&#39;D&#39;</span>) {
+            dest |= Dest::D;
         }
-        <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">contains</span>(<span class="string">&#39;A&#39;</span>) {
-            <span class="ident">dest</span> <span class="op">|</span><span class="op">=</span> <span class="ident">Dest::A</span>;
+        <span class="kw">if </span>s.contains(<span class="string">&#39;A&#39;</span>) {
+            dest |= Dest::A;
         }
-        <span class="prelude-val">Ok</span>(<span class="ident">dest</span>)
+        <span class="prelude-val">Ok</span>(dest)
     }
 }
 
-<span class="doccomment">/// Comp part of a C-instruction.</span>
-<span class="doccomment">/// Format is this: `***a cccc cc** ****`</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">u16</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Comp</span> {
-    <span class="ident">Zero</span> <span class="op">=</span> <span class="number">0b0_1010_10</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">One</span> <span class="op">=</span> <span class="number">0b0_1111_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">MinusOne</span> <span class="op">=</span> <span class="number">0b0_1110_10</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">D</span> <span class="op">=</span> <span class="number">0b0_0011_00</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">A</span> <span class="op">=</span> <span class="number">0b0_1100_00</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">M</span> <span class="op">=</span> <span class="number">0b1_1100_00</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">NotD</span> <span class="op">=</span> <span class="number">0b0_0011_01</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">NotA</span> <span class="op">=</span> <span class="number">0b0_1100_01</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">NotM</span> <span class="op">=</span> <span class="number">0b1_1100_01</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">MinusD</span> <span class="op">=</span> <span class="number">0b0_0011_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">MinusA</span> <span class="op">=</span> <span class="number">0b0_1100_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">MinusM</span> <span class="op">=</span> <span class="number">0b1_1100_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">DPlusOne</span> <span class="op">=</span> <span class="number">0b0_0111_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">APlusOne</span> <span class="op">=</span> <span class="number">0b0_1101_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">MPlusOne</span> <span class="op">=</span> <span class="number">0b1_1101_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">DMinusOne</span> <span class="op">=</span> <span class="number">0b0_0011_10</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">AMinusOne</span> <span class="op">=</span> <span class="number">0b0_1100_10</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">MMinusOne</span> <span class="op">=</span> <span class="number">0b1_1100_10</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">DPlusA</span> <span class="op">=</span> <span class="number">0b0_0000_10</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">DPlusM</span> <span class="op">=</span> <span class="number">0b1_0000_10</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">DMinusA</span> <span class="op">=</span> <span class="number">0b0_0100_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">DMinusM</span> <span class="op">=</span> <span class="number">0b1_0100_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">AMinusD</span> <span class="op">=</span> <span class="number">0b0_0001_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">MMinusD</span> <span class="op">=</span> <span class="number">0b1_0001_11</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">DAndA</span> <span class="op">=</span> <span class="number">0b0_0000_00</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">DAndM</span> <span class="op">=</span> <span class="number">0b1_0000_00</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">DOrA</span> <span class="op">=</span> <span class="number">0b0_0101_01</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
-    <span class="ident">DOrM</span> <span class="op">=</span> <span class="number">0b1_0101_01</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>,
+<span class="doccomment">/// Comp part of a C-instruction.
+/// Format is this: `***a cccc cc** ****`
+</span><span class="attribute">#[repr(u16)]
+#[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
+</span><span class="kw">pub enum </span>Comp {
+    Zero = <span class="number">0b0_1010_10 </span>&lt;&lt; <span class="number">6</span>,
+    One = <span class="number">0b0_1111_11 </span>&lt;&lt; <span class="number">6</span>,
+    MinusOne = <span class="number">0b0_1110_10 </span>&lt;&lt; <span class="number">6</span>,
+    D = <span class="number">0b0_0011_00 </span>&lt;&lt; <span class="number">6</span>,
+    A = <span class="number">0b0_1100_00 </span>&lt;&lt; <span class="number">6</span>,
+    M = <span class="number">0b1_1100_00 </span>&lt;&lt; <span class="number">6</span>,
+    NotD = <span class="number">0b0_0011_01 </span>&lt;&lt; <span class="number">6</span>,
+    NotA = <span class="number">0b0_1100_01 </span>&lt;&lt; <span class="number">6</span>,
+    NotM = <span class="number">0b1_1100_01 </span>&lt;&lt; <span class="number">6</span>,
+    MinusD = <span class="number">0b0_0011_11 </span>&lt;&lt; <span class="number">6</span>,
+    MinusA = <span class="number">0b0_1100_11 </span>&lt;&lt; <span class="number">6</span>,
+    MinusM = <span class="number">0b1_1100_11 </span>&lt;&lt; <span class="number">6</span>,
+    DPlusOne = <span class="number">0b0_0111_11 </span>&lt;&lt; <span class="number">6</span>,
+    APlusOne = <span class="number">0b0_1101_11 </span>&lt;&lt; <span class="number">6</span>,
+    MPlusOne = <span class="number">0b1_1101_11 </span>&lt;&lt; <span class="number">6</span>,
+    DMinusOne = <span class="number">0b0_0011_10 </span>&lt;&lt; <span class="number">6</span>,
+    AMinusOne = <span class="number">0b0_1100_10 </span>&lt;&lt; <span class="number">6</span>,
+    MMinusOne = <span class="number">0b1_1100_10 </span>&lt;&lt; <span class="number">6</span>,
+    DPlusA = <span class="number">0b0_0000_10 </span>&lt;&lt; <span class="number">6</span>,
+    DPlusM = <span class="number">0b1_0000_10 </span>&lt;&lt; <span class="number">6</span>,
+    DMinusA = <span class="number">0b0_0100_11 </span>&lt;&lt; <span class="number">6</span>,
+    DMinusM = <span class="number">0b1_0100_11 </span>&lt;&lt; <span class="number">6</span>,
+    AMinusD = <span class="number">0b0_0001_11 </span>&lt;&lt; <span class="number">6</span>,
+    MMinusD = <span class="number">0b1_0001_11 </span>&lt;&lt; <span class="number">6</span>,
+    DAndA = <span class="number">0b0_0000_00 </span>&lt;&lt; <span class="number">6</span>,
+    DAndM = <span class="number">0b1_0000_00 </span>&lt;&lt; <span class="number">6</span>,
+    DOrA = <span class="number">0b0_0101_01 </span>&lt;&lt; <span class="number">6</span>,
+    DOrM = <span class="number">0b1_0101_01 </span>&lt;&lt; <span class="number">6</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Comp</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">n</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">n</span> <span class="op">&amp;</span> <span class="number">0b0001_1111_1100_0000</span>) }
+<span class="kw">impl </span>From&lt;u16&gt; <span class="kw">for </span>Comp {
+    <span class="kw">fn </span>from(n: u16) -&gt; <span class="self">Self </span>{
+        <span class="kw">unsafe </span>{ std::mem::transmute(n &amp; <span class="number">0b0001_1111_1100_0000</span>) }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">Comp</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">String</span>;
+<span class="kw">impl </span>FromStr <span class="kw">for </span>Comp {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= String;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">s</span> {
-            <span class="string">&quot;0&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::Zero</span>),
-            <span class="string">&quot;1&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::One</span>),
-            <span class="string">&quot;-1&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::MinusOne</span>),
-            <span class="string">&quot;D&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::D</span>),
-            <span class="string">&quot;A&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::A</span>),
-            <span class="string">&quot;M&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::M</span>),
-            <span class="string">&quot;!D&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::NotD</span>),
-            <span class="string">&quot;!A&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::NotA</span>),
-            <span class="string">&quot;!M&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::NotM</span>),
-            <span class="string">&quot;-D&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::MinusD</span>),
-            <span class="string">&quot;-A&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::MinusA</span>),
-            <span class="string">&quot;-M&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::MinusM</span>),
-            <span class="string">&quot;D+1&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::DPlusOne</span>),
-            <span class="string">&quot;A+1&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::APlusOne</span>),
-            <span class="string">&quot;M+1&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::MPlusOne</span>),
-            <span class="string">&quot;D-1&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::DMinusOne</span>),
-            <span class="string">&quot;A-1&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::AMinusOne</span>),
-            <span class="string">&quot;M-1&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::MMinusOne</span>),
-            <span class="string">&quot;D+A&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::DPlusA</span>),
-            <span class="string">&quot;D+M&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::DPlusM</span>),
-            <span class="string">&quot;D-A&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::DMinusA</span>),
-            <span class="string">&quot;D-M&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::DMinusM</span>),
-            <span class="string">&quot;A-D&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::AMinusD</span>),
-            <span class="string">&quot;M-D&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::MMinusD</span>),
-            <span class="string">&quot;D&amp;A&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::DAndA</span>),
-            <span class="string">&quot;D&amp;M&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::DAndM</span>),
-            <span class="string">&quot;D|A&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::DOrA</span>),
-            <span class="string">&quot;D|M&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Comp::DOrM</span>),
-            <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid comp string `{}`&quot;</span>, <span class="ident">s</span>)),
-        }
-    }
-}
-
-<span class="doccomment">/// Jump part of a C-instruction.</span>
-<span class="doccomment">/// Format is: `**** **** **** *jjj`</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Jump</span> {
-    <span class="doccomment">/// No jump</span>
-    <span class="ident">No</span> <span class="op">=</span> <span class="number">0</span>,
-    <span class="doccomment">/// Jump if `comp &gt; 0`</span>
-    <span class="ident">Gt</span> <span class="op">=</span> <span class="number">1</span>,
-    <span class="doccomment">/// Jump if `comp == 0`</span>
-    <span class="ident">Eq</span> <span class="op">=</span> <span class="number">2</span>,
-    <span class="doccomment">/// Jump if `comp &gt;= 0`</span>
-    <span class="ident">Ge</span> <span class="op">=</span> <span class="number">3</span>,
-    <span class="doccomment">/// Jump if `comp &lt; 0`</span>
-    <span class="ident">Lt</span> <span class="op">=</span> <span class="number">4</span>,
-    <span class="doccomment">/// Jump if `comp != 0`</span>
-    <span class="ident">Ne</span> <span class="op">=</span> <span class="number">5</span>,
-    <span class="doccomment">/// Jump if `comp &lt;= 0`</span>
-    <span class="ident">Le</span> <span class="op">=</span> <span class="number">6</span>,
-    <span class="doccomment">/// Unconditional jump</span>
-    <span class="ident">Jump</span> <span class="op">=</span> <span class="number">7</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Jump</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">n</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">n</span> <span class="kw">as</span> <span class="ident">u8</span> <span class="op">&amp;</span> <span class="number">0b0000_0111</span>) }
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">Jump</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">String</span>;
-
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">s</span> {
-            <span class="string">&quot;&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::No</span>),
-            <span class="string">&quot;JGT&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Gt</span>),
-            <span class="string">&quot;JEQ&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Eq</span>),
-            <span class="string">&quot;JGE&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Ge</span>),
-            <span class="string">&quot;JLT&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Lt</span>),
-            <span class="string">&quot;JNE&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Ne</span>),
-            <span class="string">&quot;JLE&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Le</span>),
-            <span class="string">&quot;JMP&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Jump::Jump</span>),
-            <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid jump string: `{}`&quot;</span>, <span class="ident">s</span>)),
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        <span class="kw">match </span>s {
+            <span class="string">&quot;0&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::Zero),
+            <span class="string">&quot;1&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::One),
+            <span class="string">&quot;-1&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::MinusOne),
+            <span class="string">&quot;D&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::D),
+            <span class="string">&quot;A&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::A),
+            <span class="string">&quot;M&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::M),
+            <span class="string">&quot;!D&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::NotD),
+            <span class="string">&quot;!A&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::NotA),
+            <span class="string">&quot;!M&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::NotM),
+            <span class="string">&quot;-D&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::MinusD),
+            <span class="string">&quot;-A&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::MinusA),
+            <span class="string">&quot;-M&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::MinusM),
+            <span class="string">&quot;D+1&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::DPlusOne),
+            <span class="string">&quot;A+1&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::APlusOne),
+            <span class="string">&quot;M+1&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::MPlusOne),
+            <span class="string">&quot;D-1&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::DMinusOne),
+            <span class="string">&quot;A-1&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::AMinusOne),
+            <span class="string">&quot;M-1&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::MMinusOne),
+            <span class="string">&quot;D+A&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::DPlusA),
+            <span class="string">&quot;D+M&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::DPlusM),
+            <span class="string">&quot;D-A&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::DMinusA),
+            <span class="string">&quot;D-M&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::DMinusM),
+            <span class="string">&quot;A-D&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::AMinusD),
+            <span class="string">&quot;M-D&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::MMinusD),
+            <span class="string">&quot;D&amp;A&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::DAndA),
+            <span class="string">&quot;D&amp;M&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::DAndM),
+            <span class="string">&quot;D|A&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::DOrA),
+            <span class="string">&quot;D|M&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Comp::DOrM),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid comp string `{}`&quot;</span>, s)),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">i</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
-        <span class="comment">// last bit is not set</span>
-        <span class="kw">let</span> <span class="ident">is_a_instruction</span> <span class="op">=</span> (<span class="op">!</span><span class="ident">i</span> <span class="op">&amp;</span> <span class="number">0b1000_0000_0000_0000</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>;
+<span class="doccomment">/// Jump part of a C-instruction.
+/// Format is: `**** **** **** *jjj`
+</span><span class="attribute">#[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
+</span><span class="kw">pub enum </span>Jump {
+    <span class="doccomment">/// No jump
+    </span>No = <span class="number">0</span>,
+    <span class="doccomment">/// Jump if `comp &gt; 0`
+    </span>Gt = <span class="number">1</span>,
+    <span class="doccomment">/// Jump if `comp == 0`
+    </span>Eq = <span class="number">2</span>,
+    <span class="doccomment">/// Jump if `comp &gt;= 0`
+    </span>Ge = <span class="number">3</span>,
+    <span class="doccomment">/// Jump if `comp &lt; 0`
+    </span>Lt = <span class="number">4</span>,
+    <span class="doccomment">/// Jump if `comp != 0`
+    </span>Ne = <span class="number">5</span>,
+    <span class="doccomment">/// Jump if `comp &lt;= 0`
+    </span>Le = <span class="number">6</span>,
+    <span class="doccomment">/// Unconditional jump
+    </span>Jump = <span class="number">7</span>,
+}
 
-        <span class="comment">// last 3 bits are set</span>
-        <span class="kw">let</span> <span class="ident">is_c_instruction</span> <span class="op">=</span> (<span class="ident">i</span> <span class="op">&amp;</span> <span class="number">0b10_0000_0000_0000</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>)
-            <span class="op">&amp;&amp;</span> (<span class="ident">i</span> <span class="op">&amp;</span> <span class="number">0b100_0000_0000_0000</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>)
-            <span class="op">&amp;&amp;</span> (<span class="ident">i</span> <span class="op">&amp;</span> <span class="number">0b1000_0000_0000_0000</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>);
+<span class="kw">impl </span>From&lt;u16&gt; <span class="kw">for </span>Jump {
+    <span class="kw">fn </span>from(n: u16) -&gt; <span class="self">Self </span>{
+        <span class="kw">unsafe </span>{ std::mem::transmute(n <span class="kw">as </span>u8 &amp; <span class="number">0b0000_0111</span>) }
+    }
+}
 
-        <span class="kw">if</span> <span class="ident">is_a_instruction</span> {
-            <span class="ident"><span class="self">Self</span>::A</span>(<span class="ident">i</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">is_c_instruction</span> {
-            <span class="ident"><span class="self">Self</span>::C</span>(<span class="ident">i</span>.<span class="ident">into</span>(), <span class="ident">i</span>.<span class="ident">into</span>(), <span class="ident">i</span>.<span class="ident">into</span>())
-        } <span class="kw">else</span> {
-            <span class="macro">panic!</span>(<span class="string">&quot;Failed to convert {:b} to asm instruction&quot;</span>, <span class="ident">i</span>);
+<span class="kw">impl </span>FromStr <span class="kw">for </span>Jump {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= String;
+
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        <span class="kw">match </span>s {
+            <span class="string">&quot;&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Jump::No),
+            <span class="string">&quot;JGT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Jump::Gt),
+            <span class="string">&quot;JEQ&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Jump::Eq),
+            <span class="string">&quot;JGE&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Jump::Ge),
+            <span class="string">&quot;JLT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Jump::Lt),
+            <span class="string">&quot;JNE&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Jump::Ne),
+            <span class="string">&quot;JLE&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Jump::Le),
+            <span class="string">&quot;JMP&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Jump::Jump),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid jump string: `{}`&quot;</span>, s)),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">i</span>: <span class="ident">i16</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::from</span>(<span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>::<span class="op">&lt;</span><span class="ident">i16</span>, <span class="ident">u16</span><span class="op">&gt;</span>(<span class="ident">i</span>) })
+<span class="kw">impl </span>From&lt;u16&gt; <span class="kw">for </span>AsmInstruction {
+    <span class="kw">fn </span>from(i: u16) -&gt; <span class="self">Self </span>{
+        <span class="comment">// last bit is not set
+        </span><span class="kw">let </span>is_a_instruction = (!i &amp; <span class="number">0b1000_0000_0000_0000</span>) != <span class="number">0</span>;
+
+        <span class="comment">// last 3 bits are set
+        </span><span class="kw">let </span>is_c_instruction = (i &amp; <span class="number">0b10_0000_0000_0000 </span>!= <span class="number">0</span>)
+            &amp;&amp; (i &amp; <span class="number">0b100_0000_0000_0000 </span>!= <span class="number">0</span>)
+            &amp;&amp; (i &amp; <span class="number">0b1000_0000_0000_0000 </span>!= <span class="number">0</span>);
+
+        <span class="kw">if </span>is_a_instruction {
+            <span class="self">Self</span>::A(i)
+        } <span class="kw">else if </span>is_c_instruction {
+            <span class="self">Self</span>::C(i.into(), i.into(), i.into())
+        } <span class="kw">else </span>{
+            <span class="macro">panic!</span>(<span class="string">&quot;Failed to convert {:b} to asm instruction&quot;</span>, i);
+        }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">i</span>: <span class="ident">i32</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">words</span>: [<span class="ident">u16</span>; <span class="number">2</span>] <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">i</span>) };
-        <span class="ident"><span class="self">Self</span>::from</span>(<span class="ident">words</span>[<span class="number">1</span>])
+<span class="kw">impl </span>From&lt;i16&gt; <span class="kw">for </span>AsmInstruction {
+    <span class="kw">fn </span>from(i: i16) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::from(<span class="kw">unsafe </span>{ std::mem::transmute::&lt;i16, u16&gt;(i) })
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::fmt::Binary</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">std::fmt::Result</span> {
-        <span class="ident">std::fmt::Binary::fmt</span>(<span class="kw-2">&amp;</span><span class="ident">u16::from</span>(<span class="self">self</span>), <span class="ident">f</span>)
+<span class="kw">impl </span>From&lt;i32&gt; <span class="kw">for </span>AsmInstruction {
+    <span class="kw">fn </span>from(i: i32) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>words: [u16; <span class="number">2</span>] = <span class="kw">unsafe </span>{ std::mem::transmute(i) };
+        <span class="self">Self</span>::from(words[<span class="number">1</span>])
     }
 }
 
-<span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">AsmInstruction</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">String</span>;
+<span class="kw">impl </span>std::fmt::Binary <span class="kw">for </span>AsmInstruction {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        std::fmt::Binary::fmt(<span class="kw-2">&amp;</span>u16::from(<span class="self">self</span>), f)
+    }
+}
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">symbol_with_suffix</span>) <span class="op">=</span> <span class="ident">line</span>.<span class="ident">strip_prefix</span>(<span class="string">&#39;(&#39;</span>) {
-            <span class="comment">// Label</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">symbol</span>) <span class="op">=</span> <span class="ident">symbol_with_suffix</span>.<span class="ident">strip_suffix</span>(<span class="string">&#39;)&#39;</span>) {
-                <span class="prelude-val">Ok</span>(<span class="ident">AsmInstruction::Label</span>(<span class="ident">symbol</span>.<span class="ident">into</span>()))
-            } <span class="kw">else</span> {
-                <span class="prelude-val">Err</span>(<span class="string">&quot;Missing `)` for label&quot;</span>.<span class="ident">into</span>())
+<span class="kw">impl </span>FromStr <span class="kw">for </span>AsmInstruction {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= String;
+
+    <span class="kw">fn </span>from_str(line: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(symbol_with_suffix) = line.strip_prefix(<span class="string">&#39;(&#39;</span>) {
+            <span class="comment">// Label
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(symbol) = symbol_with_suffix.strip_suffix(<span class="string">&#39;)&#39;</span>) {
+                <span class="prelude-val">Ok</span>(AsmInstruction::Label(symbol.into()))
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(<span class="string">&quot;Missing `)` for label&quot;</span>.into())
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">literal_str</span>) <span class="op">=</span> <span class="ident">line</span>.<span class="ident">strip_prefix</span>(<span class="string">&#39;@&#39;</span>) {
-            <span class="comment">// A instruction</span>
-            <span class="comment">// Check whether there is a number to the right of the @</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">literal</span>) <span class="op">=</span> <span class="ident">literal_str</span>.<span class="ident">parse</span>() {
-                <span class="prelude-val">Ok</span>(<span class="ident">AsmInstruction::A</span>(<span class="ident">literal</span>))
-            } <span class="kw">else</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">AsmInstruction::Symbol</span>(<span class="ident">literal_str</span>.<span class="ident">into</span>()))
+        } <span class="kw">else if let </span><span class="prelude-val">Some</span>(literal_str) = line.strip_prefix(<span class="string">&#39;@&#39;</span>) {
+            <span class="comment">// A instruction
+            // Check whether there is a number to the right of the @
+            </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(literal) = literal_str.parse() {
+                <span class="prelude-val">Ok</span>(AsmInstruction::A(literal))
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Ok</span>(AsmInstruction::Symbol(literal_str.into()))
             }
-        } <span class="kw">else</span> {
-            <span class="comment">// C instruction: dest = comp ; jump</span>
-            <span class="kw">let</span> (<span class="ident">equal_index</span>, <span class="ident">comp_start</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">index</span>) <span class="op">=</span> <span class="ident">line</span>.<span class="ident">find</span>(<span class="string">&#39;=&#39;</span>) {
-                (<span class="ident">index</span>, <span class="ident">index</span> <span class="op">+</span> <span class="number">1</span>)
-            } <span class="kw">else</span> {
+        } <span class="kw">else </span>{
+            <span class="comment">// C instruction: dest = comp ; jump
+            </span><span class="kw">let </span>(equal_index, comp_start) = <span class="kw">if let </span><span class="prelude-val">Some</span>(index) = line.find(<span class="string">&#39;=&#39;</span>) {
+                (index, index + <span class="number">1</span>)
+            } <span class="kw">else </span>{
                 (<span class="number">0</span>, <span class="number">0</span>)
             };
-            <span class="kw">let</span> (<span class="ident">semicolon_index</span>, <span class="ident">jump_start</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">index</span>) <span class="op">=</span> <span class="ident">line</span>.<span class="ident">find</span>(<span class="string">&#39;;&#39;</span>) {
-                (<span class="ident">index</span>, <span class="ident">index</span> <span class="op">+</span> <span class="number">1</span>)
-            } <span class="kw">else</span> {
-                (<span class="ident">line</span>.<span class="ident">len</span>(), <span class="ident">line</span>.<span class="ident">len</span>())
+            <span class="kw">let </span>(semicolon_index, jump_start) = <span class="kw">if let </span><span class="prelude-val">Some</span>(index) = line.find(<span class="string">&#39;;&#39;</span>) {
+                (index, index + <span class="number">1</span>)
+            } <span class="kw">else </span>{
+                (line.len(), line.len())
             };
 
-            <span class="comment">// Dest is optional, in that case = is omitted</span>
-            <span class="kw">let</span> <span class="ident">dest_str</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">line</span>[<span class="number">0</span>..<span class="ident">equal_index</span>];
-            <span class="kw">let</span> <span class="ident">dest</span> <span class="op">=</span> <span class="ident">dest_str</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+            <span class="comment">// Dest is optional, in that case = is omitted
+            </span><span class="kw">let </span>dest_str = <span class="kw-2">&amp;</span>line[<span class="number">0</span>..equal_index];
+            <span class="kw">let </span>dest = dest_str.parse().unwrap();
 
-            <span class="comment">// Jump is optional, in that case ; is omitted</span>
-            <span class="kw">let</span> <span class="ident">jump_str</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">line</span>[<span class="ident">jump_start</span>..];
-            <span class="kw">let</span> <span class="ident">jump</span> <span class="op">=</span> <span class="ident">jump_str</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+            <span class="comment">// Jump is optional, in that case ; is omitted
+            </span><span class="kw">let </span>jump_str = <span class="kw-2">&amp;</span>line[jump_start..];
+            <span class="kw">let </span>jump = jump_str.parse().unwrap();
 
-            <span class="comment">// Comp is mandatory</span>
-            <span class="kw">let</span> <span class="ident">comp_str</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">line</span>[<span class="ident">comp_start</span>..<span class="ident">semicolon_index</span>];
-            <span class="kw">let</span> <span class="ident">comp</span>: <span class="ident">Comp</span> <span class="op">=</span> <span class="ident">comp_str</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+            <span class="comment">// Comp is mandatory
+            </span><span class="kw">let </span>comp_str = <span class="kw-2">&amp;</span>line[comp_start..semicolon_index];
+            <span class="kw">let </span>comp: Comp = comp_str.parse().unwrap();
 
-            <span class="prelude-val">Ok</span>(<span class="ident">AsmInstruction::C</span>(<span class="ident">dest</span>, <span class="ident">comp</span>, <span class="ident">jump</span>))
+            <span class="prelude-val">Ok</span>(AsmInstruction::C(dest, comp, jump))
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

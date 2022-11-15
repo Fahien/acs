@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/logic/demux4way.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>demux4way.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/logic/demux4way.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>demux4way.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../acs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -112,117 +112,117 @@
 <span id="110">110</span>
 <span id="111">111</span>
 <span id="112">112</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">And</span>, <span class="ident">Demux</span>, <span class="ident">Not</span>, <span class="ident">Signal</span>, <span class="ident">Signal2</span>, <span class="ident">Unit</span>};
+</span><span class="kw">use super</span>::{And, Demux, Not, Signal, Signal2, Unit};
 
-<span class="doccomment">/// 4-way demultiplexor</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Demux4Way</span> {
-    <span class="ident">inp</span>: <span class="ident">Signal</span>,
-    <span class="ident">sel</span>: <span class="ident">Signal2</span>,
-    <span class="ident">a</span>: <span class="ident">Signal</span>,
-    <span class="ident">b</span>: <span class="ident">Signal</span>,
-    <span class="ident">c</span>: <span class="ident">Signal</span>,
-    <span class="ident">d</span>: <span class="ident">Signal</span>,
+<span class="doccomment">/// 4-way demultiplexor
+</span><span class="attribute">#[derive(Default)]
+</span><span class="kw">pub struct </span>Demux4Way {
+    inp: Signal,
+    sel: Signal2,
+    a: Signal,
+    b: Signal,
+    c: Signal,
+    d: Signal,
 
-    <span class="ident">demux_a_b</span>: <span class="ident">Demux</span>,
-    <span class="ident">demux_c_d</span>: <span class="ident">Demux</span>,
+    demux_a_b: Demux,
+    demux_c_d: Demux,
 
-    <span class="ident">not_sel1</span>: <span class="ident">Not</span>,
-    <span class="ident">ands</span>: [<span class="ident">And</span>; <span class="number">4</span>],
+    not_sel1: Not,
+    ands: [And; <span class="number">4</span>],
 }
 
-<span class="kw">impl</span> <span class="ident">Demux4Way</span> {
-    <span class="doccomment">/// Carries out the simulation and returns</span>
-    <span class="doccomment">/// ```c</span>
-    <span class="doccomment">/// if sel == 0 { [inp,  0,  0,  0] }</span>
-    <span class="doccomment">/// if sel == 1 { [  0,inp,  0,  0] }</span>
-    <span class="doccomment">/// if sel == 2 { [  0,  0,inp,  0] }</span>
-    <span class="doccomment">/// if sel == 3 { [  0,  0,  0,inp] }</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sim</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">inp</span>: <span class="ident">Signal</span>, <span class="ident">sel</span>: <span class="ident">Signal2</span>) -&gt; [<span class="ident">Signal</span>; <span class="number">4</span>] {
-        <span class="self">self</span>.<span class="ident">inp</span> <span class="op">=</span> <span class="ident">inp</span>;
-        <span class="self">self</span>.<span class="ident">sel</span> <span class="op">=</span> <span class="ident">sel</span>;
-        <span class="self">self</span>.<span class="ident">eval</span>();
-        [<span class="self">self</span>.<span class="ident">a</span>, <span class="self">self</span>.<span class="ident">b</span>, <span class="self">self</span>.<span class="ident">c</span>, <span class="self">self</span>.<span class="ident">d</span>]
+<span class="kw">impl </span>Demux4Way {
+    <span class="doccomment">/// Carries out the simulation and returns
+    /// ```c
+    /// if sel == 0 { [inp,  0,  0,  0] }
+    /// if sel == 1 { [  0,inp,  0,  0] }
+    /// if sel == 2 { [  0,  0,inp,  0] }
+    /// if sel == 3 { [  0,  0,  0,inp] }
+    /// ```
+    </span><span class="kw">pub fn </span>sim(<span class="kw-2">&amp;mut </span><span class="self">self</span>, inp: Signal, sel: Signal2) -&gt; [Signal; <span class="number">4</span>] {
+        <span class="self">self</span>.inp = inp;
+        <span class="self">self</span>.sel = sel;
+        <span class="self">self</span>.eval();
+        [<span class="self">self</span>.a, <span class="self">self</span>.b, <span class="self">self</span>.c, <span class="self">self</span>.d]
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Unit</span> <span class="kw">for</span> <span class="ident">Demux4Way</span> {
-    <span class="kw">fn</span> <span class="ident">eval</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">let</span> <span class="ident">sel0</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">sel</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">into</span>();
-        (<span class="self">self</span>.<span class="ident">a</span>, <span class="self">self</span>.<span class="ident">b</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">demux_a_b</span>.<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">inp</span>, <span class="ident">sel0</span>);
-        (<span class="self">self</span>.<span class="ident">c</span>, <span class="self">self</span>.<span class="ident">d</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">demux_c_d</span>.<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">inp</span>, <span class="ident">sel0</span>);
+<span class="kw">impl </span>Unit <span class="kw">for </span>Demux4Way {
+    <span class="kw">fn </span>eval(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">let </span>sel0 = <span class="self">self</span>.sel.get(<span class="number">0</span>).into();
+        (<span class="self">self</span>.a, <span class="self">self</span>.b) = <span class="self">self</span>.demux_a_b.sim(<span class="self">self</span>.inp, sel0);
+        (<span class="self">self</span>.c, <span class="self">self</span>.d) = <span class="self">self</span>.demux_c_d.sim(<span class="self">self</span>.inp, sel0);
 
-        <span class="kw">let</span> <span class="ident">sel1</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">sel</span>.<span class="ident">get</span>(<span class="number">1</span>).<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">not_sel1_out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">not_sel1</span>.<span class="ident">sim</span>(<span class="ident">sel1</span>);
+        <span class="kw">let </span>sel1 = <span class="self">self</span>.sel.get(<span class="number">1</span>).into();
+        <span class="kw">let </span>not_sel1_out = <span class="self">self</span>.not_sel1.sim(sel1);
 
-        <span class="self">self</span>.<span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ands</span>[<span class="number">0</span>].<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">a</span>, <span class="ident">not_sel1_out</span>);
-        <span class="self">self</span>.<span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ands</span>[<span class="number">1</span>].<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">b</span>, <span class="ident">not_sel1_out</span>);
-        <span class="self">self</span>.<span class="ident">c</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ands</span>[<span class="number">2</span>].<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">c</span>, <span class="ident">sel1</span>);
-        <span class="self">self</span>.<span class="ident">d</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ands</span>[<span class="number">3</span>].<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">d</span>, <span class="ident">sel1</span>);
+        <span class="self">self</span>.a = <span class="self">self</span>.ands[<span class="number">0</span>].sim(<span class="self">self</span>.a, not_sel1_out);
+        <span class="self">self</span>.b = <span class="self">self</span>.ands[<span class="number">1</span>].sim(<span class="self">self</span>.b, not_sel1_out);
+        <span class="self">self</span>.c = <span class="self">self</span>.ands[<span class="number">2</span>].sim(<span class="self">self</span>.c, sel1);
+        <span class="self">self</span>.d = <span class="self">self</span>.ands[<span class="number">3</span>].sim(<span class="self">self</span>.d, sel1);
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">run</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">demux</span> <span class="op">=</span> <span class="ident">Demux4Way::default</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>run() {
+        <span class="kw">let </span><span class="kw-2">mut </span>demux = Demux4Way::default();
 
-        <span class="ident">demux</span>.<span class="ident">sim</span>(<span class="ident">Signal::LO</span>, <span class="ident">Signal2::new</span>(<span class="number">0</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">a</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">b</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">c</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">d</span>, <span class="ident">Signal::LO</span>);
+        demux.sim(Signal::LO, Signal2::new(<span class="number">0</span>));
+        <span class="macro">assert_eq!</span>(demux.a, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.b, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.c, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.d, Signal::LO);
 
-        <span class="ident">demux</span>.<span class="ident">sim</span>(<span class="ident">Signal::LO</span>, <span class="ident">Signal2::new</span>(<span class="number">1</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">a</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">b</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">c</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">d</span>, <span class="ident">Signal::LO</span>);
+        demux.sim(Signal::LO, Signal2::new(<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(demux.a, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.b, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.c, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.d, Signal::LO);
 
-        <span class="ident">demux</span>.<span class="ident">sim</span>(<span class="ident">Signal::LO</span>, <span class="ident">Signal2::new</span>(<span class="number">2</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">a</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">b</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">c</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">d</span>, <span class="ident">Signal::LO</span>);
+        demux.sim(Signal::LO, Signal2::new(<span class="number">2</span>));
+        <span class="macro">assert_eq!</span>(demux.a, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.b, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.c, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.d, Signal::LO);
 
-        <span class="ident">demux</span>.<span class="ident">sim</span>(<span class="ident">Signal::LO</span>, <span class="ident">Signal2::new</span>(<span class="number">3</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">a</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">b</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">c</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">d</span>, <span class="ident">Signal::LO</span>);
+        demux.sim(Signal::LO, Signal2::new(<span class="number">3</span>));
+        <span class="macro">assert_eq!</span>(demux.a, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.b, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.c, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.d, Signal::LO);
 
-        <span class="ident">demux</span>.<span class="ident">sim</span>(<span class="ident">Signal::HI</span>, <span class="ident">Signal2::new</span>(<span class="number">0</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">a</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">b</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">c</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">d</span>, <span class="ident">Signal::LO</span>);
+        demux.sim(Signal::HI, Signal2::new(<span class="number">0</span>));
+        <span class="macro">assert_eq!</span>(demux.a, Signal::HI);
+        <span class="macro">assert_eq!</span>(demux.b, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.c, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.d, Signal::LO);
 
-        <span class="ident">demux</span>.<span class="ident">sim</span>(<span class="ident">Signal::HI</span>, <span class="ident">Signal2::new</span>(<span class="number">1</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">a</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">b</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">c</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">d</span>, <span class="ident">Signal::LO</span>);
+        demux.sim(Signal::HI, Signal2::new(<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(demux.a, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.b, Signal::HI);
+        <span class="macro">assert_eq!</span>(demux.c, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.d, Signal::LO);
 
-        <span class="ident">demux</span>.<span class="ident">sim</span>(<span class="ident">Signal::HI</span>, <span class="ident">Signal2::new</span>(<span class="number">2</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">a</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">b</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">c</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">d</span>, <span class="ident">Signal::LO</span>);
+        demux.sim(Signal::HI, Signal2::new(<span class="number">2</span>));
+        <span class="macro">assert_eq!</span>(demux.a, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.b, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.c, Signal::HI);
+        <span class="macro">assert_eq!</span>(demux.d, Signal::LO);
 
-        <span class="ident">demux</span>.<span class="ident">sim</span>(<span class="ident">Signal::HI</span>, <span class="ident">Signal2::new</span>(<span class="number">3</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">a</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">b</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">c</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">demux</span>.<span class="ident">d</span>, <span class="ident">Signal::HI</span>);
+        demux.sim(Signal::HI, Signal2::new(<span class="number">3</span>));
+        <span class="macro">assert_eq!</span>(demux.a, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.b, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.c, Signal::LO);
+        <span class="macro">assert_eq!</span>(demux.d, Signal::HI);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

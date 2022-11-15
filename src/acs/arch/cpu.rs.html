@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/arch/cpu.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>cpu.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/arch/cpu.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>cpu.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../acs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -227,232 +227,232 @@
 <span id="225">225</span>
 <span id="226">226</span>
 <span id="227">227</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">mem::fast</span>::{<span class="ident">Counter</span>, <span class="ident">Register16</span>},
-    <span class="ident">Alu</span>, <span class="ident">And</span>, <span class="ident">Mux16</span>, <span class="ident">Not</span>, <span class="ident">Or</span>, <span class="ident">Signal</span>, <span class="ident">Signal15</span>, <span class="ident">Signal16</span>, <span class="ident">Time</span>, <span class="ident">Unit</span>,
+</span><span class="kw">use crate</span>::{
+    mem::fast::{Counter, Register16},
+    Alu, And, Mux16, Not, Or, Signal, Signal15, Signal16, Time, Unit,
 };
 
-<span class="doccomment">/// Central Processing Unit able to execute a given instruction and to determine</span>
-<span class="doccomment">/// which instruction should be fetched and executed next</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Cpu</span> {
-    <span class="ident">time</span>: <span class="ident">Time</span>,
+<span class="doccomment">/// Central Processing Unit able to execute a given instruction and to determine
+/// which instruction should be fetched and executed next
+</span><span class="attribute">#[derive(Default)]
+</span><span class="kw">pub struct </span>Cpu {
+    time: Time,
 
-    <span class="ident">in_m</span>: <span class="ident">Signal16</span>,
-    <span class="ident">instruction</span>: <span class="ident">Signal16</span>,
-    <span class="ident">reset</span>: <span class="ident">Signal</span>,
+    in_m: Signal16,
+    instruction: Signal16,
+    reset: Signal,
 
-    <span class="ident">out_m</span>: <span class="ident">Signal16</span>,
-    <span class="ident">write_m</span>: <span class="ident">Signal</span>,
-    <span class="ident">address_m</span>: <span class="ident">Signal15</span>,
-    <span class="ident">pc</span>: <span class="ident">Signal16</span>,
+    out_m: Signal16,
+    write_m: Signal,
+    address_m: Signal15,
+    pc: Signal16,
 
-    <span class="ident">a_register</span>: <span class="ident">Register16</span>,
-    <span class="ident">d_register</span>: <span class="ident">Register16</span>,
+    a_register: Register16,
+    d_register: Register16,
 
-    <span class="ident">actual_no</span>: <span class="ident">And</span>,
-    <span class="ident">actual_f</span>: <span class="ident">And</span>,
-    <span class="ident">actual_ny</span>: <span class="ident">And</span>,
-    <span class="ident">actual_zy</span>: <span class="ident">And</span>,
-    <span class="ident">actual_nx</span>: <span class="ident">Or</span>,
-    <span class="ident">actual_zx</span>: <span class="ident">Or</span>,
+    actual_no: And,
+    actual_f: And,
+    actual_ny: And,
+    actual_zy: And,
+    actual_nx: Or,
+    actual_zx: Or,
 
-    <span class="ident">actual_sel_m</span>: <span class="ident">And</span>,
+    actual_sel_m: And,
 
-    <span class="ident">load_a</span>: <span class="ident">Or</span>,
-    <span class="ident">load_d</span>: <span class="ident">And</span>,
-    <span class="ident">is_a_instruction</span>: <span class="ident">Not</span>,
+    load_a: Or,
+    load_d: And,
+    is_a_instruction: Not,
 
-    <span class="ident">mux_a_m</span>: <span class="ident">Mux16</span>,
-    <span class="ident">alu</span>: <span class="ident">Alu</span>,
-    <span class="ident">counter</span>: <span class="ident">Counter</span>,
-    <span class="ident">write_m_if_c</span>: <span class="ident">And</span>,
+    mux_a_m: Mux16,
+    alu: Alu,
+    counter: Counter,
+    write_m_if_c: And,
 
-    <span class="ident">mux_instruction_out</span>: <span class="ident">Mux16</span>,
+    mux_instruction_out: Mux16,
 
-    <span class="comment">// Jump logic</span>
-    <span class="ident">comp_not_zr</span>: <span class="ident">Not</span>,
-    <span class="ident">comp_not_ng</span>: <span class="ident">Not</span>,
-    <span class="ident">comp_gt_zr</span>: <span class="ident">And</span>,
-    <span class="ident">jump_gt_zr</span>: <span class="ident">And</span>,
-    <span class="ident">jump_eq_zr</span>: <span class="ident">And</span>,
-    <span class="ident">jump_lt_zr</span>: <span class="ident">And</span>,
+    <span class="comment">// Jump logic
+    </span>comp_not_zr: Not,
+    comp_not_ng: Not,
+    comp_gt_zr: And,
+    jump_gt_zr: And,
+    jump_eq_zr: And,
+    jump_lt_zr: And,
 
-    <span class="ident">jump_or</span>: [<span class="ident">Or</span>; <span class="number">2</span>],
+    jump_or: [Or; <span class="number">2</span>],
 
-    <span class="ident">load_jump</span>: <span class="ident">And</span>,
+    load_jump: And,
 }
 
-<span class="kw">impl</span> <span class="ident">Cpu</span> {
-    <span class="doccomment">/// Carries out the simulation, taking as input:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - `in_m`: data from memory</span>
-    <span class="doccomment">/// - `instruction`: fetched from ROM</span>
-    <span class="doccomment">/// - `reset`: whether to set the program counter to zero</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// It returns the following:</span>
-    <span class="doccomment">/// - `write_m`: whether to write to memory</span>
-    <span class="doccomment">/// - `out_m`: data going to memory</span>
-    <span class="doccomment">/// - `address_m`: memory address</span>
-    <span class="doccomment">/// - `pc`: program counter</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sim</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">in_m</span>: <span class="ident">Signal16</span>,
-        <span class="ident">instruction</span>: <span class="ident">Signal16</span>,
-        <span class="ident">reset</span>: <span class="ident">Signal</span>,
-    ) -&gt; (<span class="ident">Signal</span>, <span class="ident">Signal16</span>, <span class="ident">Signal15</span>, <span class="ident">Signal16</span>) {
-        <span class="self">self</span>.<span class="ident">in_m</span> <span class="op">=</span> <span class="ident">in_m</span>;
-        <span class="self">self</span>.<span class="ident">instruction</span> <span class="op">=</span> <span class="ident">instruction</span>;
-        <span class="self">self</span>.<span class="ident">reset</span> <span class="op">=</span> <span class="ident">reset</span>;
-        <span class="self">self</span>.<span class="ident">tick</span>();
-        (<span class="self">self</span>.<span class="ident">write_m</span>, <span class="self">self</span>.<span class="ident">out_m</span>, <span class="self">self</span>.<span class="ident">address_m</span>, <span class="self">self</span>.<span class="ident">pc</span>)
+<span class="kw">impl </span>Cpu {
+    <span class="doccomment">/// Carries out the simulation, taking as input:
+    ///
+    /// - `in_m`: data from memory
+    /// - `instruction`: fetched from ROM
+    /// - `reset`: whether to set the program counter to zero
+    ///
+    /// It returns the following:
+    /// - `write_m`: whether to write to memory
+    /// - `out_m`: data going to memory
+    /// - `address_m`: memory address
+    /// - `pc`: program counter
+    </span><span class="kw">pub fn </span>sim(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        in_m: Signal16,
+        instruction: Signal16,
+        reset: Signal,
+    ) -&gt; (Signal, Signal16, Signal15, Signal16) {
+        <span class="self">self</span>.in_m = in_m;
+        <span class="self">self</span>.instruction = instruction;
+        <span class="self">self</span>.reset = reset;
+        <span class="self">self</span>.tick();
+        (<span class="self">self</span>.write_m, <span class="self">self</span>.out_m, <span class="self">self</span>.address_m, <span class="self">self</span>.pc)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_pc</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Signal16</span> {
-        <span class="self">self</span>.<span class="ident">pc</span>
+    <span class="kw">pub fn </span>get_pc(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Signal16 {
+        <span class="self">self</span>.pc
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_address_m</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Signal15</span> {
-        <span class="self">self</span>.<span class="ident">address_m</span>
+    <span class="kw">pub fn </span>get_address_m(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Signal15 {
+        <span class="self">self</span>.address_m
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_out_m</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Signal16</span> {
-        <span class="self">self</span>.<span class="ident">out_m</span>
+    <span class="kw">pub fn </span>get_out_m(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Signal16 {
+        <span class="self">self</span>.out_m
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_write_m</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Signal</span> {
-        <span class="self">self</span>.<span class="ident">write_m</span>
+    <span class="kw">pub fn </span>get_write_m(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Signal {
+        <span class="self">self</span>.write_m
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Unit</span> <span class="kw">for</span> <span class="ident">Cpu</span> {
-    <span class="kw">fn</span> <span class="ident">tock</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">time</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        <span class="self">self</span>.<span class="ident">eval</span>();
+<span class="kw">impl </span>Unit <span class="kw">for </span>Cpu {
+    <span class="kw">fn </span>tock(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.time += <span class="number">1</span>;
+        <span class="self">self</span>.eval();
     }
 
-    <span class="kw">fn</span> <span class="ident">tick</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">time</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+    <span class="kw">fn </span>tick(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.time += <span class="number">1</span>;
 
-        <span class="comment">// jjj</span>
-        <span class="kw">let</span> <span class="ident">pos_jump</span>: <span class="ident">Signal</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">0</span>..<span class="number">1</span>).<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">zr_jump</span>: <span class="ident">Signal</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">1</span>..<span class="number">2</span>).<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">neg_jump</span>: <span class="ident">Signal</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">2</span>..<span class="number">3</span>).<span class="ident">into</span>();
+        <span class="comment">// jjj
+        </span><span class="kw">let </span>pos_jump: Signal = <span class="self">self</span>.instruction.get(<span class="number">0</span>..<span class="number">1</span>).into();
+        <span class="kw">let </span>zr_jump: Signal = <span class="self">self</span>.instruction.get(<span class="number">1</span>..<span class="number">2</span>).into();
+        <span class="kw">let </span>neg_jump: Signal = <span class="self">self</span>.instruction.get(<span class="number">2</span>..<span class="number">3</span>).into();
 
-        <span class="comment">// ddd</span>
-        <span class="kw">let</span> <span class="ident">write_m_signal</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">3</span>..<span class="number">4</span>).<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">load_d_signal</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">4</span>..<span class="number">5</span>).<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">load_a_signal</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">5</span>..<span class="number">6</span>).<span class="ident">into</span>();
+        <span class="comment">// ddd
+        </span><span class="kw">let </span>write_m_signal = <span class="self">self</span>.instruction.get(<span class="number">3</span>..<span class="number">4</span>).into();
+        <span class="kw">let </span>load_d_signal = <span class="self">self</span>.instruction.get(<span class="number">4</span>..<span class="number">5</span>).into();
+        <span class="kw">let </span>load_a_signal = <span class="self">self</span>.instruction.get(<span class="number">5</span>..<span class="number">6</span>).into();
 
-        <span class="comment">// cccccc</span>
-        <span class="kw">let</span> <span class="ident">no</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">6</span>..<span class="number">7</span>).<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">7</span>..<span class="number">8</span>).<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">ny</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">8</span>..<span class="number">9</span>).<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">zy</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">9</span>..<span class="number">10</span>).<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">nx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">10</span>..<span class="number">11</span>).<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">zx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">11</span>..<span class="number">12</span>).<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">sel_m</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">12</span>..<span class="number">13</span>).<span class="ident">into</span>();
+        <span class="comment">// cccccc
+        </span><span class="kw">let </span>no = <span class="self">self</span>.instruction.get(<span class="number">6</span>..<span class="number">7</span>).into();
+        <span class="kw">let </span>f = <span class="self">self</span>.instruction.get(<span class="number">7</span>..<span class="number">8</span>).into();
+        <span class="kw">let </span>ny = <span class="self">self</span>.instruction.get(<span class="number">8</span>..<span class="number">9</span>).into();
+        <span class="kw">let </span>zy = <span class="self">self</span>.instruction.get(<span class="number">9</span>..<span class="number">10</span>).into();
+        <span class="kw">let </span>nx = <span class="self">self</span>.instruction.get(<span class="number">10</span>..<span class="number">11</span>).into();
+        <span class="kw">let </span>zx = <span class="self">self</span>.instruction.get(<span class="number">11</span>..<span class="number">12</span>).into();
+        <span class="kw">let </span>sel_m = <span class="self">self</span>.instruction.get(<span class="number">12</span>..<span class="number">13</span>).into();
 
-        <span class="kw">let</span> <span class="ident">is_c_instruction</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">instruction</span>.<span class="ident">get</span>(<span class="number">15</span>..<span class="number">16</span>).<span class="ident">into</span>();
+        <span class="kw">let </span>is_c_instruction = <span class="self">self</span>.instruction.get(<span class="number">15</span>..<span class="number">16</span>).into();
 
-        <span class="kw">let</span> <span class="ident">a_register_out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">a_register</span>.<span class="ident">out</span>();
+        <span class="kw">let </span>a_register_out = <span class="self">self</span>.a_register.out();
 
-        <span class="comment">// Write and address output signals are quite easy</span>
-        <span class="self">self</span>.<span class="ident">write_m</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">write_m_if_c</span>.<span class="ident">sim</span>(<span class="ident">write_m_signal</span>, <span class="ident">is_c_instruction</span>);
-        <span class="self">self</span>.<span class="ident">address_m</span> <span class="op">=</span> <span class="ident">a_register_out</span>.<span class="ident">into</span>();
+        <span class="comment">// Write and address output signals are quite easy
+        </span><span class="self">self</span>.write_m = <span class="self">self</span>.write_m_if_c.sim(write_m_signal, is_c_instruction);
+        <span class="self">self</span>.address_m = a_register_out.into();
 
-        <span class="comment">// Zero if this is an A-instruction</span>
-        <span class="kw">let</span> <span class="ident">actual_no</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">actual_no</span>.<span class="ident">sim</span>(<span class="ident">no</span>, <span class="ident">is_c_instruction</span>);
-        <span class="kw">let</span> <span class="ident">actual_f</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">actual_f</span>.<span class="ident">sim</span>(<span class="ident">f</span>, <span class="ident">is_c_instruction</span>);
-        <span class="kw">let</span> <span class="ident">actual_ny</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">actual_ny</span>.<span class="ident">sim</span>(<span class="ident">ny</span>, <span class="ident">is_c_instruction</span>);
-        <span class="kw">let</span> <span class="ident">actual_zy</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">actual_zy</span>.<span class="ident">sim</span>(<span class="ident">zy</span>, <span class="ident">is_c_instruction</span>);
+        <span class="comment">// Zero if this is an A-instruction
+        </span><span class="kw">let </span>actual_no = <span class="self">self</span>.actual_no.sim(no, is_c_instruction);
+        <span class="kw">let </span>actual_f = <span class="self">self</span>.actual_f.sim(f, is_c_instruction);
+        <span class="kw">let </span>actual_ny = <span class="self">self</span>.actual_ny.sim(ny, is_c_instruction);
+        <span class="kw">let </span>actual_zy = <span class="self">self</span>.actual_zy.sim(zy, is_c_instruction);
 
-        <span class="comment">// Just negate is_c_instruction</span>
-        <span class="kw">let</span> <span class="ident">is_a_instruction_out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">is_a_instruction</span>.<span class="ident">sim</span>(<span class="ident">is_c_instruction</span>);
+        <span class="comment">// Just negate is_c_instruction
+        </span><span class="kw">let </span>is_a_instruction_out = <span class="self">self</span>.is_a_instruction.sim(is_c_instruction);
 
-        <span class="comment">// One if this is an A-instruction</span>
-        <span class="kw">let</span> <span class="ident">actual_nx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">actual_nx</span>.<span class="ident">sim</span>(<span class="ident">nx</span>, <span class="ident">is_a_instruction_out</span>);
-        <span class="kw">let</span> <span class="ident">actual_zx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">actual_zx</span>.<span class="ident">sim</span>(<span class="ident">zx</span>, <span class="ident">is_a_instruction_out</span>);
+        <span class="comment">// One if this is an A-instruction
+        </span><span class="kw">let </span>actual_nx = <span class="self">self</span>.actual_nx.sim(nx, is_a_instruction_out);
+        <span class="kw">let </span>actual_zx = <span class="self">self</span>.actual_zx.sim(zx, is_a_instruction_out);
 
-        <span class="comment">// Zero if this is an A-instruction</span>
-        <span class="comment">// so to feed the ALU with the A register instead of M</span>
-        <span class="kw">let</span> <span class="ident">actual_sel_m</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">actual_sel_m</span>.<span class="ident">sim</span>(<span class="ident">sel_m</span>, <span class="ident">is_c_instruction</span>);
+        <span class="comment">// Zero if this is an A-instruction
+        // so to feed the ALU with the A register instead of M
+        </span><span class="kw">let </span>actual_sel_m = <span class="self">self</span>.actual_sel_m.sim(sel_m, is_c_instruction);
 
-        <span class="self">self</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">counter</span>.<span class="ident">out</span>();
+        <span class="self">self</span>.pc = <span class="self">self</span>.counter.out();
 
-        <span class="kw">let</span> <span class="ident">alu_input_x</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">d_register</span>.<span class="ident">out</span>();
-        <span class="kw">let</span> <span class="ident">alu_input_y</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mux_a_m</span>.<span class="ident">sim</span>(<span class="ident">a_register_out</span>, <span class="self">self</span>.<span class="ident">in_m</span>, <span class="ident">actual_sel_m</span>);
+        <span class="kw">let </span>alu_input_x = <span class="self">self</span>.d_register.out();
+        <span class="kw">let </span>alu_input_y = <span class="self">self</span>.mux_a_m.sim(a_register_out, <span class="self">self</span>.in_m, actual_sel_m);
 
-        <span class="kw">let</span> (<span class="ident">alu_out</span>, <span class="ident">alu_zr</span>, <span class="ident">alu_ng</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">alu</span>.<span class="ident">sim</span>(
-            <span class="ident">alu_input_x</span>,
-            <span class="ident">alu_input_y</span>,
-            <span class="ident">actual_zx</span>,
-            <span class="ident">actual_nx</span>,
-            <span class="ident">actual_zy</span>,
-            <span class="ident">actual_ny</span>,
-            <span class="ident">actual_f</span>,
-            <span class="ident">actual_no</span>,
+        <span class="kw">let </span>(alu_out, alu_zr, alu_ng) = <span class="self">self</span>.alu.sim(
+            alu_input_x,
+            alu_input_y,
+            actual_zx,
+            actual_nx,
+            actual_zy,
+            actual_ny,
+            actual_f,
+            actual_no,
         );
 
-        <span class="self">self</span>.<span class="ident">out_m</span> <span class="op">=</span> <span class="ident">alu_out</span>;
+        <span class="self">self</span>.out_m = alu_out;
 
-        <span class="comment">// Load D when this is an C instruction and the D signal is true</span>
-        <span class="self">self</span>.<span class="ident">d_register</span>
-            .<span class="ident">sim</span>(<span class="ident">alu_out</span>, <span class="self">self</span>.<span class="ident">load_d</span>.<span class="ident">sim</span>(<span class="ident">is_c_instruction</span>, <span class="ident">load_d_signal</span>));
+        <span class="comment">// Load D when this is an C instruction and the D signal is true
+        </span><span class="self">self</span>.d_register
+            .sim(alu_out, <span class="self">self</span>.load_d.sim(is_c_instruction, load_d_signal));
 
-        <span class="comment">// Figure out A input after evaluating the ALU</span>
-        <span class="kw">let</span> <span class="ident">a_input</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">mux_instruction_out</span>
-            .<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">instruction</span>, <span class="ident">alu_out</span>, <span class="ident">is_c_instruction</span>);
+        <span class="comment">// Figure out A input after evaluating the ALU
+        </span><span class="kw">let </span>a_input = <span class="self">self
+            </span>.mux_instruction_out
+            .sim(<span class="self">self</span>.instruction, alu_out, is_c_instruction);
 
-        <span class="comment">// Load A when this is an A instruction or A signal is true</span>
-        <span class="self">self</span>.<span class="ident">a_register</span>.<span class="ident">sim</span>(
-            <span class="ident">a_input</span>,
-            <span class="self">self</span>.<span class="ident">load_a</span>.<span class="ident">sim</span>(<span class="ident">is_a_instruction_out</span>, <span class="ident">load_a_signal</span>),
+        <span class="comment">// Load A when this is an A instruction or A signal is true
+        </span><span class="self">self</span>.a_register.sim(
+            a_input,
+            <span class="self">self</span>.load_a.sim(is_a_instruction_out, load_a_signal),
         );
 
-        <span class="comment">// Counter logic</span>
-        <span class="kw">let</span> <span class="ident">comp_not_zr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">comp_not_zr</span>.<span class="ident">sim</span>(<span class="ident">alu_zr</span>);
-        <span class="kw">let</span> <span class="ident">comp_not_ng</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">comp_not_ng</span>.<span class="ident">sim</span>(<span class="ident">alu_ng</span>);
-        <span class="kw">let</span> <span class="ident">comp_gt_zr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">comp_gt_zr</span>.<span class="ident">sim</span>(<span class="ident">comp_not_zr</span>, <span class="ident">comp_not_ng</span>);
+        <span class="comment">// Counter logic
+        </span><span class="kw">let </span>comp_not_zr = <span class="self">self</span>.comp_not_zr.sim(alu_zr);
+        <span class="kw">let </span>comp_not_ng = <span class="self">self</span>.comp_not_ng.sim(alu_ng);
+        <span class="kw">let </span>comp_gt_zr = <span class="self">self</span>.comp_gt_zr.sim(comp_not_zr, comp_not_ng);
 
-        <span class="kw">let</span> <span class="ident">jump_gt_zr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">jump_gt_zr</span>.<span class="ident">sim</span>(<span class="ident">pos_jump</span>, <span class="ident">comp_gt_zr</span>);
-        <span class="kw">let</span> <span class="ident">jump_eq_zr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">jump_eq_zr</span>.<span class="ident">sim</span>(<span class="ident">zr_jump</span>, <span class="ident">alu_zr</span>);
-        <span class="kw">let</span> <span class="ident">jump_lt_zr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">jump_lt_zr</span>.<span class="ident">sim</span>(<span class="ident">neg_jump</span>, <span class="ident">alu_ng</span>);
+        <span class="kw">let </span>jump_gt_zr = <span class="self">self</span>.jump_gt_zr.sim(pos_jump, comp_gt_zr);
+        <span class="kw">let </span>jump_eq_zr = <span class="self">self</span>.jump_eq_zr.sim(zr_jump, alu_zr);
+        <span class="kw">let </span>jump_lt_zr = <span class="self">self</span>.jump_lt_zr.sim(neg_jump, alu_ng);
 
-        <span class="comment">// Jump&gt;0 || Jump==0 || Jump&lt;0</span>
-        <span class="kw">let</span> <span class="ident">jump_or0</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">jump_or</span>[<span class="number">0</span>].<span class="ident">sim</span>(<span class="ident">jump_gt_zr</span>, <span class="ident">jump_eq_zr</span>);
-        <span class="kw">let</span> <span class="ident">jump_or1</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">jump_or</span>[<span class="number">1</span>].<span class="ident">sim</span>(<span class="ident">jump_or0</span>, <span class="ident">jump_lt_zr</span>);
+        <span class="comment">// Jump&gt;0 || Jump==0 || Jump&lt;0
+        </span><span class="kw">let </span>jump_or0 = <span class="self">self</span>.jump_or[<span class="number">0</span>].sim(jump_gt_zr, jump_eq_zr);
+        <span class="kw">let </span>jump_or1 = <span class="self">self</span>.jump_or[<span class="number">1</span>].sim(jump_or0, jump_lt_zr);
 
-        <span class="kw">let</span> <span class="ident">load_jump</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">load_jump</span>.<span class="ident">sim</span>(<span class="ident">jump_or1</span>, <span class="ident">is_c_instruction</span>);
+        <span class="kw">let </span>load_jump = <span class="self">self</span>.load_jump.sim(jump_or1, is_c_instruction);
 
-        <span class="comment">// Maybe jump to address in A register</span>
-        <span class="self">self</span>.<span class="ident">counter</span>
-            .<span class="ident">sim</span>(<span class="ident">a_register_out</span>, <span class="self">self</span>.<span class="ident">reset</span>, <span class="ident">load_jump</span>, <span class="ident">Signal::HI</span>);
+        <span class="comment">// Maybe jump to address in A register
+        </span><span class="self">self</span>.counter
+            .sim(a_register_out, <span class="self">self</span>.reset, load_jump, Signal::HI);
     }
 
-    <span class="kw">fn</span> <span class="ident">eval</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">a_register</span>.<span class="ident">eval</span>();
-        <span class="self">self</span>.<span class="ident">d_register</span>.<span class="ident">eval</span>();
+    <span class="kw">fn </span>eval(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.a_register.eval();
+        <span class="self">self</span>.d_register.eval();
 
-        <span class="self">self</span>.<span class="ident">address_m</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">a_register</span>.<span class="ident">out</span>().<span class="ident">into</span>();
+        <span class="self">self</span>.address_m = <span class="self">self</span>.a_register.out().into();
 
-        <span class="self">self</span>.<span class="ident">mux_a_m</span>.<span class="ident">set_a</span>(<span class="self">self</span>.<span class="ident">a_register</span>.<span class="ident">out</span>());
-        <span class="self">self</span>.<span class="ident">mux_a_m</span>.<span class="ident">eval</span>();
+        <span class="self">self</span>.mux_a_m.set_a(<span class="self">self</span>.a_register.out());
+        <span class="self">self</span>.mux_a_m.eval();
 
-        <span class="self">self</span>.<span class="ident">alu</span>.<span class="ident">set_x</span>(<span class="self">self</span>.<span class="ident">d_register</span>.<span class="ident">out</span>());
-        <span class="self">self</span>.<span class="ident">alu</span>.<span class="ident">set_y</span>(<span class="self">self</span>.<span class="ident">mux_a_m</span>.<span class="ident">out</span>());
+        <span class="self">self</span>.alu.set_x(<span class="self">self</span>.d_register.out());
+        <span class="self">self</span>.alu.set_y(<span class="self">self</span>.mux_a_m.out());
 
-        <span class="self">self</span>.<span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="self">self</span>.<span class="ident">out_m</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">alu</span>.<span class="ident">out</span>();
+        <span class="self">self</span>.alu.eval();
+        <span class="self">self</span>.out_m = <span class="self">self</span>.alu.out();
 
-        <span class="self">self</span>.<span class="ident">counter</span>.<span class="ident">eval</span>();
-        <span class="self">self</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">counter</span>.<span class="ident">out</span>();
+        <span class="self">self</span>.counter.eval();
+        <span class="self">self</span>.pc = <span class="self">self</span>.counter.out();
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

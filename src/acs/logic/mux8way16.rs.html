@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/logic/mux8way16.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mux8way16.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/logic/mux8way16.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mux8way16.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../acs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -138,143 +138,143 @@
 <span id="136">136</span>
 <span id="137">137</span>
 <span id="138">138</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Mux16</span>, <span class="ident">Mux4Way16</span>, <span class="ident">Signal16</span>, <span class="ident">Signal3</span>, <span class="ident">Unit</span>};
+</span><span class="kw">use super</span>::{Mux16, Mux4Way16, Signal16, Signal3, Unit};
 
-<span class="doccomment">/// 8-way 16-bit multiplexor</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Mux8Way16</span> {
-    <span class="ident">a</span>: <span class="ident">Signal16</span>,
-    <span class="ident">b</span>: <span class="ident">Signal16</span>,
-    <span class="ident">c</span>: <span class="ident">Signal16</span>,
-    <span class="ident">d</span>: <span class="ident">Signal16</span>,
-    <span class="ident">e</span>: <span class="ident">Signal16</span>,
-    <span class="ident">f</span>: <span class="ident">Signal16</span>,
-    <span class="ident">g</span>: <span class="ident">Signal16</span>,
-    <span class="ident">h</span>: <span class="ident">Signal16</span>,
-    <span class="ident">sel</span>: <span class="ident">Signal3</span>,
-    <span class="ident">out</span>: <span class="ident">Signal16</span>,
+<span class="doccomment">/// 8-way 16-bit multiplexor
+</span><span class="attribute">#[derive(Default)]
+</span><span class="kw">pub struct </span>Mux8Way16 {
+    a: Signal16,
+    b: Signal16,
+    c: Signal16,
+    d: Signal16,
+    e: Signal16,
+    f: Signal16,
+    g: Signal16,
+    h: Signal16,
+    sel: Signal3,
+    out: Signal16,
 
-    <span class="ident">mux_a_b_c_d</span>: <span class="ident">Mux4Way16</span>,
-    <span class="ident">mux_e_f_g_h</span>: <span class="ident">Mux4Way16</span>,
-    <span class="ident">mux_out</span>: <span class="ident">Mux16</span>,
+    mux_a_b_c_d: Mux4Way16,
+    mux_e_f_g_h: Mux4Way16,
+    mux_out: Mux16,
 }
 
-<span class="kw">impl</span> <span class="ident">Mux8Way16</span> {
-    <span class="doccomment">/// Carries out the simulation and returns</span>
-    <span class="doccomment">/// ```c</span>
-    <span class="doccomment">/// if sel == 0 { a }</span>
-    <span class="doccomment">/// if sel == 1 { b }</span>
-    <span class="doccomment">/// if sel == 2 { c }</span>
-    <span class="doccomment">/// if sel == 3 { d }</span>
-    <span class="doccomment">/// if sel == 4 { e }</span>
-    <span class="doccomment">/// if sel == 5 { f }</span>
-    <span class="doccomment">/// if sel == 6 { g }</span>
-    <span class="doccomment">/// if sel == 7 { h }</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sim</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">signals</span>: [<span class="ident">Signal16</span>; <span class="number">8</span>], <span class="ident">sel</span>: <span class="ident">Signal3</span>) -&gt; <span class="ident">Signal16</span> {
-        <span class="self">self</span>.<span class="ident">a</span> <span class="op">=</span> <span class="ident">signals</span>[<span class="number">0</span>];
-        <span class="self">self</span>.<span class="ident">b</span> <span class="op">=</span> <span class="ident">signals</span>[<span class="number">1</span>];
-        <span class="self">self</span>.<span class="ident">c</span> <span class="op">=</span> <span class="ident">signals</span>[<span class="number">2</span>];
-        <span class="self">self</span>.<span class="ident">d</span> <span class="op">=</span> <span class="ident">signals</span>[<span class="number">3</span>];
-        <span class="self">self</span>.<span class="ident">e</span> <span class="op">=</span> <span class="ident">signals</span>[<span class="number">4</span>];
-        <span class="self">self</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">signals</span>[<span class="number">5</span>];
-        <span class="self">self</span>.<span class="ident">g</span> <span class="op">=</span> <span class="ident">signals</span>[<span class="number">6</span>];
-        <span class="self">self</span>.<span class="ident">h</span> <span class="op">=</span> <span class="ident">signals</span>[<span class="number">7</span>];
-        <span class="self">self</span>.<span class="ident">sel</span> <span class="op">=</span> <span class="ident">sel</span>;
-        <span class="self">self</span>.<span class="ident">eval</span>();
-        <span class="self">self</span>.<span class="ident">out</span>
+<span class="kw">impl </span>Mux8Way16 {
+    <span class="doccomment">/// Carries out the simulation and returns
+    /// ```c
+    /// if sel == 0 { a }
+    /// if sel == 1 { b }
+    /// if sel == 2 { c }
+    /// if sel == 3 { d }
+    /// if sel == 4 { e }
+    /// if sel == 5 { f }
+    /// if sel == 6 { g }
+    /// if sel == 7 { h }
+    /// ```
+    </span><span class="kw">pub fn </span>sim(<span class="kw-2">&amp;mut </span><span class="self">self</span>, signals: [Signal16; <span class="number">8</span>], sel: Signal3) -&gt; Signal16 {
+        <span class="self">self</span>.a = signals[<span class="number">0</span>];
+        <span class="self">self</span>.b = signals[<span class="number">1</span>];
+        <span class="self">self</span>.c = signals[<span class="number">2</span>];
+        <span class="self">self</span>.d = signals[<span class="number">3</span>];
+        <span class="self">self</span>.e = signals[<span class="number">4</span>];
+        <span class="self">self</span>.f = signals[<span class="number">5</span>];
+        <span class="self">self</span>.g = signals[<span class="number">6</span>];
+        <span class="self">self</span>.h = signals[<span class="number">7</span>];
+        <span class="self">self</span>.sel = sel;
+        <span class="self">self</span>.eval();
+        <span class="self">self</span>.out
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sel</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Signal3</span> {
-        <span class="self">self</span>.<span class="ident">sel</span>
+    <span class="kw">pub fn </span>sel(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Signal3 {
+        <span class="self">self</span>.sel
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Unit</span> <span class="kw">for</span> <span class="ident">Mux8Way16</span> {
-    <span class="kw">fn</span> <span class="ident">eval</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mux_out</span>.<span class="ident">sim</span>(
-            <span class="self">self</span>.<span class="ident">mux_a_b_c_d</span>
-                .<span class="ident">sim</span>([<span class="self">self</span>.<span class="ident">a</span>, <span class="self">self</span>.<span class="ident">b</span>, <span class="self">self</span>.<span class="ident">c</span>, <span class="self">self</span>.<span class="ident">d</span>], <span class="self">self</span>.<span class="ident">sel</span>.<span class="ident">into</span>()),
-            <span class="self">self</span>.<span class="ident">mux_e_f_g_h</span>
-                .<span class="ident">sim</span>([<span class="self">self</span>.<span class="ident">e</span>, <span class="self">self</span>.<span class="ident">f</span>, <span class="self">self</span>.<span class="ident">g</span>, <span class="self">self</span>.<span class="ident">h</span>], <span class="self">self</span>.<span class="ident">sel</span>.<span class="ident">into</span>()),
-            <span class="self">self</span>.<span class="ident">sel</span>.<span class="ident">get</span>(<span class="number">2</span>).<span class="ident">into</span>(),
+<span class="kw">impl </span>Unit <span class="kw">for </span>Mux8Way16 {
+    <span class="kw">fn </span>eval(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.out = <span class="self">self</span>.mux_out.sim(
+            <span class="self">self</span>.mux_a_b_c_d
+                .sim([<span class="self">self</span>.a, <span class="self">self</span>.b, <span class="self">self</span>.c, <span class="self">self</span>.d], <span class="self">self</span>.sel.into()),
+            <span class="self">self</span>.mux_e_f_g_h
+                .sim([<span class="self">self</span>.e, <span class="self">self</span>.f, <span class="self">self</span>.g, <span class="self">self</span>.h], <span class="self">self</span>.sel.into()),
+            <span class="self">self</span>.sel.get(<span class="number">2</span>).into(),
         );
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">run</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mux</span> <span class="op">=</span> <span class="ident">Mux8Way16::default</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>run() {
+        <span class="kw">let </span><span class="kw-2">mut </span>mux = Mux8Way16::default();
 
-        <span class="kw">let</span> <span class="ident">signals</span> <span class="op">=</span> [<span class="ident">Signal16::FALSE</span>; <span class="number">8</span>];
+        <span class="kw">let </span>signals = [Signal16::FALSE; <span class="number">8</span>];
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">0</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
+        mux.sim(signals, Signal3::new(<span class="number">0</span>));
+        <span class="macro">assert_eq!</span>(mux.out, Signal16::FALSE);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">1</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
+        mux.sim(signals, Signal3::new(<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(mux.out, Signal16::FALSE);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">2</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
+        mux.sim(signals, Signal3::new(<span class="number">2</span>));
+        <span class="macro">assert_eq!</span>(mux.out, Signal16::FALSE);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">3</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
+        mux.sim(signals, Signal3::new(<span class="number">3</span>));
+        <span class="macro">assert_eq!</span>(mux.out, Signal16::FALSE);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">4</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
+        mux.sim(signals, Signal3::new(<span class="number">4</span>));
+        <span class="macro">assert_eq!</span>(mux.out, Signal16::FALSE);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">5</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
+        mux.sim(signals, Signal3::new(<span class="number">5</span>));
+        <span class="macro">assert_eq!</span>(mux.out, Signal16::FALSE);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">6</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
+        mux.sim(signals, Signal3::new(<span class="number">6</span>));
+        <span class="macro">assert_eq!</span>(mux.out, Signal16::FALSE);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">7</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
+        mux.sim(signals, Signal3::new(<span class="number">7</span>));
+        <span class="macro">assert_eq!</span>(mux.out, Signal16::FALSE);
 
-        <span class="kw">let</span> <span class="ident">signals</span> <span class="op">=</span> [
-            <span class="ident">Signal16::from</span>(<span class="number">0b0001001000110100u16</span>),
-            <span class="ident">Signal16::from</span>(<span class="number">0b0010001101000101u16</span>),
-            <span class="ident">Signal16::from</span>(<span class="number">0b0011010001010110u16</span>),
-            <span class="ident">Signal16::from</span>(<span class="number">0b0100010101100111u16</span>),
-            <span class="ident">Signal16::from</span>(<span class="number">0b0101011001111000u16</span>),
-            <span class="ident">Signal16::from</span>(<span class="number">0b0110011110001001u16</span>),
-            <span class="ident">Signal16::from</span>(<span class="number">0b0111100010011010u16</span>),
-            <span class="ident">Signal16::from</span>(<span class="number">0b1000100110101011u16</span>),
+        <span class="kw">let </span>signals = [
+            Signal16::from(<span class="number">0b0001001000110100u16</span>),
+            Signal16::from(<span class="number">0b0010001101000101u16</span>),
+            Signal16::from(<span class="number">0b0011010001010110u16</span>),
+            Signal16::from(<span class="number">0b0100010101100111u16</span>),
+            Signal16::from(<span class="number">0b0101011001111000u16</span>),
+            Signal16::from(<span class="number">0b0110011110001001u16</span>),
+            Signal16::from(<span class="number">0b0111100010011010u16</span>),
+            Signal16::from(<span class="number">0b1000100110101011u16</span>),
         ];
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">0</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">mux</span>.<span class="ident">a</span>);
+        mux.sim(signals, Signal3::new(<span class="number">0</span>));
+        <span class="macro">assert_eq!</span>(mux.out, mux.a);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">1</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">mux</span>.<span class="ident">b</span>);
+        mux.sim(signals, Signal3::new(<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(mux.out, mux.b);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">2</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">mux</span>.<span class="ident">c</span>);
+        mux.sim(signals, Signal3::new(<span class="number">2</span>));
+        <span class="macro">assert_eq!</span>(mux.out, mux.c);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">3</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">mux</span>.<span class="ident">d</span>);
+        mux.sim(signals, Signal3::new(<span class="number">3</span>));
+        <span class="macro">assert_eq!</span>(mux.out, mux.d);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">4</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">mux</span>.<span class="ident">e</span>);
+        mux.sim(signals, Signal3::new(<span class="number">4</span>));
+        <span class="macro">assert_eq!</span>(mux.out, mux.e);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">5</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">mux</span>.<span class="ident">f</span>);
+        mux.sim(signals, Signal3::new(<span class="number">5</span>));
+        <span class="macro">assert_eq!</span>(mux.out, mux.f);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">6</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">mux</span>.<span class="ident">g</span>);
+        mux.sim(signals, Signal3::new(<span class="number">6</span>));
+        <span class="macro">assert_eq!</span>(mux.out, mux.g);
 
-        <span class="ident">mux</span>.<span class="ident">sim</span>(<span class="ident">signals</span>, <span class="ident">Signal3::new</span>(<span class="number">7</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">mux</span>.<span class="ident">out</span>, <span class="ident">mux</span>.<span class="ident">h</span>);
+        mux.sim(signals, Signal3::new(<span class="number">7</span>));
+        <span class="macro">assert_eq!</span>(mux.out, mux.h);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,3 +1,3 @@
-(function() {var implementors = {};
-implementors["acs"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.64.0/core/ops/bit/trait.BitAndAssign.html\" title=\"trait core::ops::bit::BitAndAssign\">BitAndAssign</a>&lt;<a class=\"enum\" href=\"acs/logic/signal/enum.Signal.html\" title=\"enum acs::logic::signal::Signal\">Signal</a>&gt; for <a class=\"enum\" href=\"acs/logic/signal/enum.Signal.html\" title=\"enum acs::logic::signal::Signal\">Signal</a>","synthetic":false,"types":["acs::logic::signal::Signal"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {var implementors = {
+"acs":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.65.0/core/ops/bit/trait.BitAndAssign.html\" title=\"trait core::ops::bit::BitAndAssign\">BitAndAssign</a>&lt;<a class=\"enum\" href=\"acs/logic/signal/enum.Signal.html\" title=\"enum acs::logic::signal::Signal\">Signal</a>&gt; for <a class=\"enum\" href=\"acs/logic/signal/enum.Signal.html\" title=\"enum acs::logic::signal::Signal\">Signal</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

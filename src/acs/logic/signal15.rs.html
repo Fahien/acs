@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/logic/signal15.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>signal15.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/logic/signal15.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>signal15.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../acs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -105,110 +105,110 @@
 <span id="103">103</span>
 <span id="104">104</span>
 <span id="105">105</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">fmt</span>::{<span class="ident">Debug</span>, <span class="ident">Display</span>},
-    <span class="ident">ops</span>::<span class="kw-2">*</span>,
+</span><span class="kw">use </span>std::{
+    fmt::{Debug, Display},
+    ops::<span class="kw-2">*</span>,
 };
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Signal16</span>;
+<span class="kw">use </span><span class="kw">crate</span>::Signal16;
 
-<span class="doccomment">/// 15 signals into one</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Signal15</span> {
-    <span class="kw">pub</span> <span class="ident">values</span>: <span class="ident">i16</span>,
+<span class="doccomment">/// 15 signals into one
+</span><span class="attribute">#[derive(Copy, Clone, Default, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>Signal15 {
+    <span class="kw">pub </span>values: i16,
 }
 
-<span class="kw">impl</span> <span class="ident">Signal15</span> {
-    <span class="doccomment">/// All signals `HI`</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TRUE</span>: <span class="self">Self</span> <span class="op">=</span> <span class="self">Self</span> {
-        <span class="ident">values</span>: <span class="number">0b111_1111_1111_1111</span>,
+<span class="kw">impl </span>Signal15 {
+    <span class="doccomment">/// All signals `HI`
+    </span><span class="kw">pub const </span>TRUE: <span class="self">Self </span>= <span class="self">Self </span>{
+        values: <span class="number">0b111_1111_1111_1111</span>,
     };
 
-    <span class="doccomment">/// All signals `LO`</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FALSE</span>: <span class="self">Self</span> <span class="op">=</span> <span class="self">Self</span> { <span class="ident">values</span>: <span class="number">0</span> };
+    <span class="doccomment">/// All signals `LO`
+    </span><span class="kw">pub const </span>FALSE: <span class="self">Self </span>= <span class="self">Self </span>{ values: <span class="number">0 </span>};
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">values</span>: <span class="ident">i16</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">values</span>: <span class="ident">values</span> <span class="op">&amp;</span> <span class="number">0b111_1111_1111_1111</span>,
+    <span class="kw">pub fn </span>new(values: i16) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            values: values &amp; <span class="number">0b111_1111_1111_1111</span>,
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">Range</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) -&gt; <span class="ident">i16</span> {
-        <span class="kw">let</span> <span class="ident">shift</span> <span class="op">=</span> <span class="ident">index</span>.<span class="ident">start</span>;
-        <span class="kw">let</span> <span class="ident">width</span> <span class="op">=</span> <span class="ident">index</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>;
-        <span class="kw">let</span> <span class="ident">mask_unshifted</span> <span class="op">=</span> <span class="number">2i16</span>.<span class="ident">pow</span>(<span class="ident">width</span>) <span class="op">-</span> <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="ident">mask_unshifted</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">shift</span>;
-        <span class="kw">let</span> <span class="ident">ret_unshifted</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">values</span> <span class="op">&amp;</span> <span class="ident">mask</span>;
-        <span class="ident">ret_unshifted</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">shift</span>
+    <span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, index: Range&lt;usize&gt;) -&gt; i16 {
+        <span class="kw">let </span>shift = index.start;
+        <span class="kw">let </span>width = index.len() <span class="kw">as </span>u32;
+        <span class="kw">let </span>mask_unshifted = <span class="number">2i16</span>.pow(width) - <span class="number">1</span>;
+        <span class="kw">let </span>mask = mask_unshifted &lt;&lt; shift;
+        <span class="kw">let </span>ret_unshifted = <span class="self">self</span>.values &amp; mask;
+        ret_unshifted &gt;&gt; shift
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Signal15</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: <span class="ident">i16</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">value</span>)
+<span class="kw">impl </span>From&lt;i16&gt; <span class="kw">for </span>Signal15 {
+    <span class="kw">fn </span>from(value: i16) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new(value)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Signal15</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: <span class="ident">i32</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">value</span> <span class="kw">as</span> <span class="ident">i16</span>)
+<span class="kw">impl </span>From&lt;i32&gt; <span class="kw">for </span>Signal15 {
+    <span class="kw">fn </span>from(value: i32) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new(value <span class="kw">as </span>i16)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Signal16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Signal15</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">signal</span>: <span class="ident">Signal16</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">signal</span>.<span class="ident">values</span>)
+<span class="kw">impl </span>From&lt;Signal16&gt; <span class="kw">for </span>Signal15 {
+    <span class="kw">fn </span>from(signal: Signal16) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new(signal.values)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Signal15</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">u16</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">signal</span>: <span class="ident">Signal15</span>) -&gt; <span class="ident">u16</span> {
-        <span class="kw">unsafe</span> { <span class="ident">std::mem::transmute</span>(<span class="ident">signal</span>.<span class="ident">values</span>) }
+<span class="kw">impl </span>From&lt;Signal15&gt; <span class="kw">for </span>u16 {
+    <span class="kw">fn </span>from(signal: Signal15) -&gt; u16 {
+        <span class="kw">unsafe </span>{ std::mem::transmute(signal.values) }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Signal15</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">i16</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">signal</span>: <span class="ident">Signal15</span>) -&gt; <span class="ident">i16</span> {
-        <span class="ident">signal</span>.<span class="ident">values</span> <span class="kw">as</span> <span class="ident">i16</span>
+<span class="kw">impl </span>From&lt;Signal15&gt; <span class="kw">for </span>i16 {
+    <span class="kw">fn </span>from(signal: Signal15) -&gt; i16 {
+        signal.values <span class="kw">as </span>i16
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Signal15</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">usize</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">signal</span>: <span class="ident">Signal15</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">u16::from</span>(<span class="ident">signal</span>) <span class="kw">as</span> <span class="ident">usize</span>
+<span class="kw">impl </span>From&lt;Signal15&gt; <span class="kw">for </span>usize {
+    <span class="kw">fn </span>from(signal: Signal15) -&gt; <span class="self">Self </span>{
+        u16::from(signal) <span class="kw">as </span>usize
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Not</span> <span class="kw">for</span> <span class="ident">Signal15</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Signal15</span>;
+<span class="kw">impl </span>Not <span class="kw">for </span>Signal15 {
+    <span class="kw">type </span>Output = Signal15;
 
-    <span class="kw">fn</span> <span class="ident">not</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Output</span> {
-        <span class="ident">Signal15::new</span>(<span class="op">!</span><span class="self">self</span>.<span class="ident">values</span>)
+    <span class="kw">fn </span>not(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
+        Signal15::new(!<span class="self">self</span>.values)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">BitAnd</span> <span class="kw">for</span> <span class="ident">Signal15</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Signal15</span>;
+<span class="kw">impl </span>BitAnd <span class="kw">for </span>Signal15 {
+    <span class="kw">type </span>Output = Signal15;
 
-    <span class="kw">fn</span> <span class="ident">bitand</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="self">Self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Output</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="self">self</span>.<span class="ident">values</span> <span class="op">&amp;</span> <span class="ident">rhs</span>.<span class="ident">values</span>)
+    <span class="kw">fn </span>bitand(<span class="self">self</span>, rhs: <span class="self">Self</span>) -&gt; <span class="self">Self</span>::Output {
+        <span class="self">Self</span>::new(<span class="self">self</span>.values &amp; rhs.values)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">Signal15</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">std::fmt::Result</span> {
-        <span class="ident">f</span>.<span class="ident">write_fmt</span>(<span class="macro">format_args!</span>(<span class="string">&quot;{:015b}&quot;</span>, <span class="self">self</span>.<span class="ident">values</span>))
+<span class="kw">impl </span>Debug <span class="kw">for </span>Signal15 {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        f.write_fmt(<span class="macro">format_args!</span>(<span class="string">&quot;{:015b}&quot;</span>, <span class="self">self</span>.values))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Signal15</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">std::fmt::Result</span> {
-        <span class="ident">f</span>.<span class="ident">write_fmt</span>(<span class="macro">format_args!</span>(<span class="string">&quot;{:015b}&quot;</span>, <span class="self">self</span>.<span class="ident">values</span>))
+<span class="kw">impl </span>Display <span class="kw">for </span>Signal15 {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        f.write_fmt(<span class="macro">format_args!</span>(<span class="string">&quot;{:015b}&quot;</span>, <span class="self">self</span>.values))
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

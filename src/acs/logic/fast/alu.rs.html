@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/logic/fast/alu.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>alu.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/logic/fast/alu.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>alu.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../acs/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -596,601 +596,601 @@
 <span id="594">594</span>
 <span id="595">595</span>
 <span id="596">596</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Signal</span>, <span class="ident">Signal16</span>, <span class="ident">Unit</span>};
+</span><span class="kw">use crate</span>::{Signal, Signal16, Unit};
 
-<span class="doccomment">/// Arithmetic Logic Unit</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Alu</span> {
-    <span class="kw">pub</span> <span class="ident">x</span>: <span class="ident">Signal16</span>,
-    <span class="kw">pub</span> <span class="ident">y</span>: <span class="ident">Signal16</span>,
-    <span class="doccomment">/// Set x input to zero</span>
-    <span class="kw">pub</span> <span class="ident">zx</span>: <span class="ident">Signal</span>,
-    <span class="doccomment">/// Negates x input</span>
-    <span class="kw">pub</span> <span class="ident">nx</span>: <span class="ident">Signal</span>,
-    <span class="doccomment">/// Set y input to zero</span>
-    <span class="kw">pub</span> <span class="ident">zy</span>: <span class="ident">Signal</span>,
-    <span class="comment">// Negates y input</span>
-    <span class="kw">pub</span> <span class="ident">ny</span>: <span class="ident">Signal</span>,
-    <span class="doccomment">/// - False selects the &amp; function</span>
-    <span class="doccomment">/// - True selects the + function</span>
-    <span class="kw">pub</span> <span class="ident">f</span>: <span class="ident">Signal</span>,
-    <span class="doccomment">/// Negates the output</span>
-    <span class="kw">pub</span> <span class="ident">no</span>: <span class="ident">Signal</span>,
+<span class="doccomment">/// Arithmetic Logic Unit
+</span><span class="attribute">#[derive(Default)]
+</span><span class="kw">pub struct </span>Alu {
+    <span class="kw">pub </span>x: Signal16,
+    <span class="kw">pub </span>y: Signal16,
+    <span class="doccomment">/// Set x input to zero
+    </span><span class="kw">pub </span>zx: Signal,
+    <span class="doccomment">/// Negates x input
+    </span><span class="kw">pub </span>nx: Signal,
+    <span class="doccomment">/// Set y input to zero
+    </span><span class="kw">pub </span>zy: Signal,
+    <span class="comment">// Negates y input
+    </span><span class="kw">pub </span>ny: Signal,
+    <span class="doccomment">/// - False selects the &amp; function
+    /// - True selects the + function
+    </span><span class="kw">pub </span>f: Signal,
+    <span class="doccomment">/// Negates the output
+    </span><span class="kw">pub </span>no: Signal,
 
-    <span class="kw">pub</span> <span class="ident">out</span>: <span class="ident">Signal16</span>,
-    <span class="doccomment">/// Whether the output is zero</span>
-    <span class="kw">pub</span> <span class="ident">zr</span>: <span class="ident">Signal</span>,
-    <span class="doccomment">/// Whether the output is negative</span>
-    <span class="kw">pub</span> <span class="ident">ng</span>: <span class="ident">Signal</span>,
+    <span class="kw">pub </span>out: Signal16,
+    <span class="doccomment">/// Whether the output is zero
+    </span><span class="kw">pub </span>zr: Signal,
+    <span class="doccomment">/// Whether the output is negative
+    </span><span class="kw">pub </span>ng: Signal,
 }
 
-<span class="kw">impl</span> <span class="ident">Alu</span> {
-    <span class="doccomment">/// Carries out the ALU simulation.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// It takes as input two main signals: `x` and `y`. Then the following:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - `zx`: Set `x` to zero.</span>
-    <span class="doccomment">/// - `nx`: Negate `x`.</span>
-    <span class="doccomment">/// - `zy`: Set `y` to zero.</span>
-    <span class="doccomment">/// - `ny`: Negate `y`.</span>
-    <span class="doccomment">/// - `f`:</span>
-    <span class="doccomment">///   - `LO` selects the `&amp;` function</span>
-    <span class="doccomment">///   - `HI` selects the `+` function</span>
-    <span class="doccomment">/// - `no`: Negate `out` signal.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// It can return one of the following:</span>
-    <span class="doccomment">/// `0`, `1`, `-1`, `x`, `y`, `!x`, `!y`, `-x`, `-y`,</span>
-    <span class="doccomment">/// `x+1`, `y+1`, `x-1`, `y-1`, `x+y`, `x-y`, `y-x`, `x&amp;y`, `x|y`,</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// And two more signals which tell whether the result is _zero_ or _negative_</span>
-    <span class="doccomment">/// in this exact order.</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::too_many_arguments</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sim</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">x</span>: <span class="ident">Signal16</span>,
-        <span class="ident">y</span>: <span class="ident">Signal16</span>,
-        <span class="ident">zx</span>: <span class="ident">Signal</span>,
-        <span class="ident">nx</span>: <span class="ident">Signal</span>,
-        <span class="ident">zy</span>: <span class="ident">Signal</span>,
-        <span class="ident">ny</span>: <span class="ident">Signal</span>,
-        <span class="ident">f</span>: <span class="ident">Signal</span>,
-        <span class="ident">no</span>: <span class="ident">Signal</span>,
-    ) -&gt; (<span class="ident">Signal16</span>, <span class="ident">Signal</span>, <span class="ident">Signal</span>) {
-        <span class="self">self</span>.<span class="ident">x</span> <span class="op">=</span> <span class="ident">x</span>;
-        <span class="self">self</span>.<span class="ident">y</span> <span class="op">=</span> <span class="ident">y</span>;
-        <span class="self">self</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">zx</span>;
-        <span class="self">self</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">nx</span>;
-        <span class="self">self</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">zy</span>;
-        <span class="self">self</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">ny</span>;
-        <span class="self">self</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">f</span>;
-        <span class="self">self</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">no</span>;
+<span class="kw">impl </span>Alu {
+    <span class="doccomment">/// Carries out the ALU simulation.
+    ///
+    /// It takes as input two main signals: `x` and `y`. Then the following:
+    ///
+    /// - `zx`: Set `x` to zero.
+    /// - `nx`: Negate `x`.
+    /// - `zy`: Set `y` to zero.
+    /// - `ny`: Negate `y`.
+    /// - `f`:
+    ///   - `LO` selects the `&amp;` function
+    ///   - `HI` selects the `+` function
+    /// - `no`: Negate `out` signal.
+    ///
+    /// It can return one of the following:
+    /// `0`, `1`, `-1`, `x`, `y`, `!x`, `!y`, `-x`, `-y`,
+    /// `x+1`, `y+1`, `x-1`, `y-1`, `x+y`, `x-y`, `y-x`, `x&amp;y`, `x|y`,
+    ///
+    /// And two more signals which tell whether the result is _zero_ or _negative_
+    /// in this exact order.
+    </span><span class="attribute">#[allow(clippy::too_many_arguments)]
+    </span><span class="kw">pub fn </span>sim(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        x: Signal16,
+        y: Signal16,
+        zx: Signal,
+        nx: Signal,
+        zy: Signal,
+        ny: Signal,
+        f: Signal,
+        no: Signal,
+    ) -&gt; (Signal16, Signal, Signal) {
+        <span class="self">self</span>.x = x;
+        <span class="self">self</span>.y = y;
+        <span class="self">self</span>.zx = zx;
+        <span class="self">self</span>.nx = nx;
+        <span class="self">self</span>.zy = zy;
+        <span class="self">self</span>.ny = ny;
+        <span class="self">self</span>.f = f;
+        <span class="self">self</span>.no = no;
 
-        <span class="self">self</span>.<span class="ident">eval</span>();
+        <span class="self">self</span>.eval();
 
-        (<span class="self">self</span>.<span class="ident">out</span>, <span class="self">self</span>.<span class="ident">zr</span>, <span class="self">self</span>.<span class="ident">ng</span>)
+        (<span class="self">self</span>.out, <span class="self">self</span>.zr, <span class="self">self</span>.ng)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_x</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">x</span>: <span class="ident">Signal16</span>) {
-        <span class="self">self</span>.<span class="ident">x</span> <span class="op">=</span> <span class="ident">x</span>;
+    <span class="kw">pub fn </span>set_x(<span class="kw-2">&amp;mut </span><span class="self">self</span>, x: Signal16) {
+        <span class="self">self</span>.x = x;
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_y</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">y</span>: <span class="ident">Signal16</span>) {
-        <span class="self">self</span>.<span class="ident">y</span> <span class="op">=</span> <span class="ident">y</span>;
+    <span class="kw">pub fn </span>set_y(<span class="kw-2">&amp;mut </span><span class="self">self</span>, y: Signal16) {
+        <span class="self">self</span>.y = y;
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">out</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Signal16</span> {
-        <span class="self">self</span>.<span class="ident">out</span>
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">Unit</span> <span class="kw">for</span> <span class="ident">Alu</span> {
-    <span class="kw">fn</span> <span class="ident">eval</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="comment">// Zero or X</span>
-        <span class="kw">let</span> <span class="ident">x_zero_mux_out</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">zx</span>.<span class="ident">as_bool</span>() {
-            <span class="ident">Signal16::FALSE</span>
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">x</span>
-        };
-
-        <span class="comment">// Now not X</span>
-        <span class="kw">let</span> <span class="ident">x_negx_mux_out</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">nx</span>.<span class="ident">as_bool</span>() {
-            <span class="op">!</span><span class="ident">x_zero_mux_out</span>
-        } <span class="kw">else</span> {
-            <span class="ident">x_zero_mux_out</span>
-        };
-
-        <span class="comment">// Zero or Y</span>
-        <span class="kw">let</span> <span class="ident">y_zero_mux_out</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">zy</span>.<span class="ident">as_bool</span>() {
-            <span class="ident">Signal16::FALSE</span>
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">y</span>
-        };
-
-        <span class="comment">// Now not Y</span>
-        <span class="kw">let</span> <span class="ident">y_negy_mux_out</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ny</span>.<span class="ident">as_bool</span>() {
-            <span class="op">!</span><span class="ident">y_zero_mux_out</span>
-        } <span class="kw">else</span> {
-            <span class="ident">y_zero_mux_out</span>
-        };
-
-        <span class="comment">// Select between And and Add</span>
-        <span class="kw">let</span> <span class="ident">f_mux_out</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">f</span>.<span class="ident">as_bool</span>() {
-            <span class="ident">x_negx_mux_out</span> <span class="op">+</span> <span class="ident">y_negy_mux_out</span>
-        } <span class="kw">else</span> {
-            <span class="ident">x_negx_mux_out</span> <span class="op">&amp;</span> <span class="ident">y_negy_mux_out</span>
-        };
-
-        <span class="comment">// Select between Out and !Out</span>
-        <span class="kw">let</span> <span class="ident">o_nego_mux_out</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">no</span>.<span class="ident">as_bool</span>() {
-            <span class="op">!</span><span class="ident">f_mux_out</span>
-        } <span class="kw">else</span> {
-            <span class="ident">f_mux_out</span>
-        };
-
-        <span class="self">self</span>.<span class="ident">out</span> <span class="op">=</span> <span class="ident">o_nego_mux_out</span>;
-
-        <span class="self">self</span>.<span class="ident">zr</span> <span class="op">=</span> (<span class="ident">o_nego_mux_out</span> <span class="op">==</span> <span class="ident">Signal16::FALSE</span>).<span class="ident">into</span>();
-
-        <span class="self">self</span>.<span class="ident">ng</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">get</span>(<span class="number">15</span>..<span class="number">16</span>).<span class="ident">into</span>();
+    <span class="kw">pub fn </span>out(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Signal16 {
+        <span class="self">self</span>.out
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="kw">impl </span>Unit <span class="kw">for </span>Alu {
+    <span class="kw">fn </span>eval(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="comment">// Zero or X
+        </span><span class="kw">let </span>x_zero_mux_out = <span class="kw">if </span><span class="self">self</span>.zx.as_bool() {
+            Signal16::FALSE
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.x
+        };
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">run</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">alu</span> <span class="op">=</span> <span class="ident">Alu::default</span>();
+        <span class="comment">// Now not X
+        </span><span class="kw">let </span>x_negx_mux_out = <span class="kw">if </span><span class="self">self</span>.nx.as_bool() {
+            !x_zero_mux_out
+        } <span class="kw">else </span>{
+            x_zero_mux_out
+        };
 
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Zero or Y
+        </span><span class="kw">let </span>y_zero_mux_out = <span class="kw">if </span><span class="self">self</span>.zy.as_bool() {
+            Signal16::FALSE
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.y
+        };
 
-        <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">=</span> <span class="ident">Signal16::from</span>(<span class="number">0</span>); <span class="comment">// x = 0</span>
-        <span class="ident">alu</span>.<span class="ident">y</span> <span class="op">=</span> <span class="ident">Signal16::from</span>(<span class="op">-</span><span class="number">1</span>); <span class="comment">// y = -1</span>
+        <span class="comment">// Now not Y
+        </span><span class="kw">let </span>y_negy_mux_out = <span class="kw">if </span><span class="self">self</span>.ny.as_bool() {
+            !y_zero_mux_out
+        } <span class="kw">else </span>{
+            y_zero_mux_out
+        };
 
-        <span class="comment">// Compute 0</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Select between And and Add
+        </span><span class="kw">let </span>f_mux_out = <span class="kw">if </span><span class="self">self</span>.f.as_bool() {
+            x_negx_mux_out + y_negy_mux_out
+        } <span class="kw">else </span>{
+            x_negx_mux_out &amp; y_negy_mux_out
+        };
 
-        <span class="comment">// Compute 1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">Signal16::from</span>(<span class="number">1</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Select between Out and !Out
+        </span><span class="kw">let </span>o_nego_mux_out = <span class="kw">if </span><span class="self">self</span>.no.as_bool() {
+            !f_mux_out
+        } <span class="kw">else </span>{
+            f_mux_out
+        };
 
-        <span class="comment">// Compute -1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">Signal16::from</span>(<span class="op">-</span><span class="number">1</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="self">self</span>.out = o_nego_mux_out;
 
-        <span class="comment">// Compute x</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="self">self</span>.zr = (o_nego_mux_out == Signal16::FALSE).into();
 
-        <span class="comment">// Compute y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="self">self</span>.ng = <span class="self">self</span>.out.get(<span class="number">15</span>..<span class="number">16</span>).into();
+    }
+}
 
-        <span class="comment">// Compute !x</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="op">!</span><span class="ident">alu</span>.<span class="ident">x</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">Signal16::TRUE</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-        <span class="comment">// Compute !y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="op">!</span><span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>run() {
+        <span class="kw">let </span><span class="kw-2">mut </span>alu = Alu::default();
 
-        <span class="comment">// Compute -x</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="op">-</span><span class="ident">alu</span>.<span class="ident">x</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, Signal16::FALSE);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::HI);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute -y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="op">-</span><span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        alu.x = Signal16::from(<span class="number">0</span>); <span class="comment">// x = 0
+        </span>alu.y = Signal16::from(-<span class="number">1</span>); <span class="comment">// y = -1
 
-        <span class="comment">// Compute x + 1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">+</span> <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        // Compute 0
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, Signal16::FALSE);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::HI);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute y + 1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">y</span> <span class="op">+</span> <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute 1
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, Signal16::from(<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute x - 1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">-</span> <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="comment">// Compute -1
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, Signal16::from(-<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute y - 1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">y</span> <span class="op">-</span> <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="comment">// Compute x
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::LO;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::HI);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute x + y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">+</span> <span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="comment">// Compute y
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::LO;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute x - y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">-</span> <span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute !x
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::LO;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, !alu.x);
+        <span class="macro">assert_eq!</span>(alu.out, Signal16::TRUE);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute y - x</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">y</span> <span class="op">-</span> <span class="ident">alu</span>.<span class="ident">x</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="comment">// Compute !y
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::LO;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, !alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::HI);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute x &amp; y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">&amp;</span> <span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute -x
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, -alu.x);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::HI);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute x | y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">|</span> <span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="comment">// Compute -y
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, -alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">=</span> <span class="ident">Signal16::from</span>(<span class="number">0b000000000010001i16</span>); <span class="comment">// x = 17</span>
-        <span class="ident">alu</span>.<span class="ident">y</span> <span class="op">=</span> <span class="ident">Signal16::from</span>(<span class="number">0b000000000000011i16</span>); <span class="comment">// y =  3</span>
+        <span class="comment">// Compute x + 1
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x + <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute 0</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute y + 1
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.y + <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::HI);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute 1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">Signal16::from</span>(<span class="number">1</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute x - 1
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x - <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute -1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">Signal16::from</span>(<span class="op">-</span><span class="number">1</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="comment">// Compute y - 1
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.y - <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute x</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute x + y
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x + alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute x - y
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x - alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute !x</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="op">!</span><span class="ident">alu</span>.<span class="ident">x</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="comment">// Compute y - x
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.y - alu.x);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute !y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="op">!</span><span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="comment">// Compute x &amp; y
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::LO;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x &amp; alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::HI);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute -x</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="op">-</span><span class="ident">alu</span>.<span class="ident">x</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="comment">// Compute x | y
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::HI;
+        alu.f = Signal::LO;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x | alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute -y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="op">-</span><span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        alu.x = Signal16::from(<span class="number">0b000000000010001i16</span>); <span class="comment">// x = 17
+        </span>alu.y = Signal16::from(<span class="number">0b000000000000011i16</span>); <span class="comment">// y =  3
 
-        <span class="comment">// Compute x + 1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">+</span> <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        // Compute 0
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, Signal16::FALSE);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::HI);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute y + 1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">y</span> <span class="op">+</span> <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute 1
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, Signal16::from(<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute x - 1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">-</span> <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute -1
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, Signal16::from(-<span class="number">1</span>));
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute y - 1</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">y</span> <span class="op">-</span> <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute x
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::LO;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute x + y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">+</span> <span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute y
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::LO;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
 
-        <span class="comment">// Compute x - y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">-</span> <span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute !x
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::LO;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, !alu.x);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute y - x</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">y</span> <span class="op">-</span> <span class="ident">alu</span>.<span class="ident">x</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::HI</span>);
+        <span class="comment">// Compute !y
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::LO;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, !alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute x &amp; y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">&amp;</span> <span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute -x
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, -alu.x);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
 
-        <span class="comment">// Compute x | y</span>
-        <span class="ident">alu</span>.<span class="ident">zx</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">nx</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">zy</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">ny</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">f</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-        <span class="ident">alu</span>.<span class="ident">no</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-        <span class="ident">alu</span>.<span class="ident">eval</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">out</span>, <span class="ident">alu</span>.<span class="ident">x</span> <span class="op">|</span> <span class="ident">alu</span>.<span class="ident">y</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">zr</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">alu</span>.<span class="ident">ng</span>, <span class="ident">Signal::LO</span>);
+        <span class="comment">// Compute -y
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, -alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
+
+        <span class="comment">// Compute x + 1
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x + <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
+
+        <span class="comment">// Compute y + 1
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.y + <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
+
+        <span class="comment">// Compute x - 1
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::HI;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x - <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
+
+        <span class="comment">// Compute y - 1
+        </span>alu.zx = Signal::HI;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.y - <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
+
+        <span class="comment">// Compute x + y
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x + alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
+
+        <span class="comment">// Compute x - y
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x - alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
+
+        <span class="comment">// Compute y - x
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::HI;
+        alu.f = Signal::HI;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.y - alu.x);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::HI);
+
+        <span class="comment">// Compute x &amp; y
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::LO;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::LO;
+        alu.f = Signal::LO;
+        alu.no = Signal::LO;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x &amp; alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
+
+        <span class="comment">// Compute x | y
+        </span>alu.zx = Signal::LO;
+        alu.nx = Signal::HI;
+        alu.zy = Signal::LO;
+        alu.ny = Signal::HI;
+        alu.f = Signal::LO;
+        alu.no = Signal::HI;
+        alu.eval();
+        <span class="macro">assert_eq!</span>(alu.out, alu.x | alu.y);
+        <span class="macro">assert_eq!</span>(alu.zr, Signal::LO);
+        <span class="macro">assert_eq!</span>(alu.ng, Signal::LO);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

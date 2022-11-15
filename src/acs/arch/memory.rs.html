@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/arch/memory.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>memory.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/arch/memory.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>memory.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../acs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -160,165 +160,165 @@
 <span id="158">158</span>
 <span id="159">159</span>
 <span id="160">160</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">mem::fast::Ram16k</span>, <span class="ident">And</span>, <span class="ident">And16</span>, <span class="ident">Keyboard</span>, <span class="ident">Mux16</span>, <span class="ident">Not</span>, <span class="ident">Or16Way</span>, <span class="ident">Screen</span>, <span class="ident">Signal</span>, <span class="ident">Signal15</span>,
-    <span class="ident">Signal16</span>, <span class="ident">Unit</span>,
+</span><span class="kw">use crate</span>::{
+    mem::fast::Ram16k, And, And16, Keyboard, Mux16, Not, Or16Way, Screen, Signal, Signal15,
+    Signal16, Unit,
 };
 
-<span class="doccomment">/// Package of three 16-bit chip parts: `Ram16k`, `Screen`, and `Keyboard`</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Memory</span> {
-    <span class="kw">pub</span> <span class="ident">inp</span>: <span class="ident">Signal16</span>,
-    <span class="kw">pub</span> <span class="ident">load</span>: <span class="ident">Signal</span>,
-    <span class="kw">pub</span> <span class="ident">address</span>: <span class="ident">Signal15</span>,
-    <span class="ident">out</span>: <span class="ident">Signal16</span>,
+<span class="doccomment">/// Package of three 16-bit chip parts: `Ram16k`, `Screen`, and `Keyboard`
+</span><span class="attribute">#[derive(Default)]
+</span><span class="kw">pub struct </span>Memory {
+    <span class="kw">pub </span>inp: Signal16,
+    <span class="kw">pub </span>load: Signal,
+    <span class="kw">pub </span>address: Signal15,
+    out: Signal16,
 
-    <span class="ident">ram</span>: <span class="ident">Ram16k</span>,
-    <span class="ident">screen</span>: <span class="ident">Screen</span>,
-    <span class="ident">keyboard</span>: <span class="ident">Keyboard</span>,
+    ram: Ram16k,
+    screen: Screen,
+    keyboard: Keyboard,
 
-    <span class="ident">sel_ram</span>: <span class="ident">Not</span>,
-    <span class="ident">load_ram</span>: <span class="ident">And</span>,
+    sel_ram: Not,
+    load_ram: And,
 
-    <span class="ident">sel_screen</span>: <span class="ident">Not</span>,
-    <span class="ident">load_screen0</span>: <span class="ident">And</span>,
-    <span class="ident">load_screen1</span>: <span class="ident">And</span>,
+    sel_screen: Not,
+    load_screen0: And,
+    load_screen1: And,
 
-    <span class="ident">keyboard_address_and</span>: <span class="ident">And16</span>,
-    <span class="ident">keyboard_address_or</span>: <span class="ident">Or16Way</span>,
-    <span class="ident">keyboard_out</span>: <span class="ident">Mux16</span>,
+    keyboard_address_and: And16,
+    keyboard_address_or: Or16Way,
+    keyboard_out: Mux16,
 
-    <span class="ident">screen_key_mux</span>: <span class="ident">Mux16</span>,
-    <span class="ident">out_mux</span>: <span class="ident">Mux16</span>,
+    screen_key_mux: Mux16,
+    out_mux: Mux16,
 }
 
-<span class="kw">impl</span> <span class="ident">Memory</span> {
-    <span class="doccomment">/// Carries out the simulation, taking as input:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - `inp`: data input</span>
-    <span class="doccomment">/// - `load`: whether to write `inp` into the RAM</span>
-    <span class="doccomment">/// - `address`: which register to select</span>
-    <span class="doccomment">///   - \[0, 16383\] results in accessing Ram16k</span>
-    <span class="doccomment">///   - \[16384, 24575\] results in accessing the Screen</span>
-    <span class="doccomment">///   - 24576 results in accessing the Keyboard</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// It returns the value stored at `address. Furthermore, when `load` is</span>
-    <span class="doccomment">/// `HI`, `inp` is written at location `address`, and the loaded value will</span>
-    <span class="doccomment">/// be emitted from the next time step onward.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sim</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">inp</span>: <span class="ident">Signal16</span>, <span class="ident">load</span>: <span class="ident">Signal</span>, <span class="ident">address</span>: <span class="ident">Signal15</span>) -&gt; <span class="ident">Signal16</span> {
-        <span class="self">self</span>.<span class="ident">inp</span> <span class="op">=</span> <span class="ident">inp</span>;
-        <span class="self">self</span>.<span class="ident">load</span> <span class="op">=</span> <span class="ident">load</span>;
-        <span class="self">self</span>.<span class="ident">address</span> <span class="op">=</span> <span class="ident">address</span>;
-        <span class="self">self</span>.<span class="ident">tick</span>();
-        <span class="self">self</span>.<span class="ident">out</span>
+<span class="kw">impl </span>Memory {
+    <span class="doccomment">/// Carries out the simulation, taking as input:
+    ///
+    /// - `inp`: data input
+    /// - `load`: whether to write `inp` into the RAM
+    /// - `address`: which register to select
+    ///   - \[0, 16383\] results in accessing Ram16k
+    ///   - \[16384, 24575\] results in accessing the Screen
+    ///   - 24576 results in accessing the Keyboard
+    ///
+    /// It returns the value stored at `address. Furthermore, when `load` is
+    /// `HI`, `inp` is written at location `address`, and the loaded value will
+    /// be emitted from the next time step onward.
+    </span><span class="kw">pub fn </span>sim(<span class="kw-2">&amp;mut </span><span class="self">self</span>, inp: Signal16, load: Signal, address: Signal15) -&gt; Signal16 {
+        <span class="self">self</span>.inp = inp;
+        <span class="self">self</span>.load = load;
+        <span class="self">self</span>.address = address;
+        <span class="self">self</span>.tick();
+        <span class="self">self</span>.out
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">out</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Signal16</span> {
-        <span class="self">self</span>.<span class="ident">out</span>
+    <span class="kw">pub fn </span>out(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Signal16 {
+        <span class="self">self</span>.out
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_screen</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Screen</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">screen</span>
+    <span class="kw">pub fn </span>get_screen(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Screen {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.screen
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_keyboard_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Keyboard</span> {
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">keyboard</span>
+    <span class="kw">pub fn </span>get_keyboard_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>Keyboard {
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>.keyboard
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Unit</span> <span class="kw">for</span> <span class="ident">Memory</span> {
-    <span class="kw">fn</span> <span class="ident">tick</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="comment">// When not_ram is 1, we are going into devices address space</span>
-        <span class="kw">let</span> <span class="ident">not_ram</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">address</span>.<span class="ident">get</span>(<span class="number">14</span>..<span class="number">15</span>).<span class="ident">into</span>();
+<span class="kw">impl </span>Unit <span class="kw">for </span>Memory {
+    <span class="kw">fn </span>tick(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="comment">// When not_ram is 1, we are going into devices address space
+        </span><span class="kw">let </span>not_ram = <span class="self">self</span>.address.get(<span class="number">14</span>..<span class="number">15</span>).into();
 
-        <span class="kw">let</span> <span class="ident">ram_load</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">load_ram</span>.<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">load</span>, <span class="self">self</span>.<span class="ident">sel_ram</span>.<span class="ident">sim</span>(<span class="ident">not_ram</span>));
+        <span class="kw">let </span>ram_load = <span class="self">self</span>.load_ram.sim(<span class="self">self</span>.load, <span class="self">self</span>.sel_ram.sim(not_ram));
 
-        <span class="comment">// When not_screen is 1 we are going beyond its address space</span>
-        <span class="kw">let</span> <span class="ident">not_screen</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">address</span>.<span class="ident">get</span>(<span class="number">13</span>..<span class="number">14</span>).<span class="ident">into</span>();
+        <span class="comment">// When not_screen is 1 we are going beyond its address space
+        </span><span class="kw">let </span>not_screen = <span class="self">self</span>.address.get(<span class="number">13</span>..<span class="number">14</span>).into();
 
-        <span class="kw">let</span> <span class="ident">screen_load</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">load_screen1</span>.<span class="ident">sim</span>(
-            <span class="self">self</span>.<span class="ident">load_screen0</span>
-                .<span class="ident">sim</span>(<span class="ident">not_ram</span>, <span class="self">self</span>.<span class="ident">sel_screen</span>.<span class="ident">sim</span>(<span class="ident">not_screen</span>)),
-            <span class="self">self</span>.<span class="ident">load</span>,
+        <span class="kw">let </span>screen_load = <span class="self">self</span>.load_screen1.sim(
+            <span class="self">self</span>.load_screen0
+                .sim(not_ram, <span class="self">self</span>.sel_screen.sim(not_screen)),
+            <span class="self">self</span>.load,
         );
 
-        <span class="kw">let</span> <span class="ident">ram_out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ram</span>.<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">inp</span>, <span class="ident">ram_load</span>, <span class="self">self</span>.<span class="ident">address</span>);
-        <span class="kw">let</span> <span class="ident">screen_out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">screen</span>.<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">inp</span>, <span class="ident">screen_load</span>, <span class="self">self</span>.<span class="ident">address</span>.<span class="ident">into</span>());
-        <span class="self">self</span>.<span class="ident">keyboard</span>.<span class="ident">eval</span>();
+        <span class="kw">let </span>ram_out = <span class="self">self</span>.ram.sim(<span class="self">self</span>.inp, ram_load, <span class="self">self</span>.address);
+        <span class="kw">let </span>screen_out = <span class="self">self</span>.screen.sim(<span class="self">self</span>.inp, screen_load, <span class="self">self</span>.address.into());
+        <span class="self">self</span>.keyboard.eval();
 
-        <span class="comment">// Only one address should select keyboard</span>
-        <span class="comment">// Out is going to be 0 is address is keyboard</span>
-        <span class="comment">// otherwise 1 if address is not keyboard</span>
-        <span class="kw">let</span> <span class="ident">kao</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">keyboard_address_or</span>.<span class="ident">sim</span>(
-            <span class="self">self</span>.<span class="ident">keyboard_address_and</span>
-                .<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">address</span>.<span class="ident">into</span>(), <span class="op">!</span><span class="ident">Signal16::new</span>(<span class="number">24576</span>)),
+        <span class="comment">// Only one address should select keyboard
+        // Out is going to be 0 is address is keyboard
+        // otherwise 1 if address is not keyboard
+        </span><span class="kw">let </span>kao = <span class="self">self</span>.keyboard_address_or.sim(
+            <span class="self">self</span>.keyboard_address_and
+                .sim(<span class="self">self</span>.address.into(), !Signal16::new(<span class="number">24576</span>)),
         );
 
-        <span class="kw">let</span> <span class="ident">keyboard_out_out</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">keyboard_out</span>
-            .<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">keyboard</span>.<span class="ident">out</span>(), <span class="ident">Signal16::FALSE</span>, <span class="ident">kao</span>);
+        <span class="kw">let </span>keyboard_out_out = <span class="self">self
+            </span>.keyboard_out
+            .sim(<span class="self">self</span>.keyboard.out(), Signal16::FALSE, kao);
 
-        <span class="comment">// Select between screen and keyboard</span>
-        <span class="kw">let</span> <span class="ident">screen_key_mux_out</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">screen_key_mux</span>
-            .<span class="ident">sim</span>(<span class="ident">screen_out</span>, <span class="ident">keyboard_out_out</span>, <span class="ident">not_screen</span>);
+        <span class="comment">// Select between screen and keyboard
+        </span><span class="kw">let </span>screen_key_mux_out = <span class="self">self
+            </span>.screen_key_mux
+            .sim(screen_out, keyboard_out_out, not_screen);
 
-        <span class="comment">// Select out between ram and devices</span>
-        <span class="kw">let</span> <span class="ident">out_mux_out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">out_mux</span>.<span class="ident">sim</span>(<span class="ident">ram_out</span>, <span class="ident">screen_key_mux_out</span>, <span class="ident">not_ram</span>);
+        <span class="comment">// Select out between ram and devices
+        </span><span class="kw">let </span>out_mux_out = <span class="self">self</span>.out_mux.sim(ram_out, screen_key_mux_out, not_ram);
 
-        <span class="self">self</span>.<span class="ident">out</span> <span class="op">=</span> <span class="ident">out_mux_out</span>;
+        <span class="self">self</span>.out = out_mux_out;
     }
 
-    <span class="kw">fn</span> <span class="ident">eval</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="comment">// When not_ram is 1, we are going into devices address space</span>
-        <span class="kw">let</span> <span class="ident">not_ram</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">address</span>.<span class="ident">get</span>(<span class="number">14</span>..<span class="number">15</span>).<span class="ident">into</span>();
+    <span class="kw">fn </span>eval(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="comment">// When not_ram is 1, we are going into devices address space
+        </span><span class="kw">let </span>not_ram = <span class="self">self</span>.address.get(<span class="number">14</span>..<span class="number">15</span>).into();
 
-        <span class="kw">let</span> <span class="ident">ram_load</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">load_ram</span>.<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">load</span>, <span class="self">self</span>.<span class="ident">sel_ram</span>.<span class="ident">sim</span>(<span class="ident">not_ram</span>));
+        <span class="kw">let </span>ram_load = <span class="self">self</span>.load_ram.sim(<span class="self">self</span>.load, <span class="self">self</span>.sel_ram.sim(not_ram));
 
-        <span class="comment">// When not_screen is 1 we are going beyond its address space</span>
-        <span class="kw">let</span> <span class="ident">not_screen</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">address</span>.<span class="ident">get</span>(<span class="number">13</span>..<span class="number">14</span>).<span class="ident">into</span>();
+        <span class="comment">// When not_screen is 1 we are going beyond its address space
+        </span><span class="kw">let </span>not_screen = <span class="self">self</span>.address.get(<span class="number">13</span>..<span class="number">14</span>).into();
 
-        <span class="kw">let</span> <span class="ident">screen_load</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">load_screen1</span>.<span class="ident">sim</span>(
-            <span class="self">self</span>.<span class="ident">load_screen0</span>
-                .<span class="ident">sim</span>(<span class="ident">not_ram</span>, <span class="self">self</span>.<span class="ident">sel_screen</span>.<span class="ident">sim</span>(<span class="ident">not_screen</span>)),
-            <span class="self">self</span>.<span class="ident">load</span>,
+        <span class="kw">let </span>screen_load = <span class="self">self</span>.load_screen1.sim(
+            <span class="self">self</span>.load_screen0
+                .sim(not_ram, <span class="self">self</span>.sel_screen.sim(not_screen)),
+            <span class="self">self</span>.load,
         );
 
-        <span class="self">self</span>.<span class="ident">ram</span>.<span class="ident">set_inp</span>(<span class="self">self</span>.<span class="ident">inp</span>);
-        <span class="self">self</span>.<span class="ident">ram</span>.<span class="ident">set_address</span>(<span class="self">self</span>.<span class="ident">address</span>);
-        <span class="self">self</span>.<span class="ident">ram</span>.<span class="ident">set_load</span>(<span class="ident">ram_load</span>);
-        <span class="self">self</span>.<span class="ident">ram</span>.<span class="ident">eval</span>();
-        <span class="kw">let</span> <span class="ident">ram_out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ram</span>.<span class="ident">out</span>();
-        <span class="kw">let</span> <span class="ident">screen_out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">screen</span>.<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">inp</span>, <span class="ident">screen_load</span>, <span class="self">self</span>.<span class="ident">address</span>.<span class="ident">into</span>());
-        <span class="self">self</span>.<span class="ident">screen</span>.<span class="ident">eval</span>();
-        <span class="self">self</span>.<span class="ident">keyboard</span>.<span class="ident">eval</span>();
+        <span class="self">self</span>.ram.set_inp(<span class="self">self</span>.inp);
+        <span class="self">self</span>.ram.set_address(<span class="self">self</span>.address);
+        <span class="self">self</span>.ram.set_load(ram_load);
+        <span class="self">self</span>.ram.eval();
+        <span class="kw">let </span>ram_out = <span class="self">self</span>.ram.out();
+        <span class="kw">let </span>screen_out = <span class="self">self</span>.screen.sim(<span class="self">self</span>.inp, screen_load, <span class="self">self</span>.address.into());
+        <span class="self">self</span>.screen.eval();
+        <span class="self">self</span>.keyboard.eval();
 
-        <span class="comment">// Only one address should select keyboard</span>
-        <span class="comment">// Out is going to be 0 is address is keyboard</span>
-        <span class="comment">// otherwise 1 if address is not keyboard</span>
-        <span class="kw">let</span> <span class="ident">kao</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">keyboard_address_or</span>.<span class="ident">sim</span>(
-            <span class="self">self</span>.<span class="ident">keyboard_address_and</span>
-                .<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">address</span>.<span class="ident">into</span>(), <span class="op">!</span><span class="ident">Signal16::new</span>(<span class="number">24576</span>)),
+        <span class="comment">// Only one address should select keyboard
+        // Out is going to be 0 is address is keyboard
+        // otherwise 1 if address is not keyboard
+        </span><span class="kw">let </span>kao = <span class="self">self</span>.keyboard_address_or.sim(
+            <span class="self">self</span>.keyboard_address_and
+                .sim(<span class="self">self</span>.address.into(), !Signal16::new(<span class="number">24576</span>)),
         );
 
-        <span class="kw">let</span> <span class="ident">keyboard_out_out</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">keyboard_out</span>
-            .<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">keyboard</span>.<span class="ident">out</span>(), <span class="ident">Signal16::FALSE</span>, <span class="ident">kao</span>);
+        <span class="kw">let </span>keyboard_out_out = <span class="self">self
+            </span>.keyboard_out
+            .sim(<span class="self">self</span>.keyboard.out(), Signal16::FALSE, kao);
 
-        <span class="comment">// Select between screen and keyboard</span>
-        <span class="kw">let</span> <span class="ident">screen_key_mux_out</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">screen_key_mux</span>
-            .<span class="ident">sim</span>(<span class="ident">screen_out</span>, <span class="ident">keyboard_out_out</span>, <span class="ident">not_screen</span>);
+        <span class="comment">// Select between screen and keyboard
+        </span><span class="kw">let </span>screen_key_mux_out = <span class="self">self
+            </span>.screen_key_mux
+            .sim(screen_out, keyboard_out_out, not_screen);
 
-        <span class="comment">// Select out between ram and devices</span>
-        <span class="kw">let</span> <span class="ident">out_mux_out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">out_mux</span>.<span class="ident">sim</span>(<span class="ident">ram_out</span>, <span class="ident">screen_key_mux_out</span>, <span class="ident">not_ram</span>);
+        <span class="comment">// Select out between ram and devices
+        </span><span class="kw">let </span>out_mux_out = <span class="self">self</span>.out_mux.sim(ram_out, screen_key_mux_out, not_ram);
 
-        <span class="self">self</span>.<span class="ident">out</span> <span class="op">=</span> <span class="ident">out_mux_out</span>;
+        <span class="self">self</span>.out = out_mux_out;
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

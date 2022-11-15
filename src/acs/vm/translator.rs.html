@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/vm/translator.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>translator.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/vm/translator.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>translator.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../acs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -466,471 +466,471 @@
 <span id="464">464</span>
 <span id="465">465</span>
 <span id="466">466</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">asm::instruction::AsmInstruction</span>,
-    <span class="ident">asm::instruction</span>::{<span class="ident">Comp</span>, <span class="ident">Dest</span>, <span class="ident">Jump</span>},
-    <span class="ident">segment::Segment</span>,
-    <span class="ident">vm::instruction::VmInstruction</span>,
-    <span class="ident">Assembler</span>,
+</span><span class="kw">use crate</span>::{
+    asm::instruction::AsmInstruction,
+    asm::instruction::{Comp, Dest, Jump},
+    segment::Segment,
+    vm::instruction::VmInstruction,
+    Assembler,
 };
 
-<span class="doccomment">/// Translates VM instructions into a sequence of low-level instructions that</span>
-<span class="doccomment">/// can execute on the target platform.</span>
-<span class="doccomment">/// It represents the VM stack abstraction using the `RAM`. The stack pointer, or</span>
-<span class="doccomment">/// `SP`, is stored at `RAM[0]` and defaults to `256`.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VmTranslator</span> {
-    <span class="doccomment">/// Labels generated so far</span>
-    <span class="ident">label_count</span>: <span class="ident">u32</span>,
+<span class="doccomment">/// Translates VM instructions into a sequence of low-level instructions that
+/// can execute on the target platform.
+/// It represents the VM stack abstraction using the `RAM`. The stack pointer, or
+/// `SP`, is stored at `RAM[0]` and defaults to `256`.
+</span><span class="attribute">#[derive(Default)]
+</span><span class="kw">pub struct </span>VmTranslator {
+    <span class="doccomment">/// Labels generated so far
+    </span>label_count: u32,
 }
 
-<span class="kw">use</span> <span class="ident">AsmInstruction</span> <span class="kw">as</span> <span class="ident">I</span>;
+<span class="kw">use </span>AsmInstruction <span class="kw">as </span>I;
 
-<span class="kw">impl</span> <span class="ident">VmTranslator</span> {
-    <span class="kw">fn</span> <span class="ident">next_label</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;LABEL{}&quot;</span>, <span class="self">self</span>.<span class="ident">label_count</span>);
-        <span class="self">self</span>.<span class="ident">label_count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        <span class="ident">ret</span>
+<span class="kw">impl </span>VmTranslator {
+    <span class="kw">fn </span>next_label(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; String {
+        <span class="kw">let </span>ret = <span class="macro">format!</span>(<span class="string">&quot;LABEL{}&quot;</span>, <span class="self">self</span>.label_count);
+        <span class="self">self</span>.label_count += <span class="number">1</span>;
+        ret
     }
 
-    <span class="doccomment">/// Translates a push VM instruction into an equivalent sequence of assembly instructions</span>
-    <span class="kw">fn</span> <span class="ident">gen_push</span>(<span class="ident">segment</span>: <span class="ident">Segment</span>, <span class="ident">value</span>: <span class="ident">u16</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">segment</span> {
-            <span class="ident">Segment::Stack</span> =&gt; {
+    <span class="doccomment">/// Translates a push VM instruction into an equivalent sequence of assembly instructions
+    </span><span class="kw">fn </span>gen_push(segment: Segment, value: u16) -&gt; Vec&lt;I&gt; {
+        <span class="kw">match </span>segment {
+            Segment::Stack =&gt; {
                 <span class="macro">vec!</span>[
-                    <span class="comment">// Put value in A, then in D</span>
-                    <span class="comment">// @value and D=A</span>
-                    <span class="ident">I::A</span>(<span class="ident">value</span>),
-                    <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::A</span>, <span class="ident">Jump::No</span>),
-                    <span class="comment">// Put stack pointer from RAM[0] in A</span>
-                    <span class="comment">// Here A is used for addressing the next instruction</span>
-                    <span class="comment">// @SP -&gt; A=0 and A=M[A]</span>
-                    <span class="ident">I::A</span>(<span class="number">0</span>),
-                    <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-                    <span class="comment">// Copy value from D to stack memory</span>
-                    <span class="comment">// *SP=D -&gt; M[A]=D</span>
-                    <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-                    <span class="comment">// Now increment value in RAM[0]</span>
-                    <span class="comment">// A=0</span>
-                    <span class="ident">I::A</span>(<span class="number">0</span>),
-                    <span class="comment">// M[0]=M[0]+1</span>
-                    <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::MPlusOne</span>, <span class="ident">Jump::No</span>),
+                    <span class="comment">// Put value in A, then in D
+                    // @value and D=A
+                    </span>I::A(value),
+                    I::C(Dest::D, Comp::A, Jump::No),
+                    <span class="comment">// Put stack pointer from RAM[0] in A
+                    // Here A is used for addressing the next instruction
+                    // @SP -&gt; A=0 and A=M[A]
+                    </span>I::A(<span class="number">0</span>),
+                    I::C(Dest::A, Comp::M, Jump::No),
+                    <span class="comment">// Copy value from D to stack memory
+                    // *SP=D -&gt; M[A]=D
+                    </span>I::C(Dest::M, Comp::D, Jump::No),
+                    <span class="comment">// Now increment value in RAM[0]
+                    // A=0
+                    </span>I::A(<span class="number">0</span>),
+                    <span class="comment">// M[0]=M[0]+1
+                    </span>I::C(Dest::M, Comp::MPlusOne, Jump::No),
                 ]
             }
-            <span class="ident">Segment::Local</span> <span class="op">|</span> <span class="ident">Segment::Argument</span> <span class="op">|</span> <span class="ident">Segment::This</span> <span class="op">|</span> <span class="ident">Segment::That</span> =&gt; <span class="macro">vec!</span>[
-                <span class="ident">I::A</span>(<span class="ident">segment</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::A</span>(<span class="ident">value</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::DPlusA</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::A</span>(<span class="number">0</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MPlusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
+            Segment::Local | Segment::Argument | Segment::This | Segment::That =&gt; <span class="macro">vec!</span>[
+                I::A(segment.get_base_address() <span class="kw">as </span>u16),
+                I::C(Dest::D, Comp::M, Jump::No),
+                I::A(value),
+                I::C(Dest::A, Comp::DPlusA, Jump::No),
+                I::C(Dest::D, Comp::M, Jump::No),
+                I::A(<span class="number">0</span>),
+                I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+                I::C(Dest::A, Comp::AMinusOne, Jump::No),
+                I::C(Dest::M, Comp::D, Jump::No),
             ],
-            <span class="ident">Segment::Constant</span> =&gt; <span class="macro">vec!</span>[
-                <span class="comment">// Put constant value in D</span>
-                <span class="ident">I::A</span>(<span class="ident">value</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::A</span>, <span class="ident">Jump::No</span>),
-                <span class="comment">// Get stack pointer</span>
-                <span class="ident">I::A</span>(<span class="number">0</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MPlusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="comment">// Put D on top of the stack</span>
-                <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
+            Segment::Constant =&gt; <span class="macro">vec!</span>[
+                <span class="comment">// Put constant value in D
+                </span>I::A(value),
+                I::C(Dest::D, Comp::A, Jump::No),
+                <span class="comment">// Get stack pointer
+                </span>I::A(<span class="number">0</span>),
+                I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+                I::C(Dest::A, Comp::AMinusOne, Jump::No),
+                <span class="comment">// Put D on top of the stack
+                </span>I::C(Dest::M, Comp::D, Jump::No),
             ],
-            <span class="ident">Segment::Static</span> <span class="op">|</span> <span class="ident">Segment::Pointer</span> <span class="op">|</span> <span class="ident">Segment::Temp</span> =&gt; {
+            Segment::Static | Segment::Pointer | Segment::Temp =&gt; {
                 <span class="macro">vec!</span>[
-                    <span class="ident">I::A</span>(<span class="ident">segment</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span> <span class="op">+</span> <span class="ident">value</span>),
-                    <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-                    <span class="ident">I::A</span>(<span class="number">0</span>),
-                    <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MPlusOne</span>, <span class="ident">Jump::No</span>),
-                    <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-                    <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
+                    I::A(segment.get_base_address() <span class="kw">as </span>u16 + value),
+                    I::C(Dest::D, Comp::M, Jump::No),
+                    I::A(<span class="number">0</span>),
+                    I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+                    I::C(Dest::A, Comp::AMinusOne, Jump::No),
+                    I::C(Dest::M, Comp::D, Jump::No),
                 ]
             }
-            <span class="kw">_</span> =&gt; <span class="macro">unimplemented!</span>(),
+            <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(),
         }
     }
 
-    <span class="doccomment">/// Translates a pop VM instruction into an equivalent sequence of assembly instructions</span>
-    <span class="kw">fn</span> <span class="ident">gen_pop</span>(<span class="ident">segment</span>: <span class="ident">Segment</span>, <span class="ident">value</span>: <span class="ident">u16</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">segment</span> {
-            <span class="ident">Segment::Stack</span> =&gt; <span class="macro">vec!</span>[<span class="ident">I::A</span>(<span class="number">0</span>), <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>)],
-            <span class="ident">Segment::Local</span> <span class="op">|</span> <span class="ident">Segment::Argument</span> <span class="op">|</span> <span class="ident">Segment::This</span> <span class="op">|</span> <span class="ident">Segment::That</span> =&gt; <span class="macro">vec!</span>[
-                <span class="comment">// Put in D address where to store</span>
-                <span class="ident">I::A</span>(<span class="ident">value</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::A</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::A</span>(<span class="ident">segment</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::DPlusM</span>, <span class="ident">Jump::No</span>),
-                <span class="comment">// Store address where to store on stack</span>
-                <span class="ident">I::A</span>(<span class="number">0</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::APlusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-                <span class="comment">// Put element from stack in D</span>
-                <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-                <span class="comment">// Put address to store in A</span>
-                <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::APlusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-                <span class="comment">// Store element in segment</span>
-                <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
+    <span class="doccomment">/// Translates a pop VM instruction into an equivalent sequence of assembly instructions
+    </span><span class="kw">fn </span>gen_pop(segment: Segment, value: u16) -&gt; Vec&lt;I&gt; {
+        <span class="kw">match </span>segment {
+            Segment::Stack =&gt; <span class="macro">vec!</span>[I::A(<span class="number">0</span>), I::C(Dest::M, Comp::MMinusOne, Jump::No)],
+            Segment::Local | Segment::Argument | Segment::This | Segment::That =&gt; <span class="macro">vec!</span>[
+                <span class="comment">// Put in D address where to store
+                </span>I::A(value),
+                I::C(Dest::D, Comp::A, Jump::No),
+                I::A(segment.get_base_address() <span class="kw">as </span>u16),
+                I::C(Dest::D, Comp::DPlusM, Jump::No),
+                <span class="comment">// Store address where to store on stack
+                </span>I::A(<span class="number">0</span>),
+                I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+                I::C(Dest::A, Comp::APlusOne, Jump::No),
+                I::C(Dest::M, Comp::D, Jump::No),
+                <span class="comment">// Put element from stack in D
+                </span>I::C(Dest::A, Comp::AMinusOne, Jump::No),
+                I::C(Dest::D, Comp::M, Jump::No),
+                <span class="comment">// Put address to store in A
+                </span>I::C(Dest::A, Comp::APlusOne, Jump::No),
+                I::C(Dest::A, Comp::M, Jump::No),
+                <span class="comment">// Store element in segment
+                </span>I::C(Dest::M, Comp::D, Jump::No),
             ],
-            <span class="ident">Segment::Static</span> <span class="op">|</span> <span class="ident">Segment::Temp</span> <span class="op">|</span> <span class="ident">Segment::Pointer</span> =&gt; <span class="macro">vec!</span>[
-                <span class="ident">I::A</span>(<span class="number">0</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::A</span>(<span class="ident">segment</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span> <span class="op">+</span> <span class="ident">value</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
+            Segment::Static | Segment::Temp | Segment::Pointer =&gt; <span class="macro">vec!</span>[
+                I::A(<span class="number">0</span>),
+                I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+                I::C(Dest::D, Comp::M, Jump::No),
+                I::A(segment.get_base_address() <span class="kw">as </span>u16 + value),
+                I::C(Dest::M, Comp::D, Jump::No),
             ],
-            <span class="kw">_</span> =&gt; <span class="macro">unimplemented!</span>(),
+            <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">gen_and</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">fn </span>gen_and() -&gt; Vec&lt;I&gt; {
         <span class="macro">vec!</span>[
-            <span class="comment">// Get stack pointer</span>
-            <span class="comment">// A=0</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="comment">// AM=M[A]-1</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Pop first element from stack</span>
-            <span class="comment">// D=M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Move temp stack pointer backwards</span>
-            <span class="comment">// A=A-1</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// M[A]=D &amp; M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::DAndM</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Get stack pointer
+            // A=0
+            </span>I::A(<span class="number">0</span>),
+            <span class="comment">// AM=M[A]-1
+            </span>I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            <span class="comment">// Pop first element from stack
+            // D=M[A]
+            </span>I::C(Dest::D, Comp::M, Jump::No),
+            <span class="comment">// Move temp stack pointer backwards
+            // A=A-1
+            </span>I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            <span class="comment">// M[A]=D &amp; M[A]
+            </span>I::C(Dest::M, Comp::DAndM, Jump::No),
         ]
     }
 
-    <span class="kw">fn</span> <span class="ident">gen_or</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">fn </span>gen_or() -&gt; Vec&lt;I&gt; {
         <span class="macro">vec!</span>[
-            <span class="comment">// Get stack pointer</span>
-            <span class="comment">// A=0</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="comment">// AM=M[A]-1</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Pop first element from stack</span>
-            <span class="comment">// D=M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Move temp stack pointer backwards</span>
-            <span class="comment">// A=A-1</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// M[A]=D &amp; M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::DOrM</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Get stack pointer
+            // A=0
+            </span>I::A(<span class="number">0</span>),
+            <span class="comment">// AM=M[A]-1
+            </span>I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            <span class="comment">// Pop first element from stack
+            // D=M[A]
+            </span>I::C(Dest::D, Comp::M, Jump::No),
+            <span class="comment">// Move temp stack pointer backwards
+            // A=A-1
+            </span>I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            <span class="comment">// M[A]=D &amp; M[A]
+            </span>I::C(Dest::M, Comp::DOrM, Jump::No),
         ]
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gen_add</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">pub fn </span>gen_add() -&gt; Vec&lt;I&gt; {
         <span class="macro">vec!</span>[
-            <span class="comment">// Get stack pointer</span>
-            <span class="comment">// A=0</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="comment">// AM=M[A]-1</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Pop first element from stack</span>
-            <span class="comment">// D=M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Move temp stack pointer backwards</span>
-            <span class="comment">// A=A-1</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// M[A]=D+M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::DPlusM</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Get stack pointer
+            // A=0
+            </span>I::A(<span class="number">0</span>),
+            <span class="comment">// AM=M[A]-1
+            </span>I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            <span class="comment">// Pop first element from stack
+            // D=M[A]
+            </span>I::C(Dest::D, Comp::M, Jump::No),
+            <span class="comment">// Move temp stack pointer backwards
+            // A=A-1
+            </span>I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            <span class="comment">// M[A]=D+M[A]
+            </span>I::C(Dest::M, Comp::DPlusM, Jump::No),
         ]
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gen_sub</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">pub fn </span>gen_sub() -&gt; Vec&lt;I&gt; {
         <span class="macro">vec!</span>[
-            <span class="comment">// Get stack pointer</span>
-            <span class="comment">// A=0</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="comment">// AM=M[A]-1</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Pop first element from stack</span>
-            <span class="comment">// D=M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Move temp stack pointer backwards</span>
-            <span class="comment">// A=A-1</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// M[A]=D+M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::MMinusD</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Get stack pointer
+            // A=0
+            </span>I::A(<span class="number">0</span>),
+            <span class="comment">// AM=M[A]-1
+            </span>I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            <span class="comment">// Pop first element from stack
+            // D=M[A]
+            </span>I::C(Dest::D, Comp::M, Jump::No),
+            <span class="comment">// Move temp stack pointer backwards
+            // A=A-1
+            </span>I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            <span class="comment">// M[A]=D+M[A]
+            </span>I::C(Dest::M, Comp::MMinusD, Jump::No),
         ]
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gen_neg</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">pub fn </span>gen_neg() -&gt; Vec&lt;I&gt; {
         <span class="macro">vec!</span>[
-            <span class="comment">// Get stack pointer</span>
-            <span class="comment">// A=0</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="comment">// A=M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// M[A]=-M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::MinusM</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Get stack pointer
+            // A=0
+            </span>I::A(<span class="number">0</span>),
+            <span class="comment">// A=M[A]
+            </span>I::C(Dest::A, Comp::MMinusOne, Jump::No),
+            <span class="comment">// M[A]=-M[A]
+            </span>I::C(Dest::M, Comp::MinusM, Jump::No),
         ]
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gen_not</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">pub fn </span>gen_not() -&gt; Vec&lt;I&gt; {
         <span class="macro">vec!</span>[
-            <span class="comment">// Get stack pointer</span>
-            <span class="comment">// A=0</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="comment">// A=M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// M[A]=-M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::NotM</span>, <span class="ident">Jump::No</span>),
+            <span class="comment">// Get stack pointer
+            // A=0
+            </span>I::A(<span class="number">0</span>),
+            <span class="comment">// A=M[A]
+            </span>I::C(Dest::A, Comp::MMinusOne, Jump::No),
+            <span class="comment">// M[A]=-M[A]
+            </span>I::C(Dest::M, Comp::NotM, Jump::No),
         ]
     }
 
-    <span class="doccomment">/// Pops two elements from the stack and pushes whether they _compare_ (encoded in jump)</span>
-    <span class="kw">fn</span> <span class="ident">gen_compare</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">jump</span>: <span class="ident">Jump</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">next_label</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">next_label</span>();
+    <span class="doccomment">/// Pops two elements from the stack and pushes whether they _compare_ (encoded in jump)
+    </span><span class="kw">fn </span>gen_compare(<span class="kw-2">&amp;mut </span><span class="self">self</span>, jump: Jump) -&gt; Vec&lt;I&gt; {
+        <span class="kw">let </span>next_label = <span class="self">self</span>.next_label();
         <span class="macro">vec!</span>[
-            <span class="comment">// Get stack pointer and decrements it (pop)</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="comment">// A,M[0]=M[0]-1</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Get topmost element of stack</span>
-            <span class="comment">// D=M[A]</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Move stack pointer backwards</span>
-            <span class="comment">// A=A-1</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// D = top() - previously_popped()</span>
-            <span class="comment">// D=M[A]-D</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::MMinusD</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Set element on stack (result) to TRUE</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::MinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Put label address into A</span>
-            <span class="ident">I::Symbol</span>(<span class="ident">next_label</span>.<span class="ident">clone</span>()),
-            <span class="comment">// Jump if D `jump-comparison` 0</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::D</span>, <span class="ident">jump</span>),
-            <span class="comment">// Symbol instruction wrote onto A, need to get SP again</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Set element on stack (result) to FALSE</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::Zero</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::Label</span>(<span class="ident">next_label</span>),
+            <span class="comment">// Get stack pointer and decrements it (pop)
+            </span>I::A(<span class="number">0</span>),
+            <span class="comment">// A,M[0]=M[0]-1
+            </span>I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            <span class="comment">// Get topmost element of stack
+            // D=M[A]
+            </span>I::C(Dest::D, Comp::M, Jump::No),
+            <span class="comment">// Move stack pointer backwards
+            // A=A-1
+            </span>I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            <span class="comment">// D = top() - previously_popped()
+            // D=M[A]-D
+            </span>I::C(Dest::D, Comp::MMinusD, Jump::No),
+            <span class="comment">// Set element on stack (result) to TRUE
+            </span>I::C(Dest::M, Comp::MinusOne, Jump::No),
+            <span class="comment">// Put label address into A
+            </span>I::Symbol(next_label.clone()),
+            <span class="comment">// Jump if D `jump-comparison` 0
+            </span>I::C(Dest::D, Comp::D, jump),
+            <span class="comment">// Symbol instruction wrote onto A, need to get SP again
+            </span>I::A(<span class="number">0</span>),
+            I::C(Dest::A, Comp::MMinusOne, Jump::No),
+            <span class="comment">// Set element on stack (result) to FALSE
+            </span>I::C(Dest::M, Comp::Zero, Jump::No),
+            I::Label(next_label),
         ]
     }
 
-    <span class="kw">fn</span> <span class="ident">gen_goto</span>(<span class="ident">label</span>: <span class="ident">String</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-        <span class="macro">vec!</span>[<span class="ident">I::Symbol</span>(<span class="ident">label</span>), <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::Jump</span>)]
+    <span class="kw">fn </span>gen_goto(label: String) -&gt; Vec&lt;I&gt; {
+        <span class="macro">vec!</span>[I::Symbol(label), I::C(Dest::D, Comp::D, Jump::Jump)]
     }
 
-    <span class="kw">fn</span> <span class="ident">gen_if_goto</span>(<span class="ident">label</span>: <span class="ident">String</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">fn </span>gen_if_goto(label: String) -&gt; Vec&lt;I&gt; {
         <span class="macro">vec!</span>[
-            <span class="comment">// Pop into D</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Put label address into A</span>
-            <span class="ident">I::Symbol</span>(<span class="ident">label</span>),
-            <span class="comment">// Jump if D!=0</span>
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::Ne</span>),
+            <span class="comment">// Pop into D
+            </span>I::A(<span class="number">0</span>),
+            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            <span class="comment">// Put label address into A
+            </span>I::Symbol(label),
+            <span class="comment">// Jump if D!=0
+            </span>I::C(Dest::D, Comp::D, Jump::Ne),
         ]
     }
 
-    <span class="kw">fn</span> <span class="ident">gen_function</span>(<span class="ident">function</span>: <span class="ident">String</span>, <span class="ident">local_count</span>: <span class="ident">u16</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">I::Label</span>(<span class="ident">function</span>)];
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">local_count</span> {
-            <span class="ident">ret</span>.<span class="ident">extend</span>([
-                <span class="ident">I::A</span>(<span class="number">0</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MPlusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::Zero</span>, <span class="ident">Jump::No</span>),
+    <span class="kw">fn </span>gen_function(function: String, local_count: u16) -&gt; Vec&lt;I&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="macro">vec!</span>[I::Label(function)];
+        <span class="kw">for _ in </span><span class="number">0</span>..local_count {
+            ret.extend([
+                I::A(<span class="number">0</span>),
+                I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+                I::C(Dest::A, Comp::AMinusOne, Jump::No),
+                I::C(Dest::M, Comp::Zero, Jump::No),
             ]);
         }
-        <span class="ident">ret</span>
+        ret
     }
 
-    <span class="kw">fn</span> <span class="ident">gen_call</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">function</span>: <span class="ident">String</span>, <span class="ident">arg_count</span>: <span class="ident">u16</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">return_label</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">next_label</span>();
+    <span class="kw">fn </span>gen_call(<span class="kw-2">&amp;mut </span><span class="self">self</span>, function: String, arg_count: u16) -&gt; Vec&lt;I&gt; {
+        <span class="kw">let </span>return_label = <span class="self">self</span>.next_label();
         <span class="macro">vec!</span>[
-            <span class="comment">// Push return address onto the stack</span>
-            <span class="ident">I::Symbol</span>(<span class="ident">return_label</span>.<span class="ident">clone</span>()),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::A</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MPlusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Push local pointer</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::Local</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MPlusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Push arg pointer</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::Argument</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MPlusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Push this pointer</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::This</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MPlusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Push that pointer</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::That</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MPlusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::AMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Update arg pointer</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="number">5</span> <span class="op">+</span> <span class="ident">arg_count</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::DMinusA</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="ident">Segment::Argument</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Update local pointer</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="ident">Segment::Local</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Jump to function</span>
-            <span class="ident">I::Symbol</span>(<span class="ident">function</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::Jump</span>),
-            <span class="comment">// Save return address</span>
-            <span class="ident">I::Label</span>(<span class="ident">return_label</span>),
+            <span class="comment">// Push return address onto the stack
+            </span>I::Symbol(return_label.clone()),
+            I::C(Dest::D, Comp::A, Jump::No),
+            I::A(<span class="number">0</span>),
+            I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+            I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// Push local pointer
+            </span>I::A(Segment::Local.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(<span class="number">0</span>),
+            I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+            I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// Push arg pointer
+            </span>I::A(Segment::Argument.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(<span class="number">0</span>),
+            I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+            I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// Push this pointer
+            </span>I::A(Segment::This.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(<span class="number">0</span>),
+            I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+            I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// Push that pointer
+            </span>I::A(Segment::That.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(<span class="number">0</span>),
+            I::C(Dest::AM, Comp::MPlusOne, Jump::No),
+            I::C(Dest::A, Comp::AMinusOne, Jump::No),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// Update arg pointer
+            </span>I::A(<span class="number">0</span>),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(<span class="number">5 </span>+ arg_count),
+            I::C(Dest::D, Comp::DMinusA, Jump::No),
+            I::A(Segment::Argument.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// Update local pointer
+            </span>I::A(<span class="number">0</span>),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::Local.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// Jump to function
+            </span>I::Symbol(function),
+            I::C(Dest::D, Comp::D, Jump::Jump),
+            <span class="comment">// Save return address
+            </span>I::Label(return_label),
         ]
     }
 
-    <span class="kw">fn</span> <span class="ident">gen_return</span>(<span class="ident">return_size_in_words</span>: <span class="ident">u16</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="macro">vec!</span>[
-            <span class="comment">// Put frame on R13, A and D</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::Local</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="ident">Segment::R13</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Put return address in R14</span>
-            <span class="ident">I::A</span>(<span class="number">5</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::DMinusA</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="ident">Segment::R14</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// Put current `*ARG + return_size_in_words` in `R15`</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::Argument</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="ident">return_size_in_words</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::DPlusA</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="ident">Segment::R15</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// That = *(frame-1)</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::R13</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="ident">Segment::That</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// This = *(frame-2)</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::R13</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="ident">Segment::This</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// ARG = *(frame-3)</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::R13</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="ident">Segment::Argument</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// LCL = *(frame-4)</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::R13</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="ident">Segment::Local</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
+    <span class="kw">fn </span>gen_return(return_size_in_words: u16) -&gt; Vec&lt;I&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="macro">vec!</span>[
+            <span class="comment">// Put frame on R13, A and D
+            </span>I::A(Segment::Local.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::R13.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// Put return address in R14
+            </span>I::A(<span class="number">5</span>),
+            I::C(Dest::A, Comp::DMinusA, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::R14.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// Put current `*ARG + return_size_in_words` in `R15`
+            </span>I::A(Segment::Argument.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(return_size_in_words),
+            I::C(Dest::D, Comp::DPlusA, Jump::No),
+            I::A(Segment::R15.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// That = *(frame-1)
+            </span>I::A(Segment::R13.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::That.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// This = *(frame-2)
+            </span>I::A(Segment::R13.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::This.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// ARG = *(frame-3)
+            </span>I::A(Segment::R13.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::Argument.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// LCL = *(frame-4)
+            </span>I::A(Segment::R13.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(Segment::Local.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::M, Comp::D, Jump::No),
         ];
 
-        <span class="comment">// Store return value in current argument segment</span>
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">return_size_in_words</span> {
-            <span class="ident">ret</span>.<span class="ident">extend</span>([
-                <span class="comment">// Pop from stack into RAM[*R15-i]</span>
-                <span class="ident">I::A</span>(<span class="number">0</span>),
-                <span class="comment">// Get SP while decrementing RAM[0] at the same time</span>
-                <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="comment">// D = *SP</span>
-                <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::A</span>(<span class="ident">Segment::R15</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-                <span class="comment">// AM = *R15 - 1</span>
-                <span class="ident">I::C</span>(<span class="ident">Dest::AM</span>, <span class="ident">Comp::MMinusOne</span>, <span class="ident">Jump::No</span>),
-                <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
+        <span class="comment">// Store return value in current argument segment
+        </span><span class="kw">for _ in </span><span class="number">0</span>..return_size_in_words {
+            ret.extend([
+                <span class="comment">// Pop from stack into RAM[*R15-i]
+                </span>I::A(<span class="number">0</span>),
+                <span class="comment">// Get SP while decrementing RAM[0] at the same time
+                </span>I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+                <span class="comment">// D = *SP
+                </span>I::C(Dest::D, Comp::M, Jump::No),
+                I::A(Segment::R15.get_base_address() <span class="kw">as </span>u16),
+                <span class="comment">// AM = *R15 - 1
+                </span>I::C(Dest::AM, Comp::MMinusOne, Jump::No),
+                I::C(Dest::M, Comp::D, Jump::No),
             ]);
         }
 
-        <span class="ident">ret</span>.<span class="ident">extend</span>([
-            <span class="comment">// *SP = old*ARG + return_size_in_words</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::R15</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="ident">return_size_in_words</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::DPlusA</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>),
-            <span class="comment">// goto return address *(frame-5)</span>
-            <span class="ident">I::A</span>(<span class="ident">Segment::R14</span>.<span class="ident">get_base_address</span>() <span class="kw">as</span> <span class="ident">u16</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::A</span>, <span class="ident">Comp::M</span>, <span class="ident">Jump::No</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::Jump</span>),
+        ret.extend([
+            <span class="comment">// *SP = old*ARG + return_size_in_words
+            </span>I::A(Segment::R15.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::D, Comp::M, Jump::No),
+            I::A(return_size_in_words),
+            I::C(Dest::D, Comp::DPlusA, Jump::No),
+            I::A(<span class="number">0</span>),
+            I::C(Dest::M, Comp::D, Jump::No),
+            <span class="comment">// goto return address *(frame-5)
+            </span>I::A(Segment::R14.get_base_address() <span class="kw">as </span>u16),
+            I::C(Dest::A, Comp::M, Jump::No),
+            I::C(Dest::D, Comp::D, Jump::Jump),
         ]);
 
-        <span class="ident">ret</span>
+        ret
     }
 
-    <span class="doccomment">/// Translates a VM instruction into a sequence of assembly instructions</span>
-    <span class="kw">fn</span> <span class="ident">vm_to_asm</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">vm_instruction</span>: <span class="ident">VmInstruction</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">vm_instruction</span> {
-            <span class="ident">VmInstruction::Push</span>(<span class="ident">segment</span>, <span class="ident">value</span>) =&gt; <span class="ident"><span class="self">Self</span>::gen_push</span>(<span class="ident">segment</span>, <span class="ident">value</span>),
-            <span class="ident">VmInstruction::Pop</span>(<span class="ident">segment</span>, <span class="ident">value</span>) =&gt; <span class="ident"><span class="self">Self</span>::gen_pop</span>(<span class="ident">segment</span>, <span class="ident">value</span>),
-            <span class="ident">VmInstruction::Add</span> =&gt; <span class="ident"><span class="self">Self</span>::gen_add</span>(),
-            <span class="ident">VmInstruction::Sub</span> =&gt; <span class="ident"><span class="self">Self</span>::gen_sub</span>(),
-            <span class="ident">VmInstruction::Eq</span> =&gt; <span class="self">self</span>.<span class="ident">gen_compare</span>(<span class="ident">Jump::Eq</span>),
-            <span class="ident">VmInstruction::Lt</span> =&gt; <span class="self">self</span>.<span class="ident">gen_compare</span>(<span class="ident">Jump::Lt</span>),
-            <span class="ident">VmInstruction::Gt</span> =&gt; <span class="self">self</span>.<span class="ident">gen_compare</span>(<span class="ident">Jump::Gt</span>),
-            <span class="ident">VmInstruction::Neg</span> =&gt; <span class="ident"><span class="self">Self</span>::gen_neg</span>(),
-            <span class="ident">VmInstruction::And</span> =&gt; <span class="ident"><span class="self">Self</span>::gen_and</span>(),
-            <span class="ident">VmInstruction::Or</span> =&gt; <span class="ident"><span class="self">Self</span>::gen_or</span>(),
-            <span class="ident">VmInstruction::Not</span> =&gt; <span class="ident"><span class="self">Self</span>::gen_not</span>(),
-            <span class="ident">VmInstruction::Label</span>(<span class="ident">label</span>) =&gt; <span class="macro">vec!</span>[<span class="ident">I::Label</span>(<span class="ident">label</span>)],
-            <span class="ident">VmInstruction::Goto</span>(<span class="ident">label</span>) =&gt; <span class="ident"><span class="self">Self</span>::gen_goto</span>(<span class="ident">label</span>),
-            <span class="ident">VmInstruction::IfGoto</span>(<span class="ident">label</span>) =&gt; <span class="ident"><span class="self">Self</span>::gen_if_goto</span>(<span class="ident">label</span>),
-            <span class="ident">VmInstruction::Function</span>(<span class="ident">func</span>, <span class="ident">local_count</span>) =&gt; <span class="ident"><span class="self">Self</span>::gen_function</span>(<span class="ident">func</span>, <span class="ident">local_count</span>),
-            <span class="ident">VmInstruction::Call</span>(<span class="ident">function</span>, <span class="ident">arg_count</span>) =&gt; <span class="self">self</span>.<span class="ident">gen_call</span>(<span class="ident">function</span>, <span class="ident">arg_count</span>),
-            <span class="ident">VmInstruction::Return</span>(<span class="ident">return_size_in_words</span>) =&gt; <span class="ident"><span class="self">Self</span>::gen_return</span>(<span class="ident">return_size_in_words</span>),
+    <span class="doccomment">/// Translates a VM instruction into a sequence of assembly instructions
+    </span><span class="kw">fn </span>vm_to_asm(<span class="kw-2">&amp;mut </span><span class="self">self</span>, vm_instruction: VmInstruction) -&gt; Vec&lt;I&gt; {
+        <span class="kw">match </span>vm_instruction {
+            VmInstruction::Push(segment, value) =&gt; <span class="self">Self</span>::gen_push(segment, value),
+            VmInstruction::Pop(segment, value) =&gt; <span class="self">Self</span>::gen_pop(segment, value),
+            VmInstruction::Add =&gt; <span class="self">Self</span>::gen_add(),
+            VmInstruction::Sub =&gt; <span class="self">Self</span>::gen_sub(),
+            VmInstruction::Eq =&gt; <span class="self">self</span>.gen_compare(Jump::Eq),
+            VmInstruction::Lt =&gt; <span class="self">self</span>.gen_compare(Jump::Lt),
+            VmInstruction::Gt =&gt; <span class="self">self</span>.gen_compare(Jump::Gt),
+            VmInstruction::Neg =&gt; <span class="self">Self</span>::gen_neg(),
+            VmInstruction::And =&gt; <span class="self">Self</span>::gen_and(),
+            VmInstruction::Or =&gt; <span class="self">Self</span>::gen_or(),
+            VmInstruction::Not =&gt; <span class="self">Self</span>::gen_not(),
+            VmInstruction::Label(label) =&gt; <span class="macro">vec!</span>[I::Label(label)],
+            VmInstruction::Goto(label) =&gt; <span class="self">Self</span>::gen_goto(label),
+            VmInstruction::IfGoto(label) =&gt; <span class="self">Self</span>::gen_if_goto(label),
+            VmInstruction::Function(func, local_count) =&gt; <span class="self">Self</span>::gen_function(func, local_count),
+            VmInstruction::Call(function, arg_count) =&gt; <span class="self">self</span>.gen_call(function, arg_count),
+            VmInstruction::Return(return_size_in_words) =&gt; <span class="self">Self</span>::gen_return(return_size_in_words),
         }
     }
 
-    <span class="doccomment">/// Translates a VM program into a sequence of assembly instructions</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">translate</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">vm_instructions</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VmInstruction</span><span class="op">&gt;</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">asm_instructions</span> <span class="op">=</span> <span class="macro">vec!</span>[
-            <span class="comment">// Set stack pointer to 256</span>
-            <span class="ident">I::A</span>(<span class="number">256</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::D</span>, <span class="ident">Comp::A</span>, <span class="ident">Jump::No</span>), <span class="comment">// D=256</span>
-            <span class="ident">I::A</span>(<span class="number">0</span>),
-            <span class="ident">I::C</span>(<span class="ident">Dest::M</span>, <span class="ident">Comp::D</span>, <span class="ident">Jump::No</span>), <span class="comment">// M[0]=D</span>
-        ];
-        <span class="kw">for</span> <span class="ident">instruction</span> <span class="kw">in</span> <span class="ident">vm_instructions</span> {
-            <span class="kw">let</span> <span class="ident">new_asm_instructions</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">vm_to_asm</span>(<span class="ident">instruction</span>);
-            <span class="ident">asm_instructions</span>.<span class="ident">extend</span>(<span class="ident">new_asm_instructions</span>)
+    <span class="doccomment">/// Translates a VM program into a sequence of assembly instructions
+    </span><span class="kw">pub fn </span>translate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, vm_instructions: Vec&lt;VmInstruction&gt;) -&gt; Vec&lt;I&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>asm_instructions = <span class="macro">vec!</span>[
+            <span class="comment">// Set stack pointer to 256
+            </span>I::A(<span class="number">256</span>),
+            I::C(Dest::D, Comp::A, Jump::No), <span class="comment">// D=256
+            </span>I::A(<span class="number">0</span>),
+            I::C(Dest::M, Comp::D, Jump::No), <span class="comment">// M[0]=D
+        </span>];
+        <span class="kw">for </span>instruction <span class="kw">in </span>vm_instructions {
+            <span class="kw">let </span>new_asm_instructions = <span class="self">self</span>.vm_to_asm(instruction);
+            asm_instructions.extend(new_asm_instructions)
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">assembler</span> <span class="op">=</span> <span class="ident">Assembler::default</span>();
-        <span class="ident">assembler</span>.<span class="ident">resolve</span>(<span class="ident">asm_instructions</span>)
+        <span class="kw">let </span><span class="kw-2">mut </span>assembler = Assembler::default();
+        assembler.resolve(asm_instructions)
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">translate</span>(<span class="ident">vm_instructions</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VmInstruction</span><span class="op">&gt;</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-    <span class="ident">VmTranslator::default</span>().<span class="ident">translate</span>(<span class="ident">vm_instructions</span>)
+<span class="kw">pub fn </span>translate(vm_instructions: Vec&lt;VmInstruction&gt;) -&gt; Vec&lt;I&gt; {
+    VmTranslator::default().translate(vm_instructions)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

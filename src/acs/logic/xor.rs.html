@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/logic/xor.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>xor.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/logic/xor.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>xor.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../acs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -64,69 +64,69 @@
 <span id="62">62</span>
 <span id="63">63</span>
 <span id="64">64</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">And</span>, <span class="ident">Nand</span>, <span class="ident">Or</span>, <span class="ident">Signal</span>, <span class="ident">Unit</span>};
+</span><span class="kw">use super</span>::{And, Nand, Or, Signal, Unit};
 
-<span class="doccomment">/// The XOR gate is built using a NAND, an OR, and an AND gate</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// | a | b |out|</span>
-<span class="doccomment">/// |---|---|---|</span>
-<span class="doccomment">/// | 0 | 0 | 0 |</span>
-<span class="doccomment">/// | 0 | 1 | 1 |</span>
-<span class="doccomment">/// | 1 | 0 | 1 |</span>
-<span class="doccomment">/// | 1 | 1 | 0 |</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Xor</span> {
-    <span class="ident">a</span>: <span class="ident">Signal</span>,
-    <span class="ident">b</span>: <span class="ident">Signal</span>,
-    <span class="ident">out</span>: <span class="ident">Signal</span>,
+<span class="doccomment">/// The XOR gate is built using a NAND, an OR, and an AND gate
+///
+/// | a | b |out|
+/// |---|---|---|
+/// | 0 | 0 | 0 |
+/// | 0 | 1 | 1 |
+/// | 1 | 0 | 1 |
+/// | 1 | 1 | 0 |
+</span><span class="attribute">#[derive(Default)]
+</span><span class="kw">pub struct </span>Xor {
+    a: Signal,
+    b: Signal,
+    out: Signal,
 
-    <span class="ident">nand</span>: <span class="ident">Nand</span>,
-    <span class="ident">or</span>: <span class="ident">Or</span>,
-    <span class="ident">and</span>: <span class="ident">And</span>,
+    nand: Nand,
+    or: Or,
+    and: And,
 }
 
-<span class="kw">impl</span> <span class="ident">Xor</span> {
-    <span class="doccomment">/// Carries out the simulation and returns `a XOR b`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sim</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">a</span>: <span class="ident">Signal</span>, <span class="ident">b</span>: <span class="ident">Signal</span>) -&gt; <span class="ident">Signal</span> {
-        <span class="self">self</span>.<span class="ident">a</span> <span class="op">=</span> <span class="ident">a</span>;
-        <span class="self">self</span>.<span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>;
-        <span class="self">self</span>.<span class="ident">eval</span>();
-        <span class="self">self</span>.<span class="ident">out</span>
+<span class="kw">impl </span>Xor {
+    <span class="doccomment">/// Carries out the simulation and returns `a XOR b`
+    </span><span class="kw">pub fn </span>sim(<span class="kw-2">&amp;mut </span><span class="self">self</span>, a: Signal, b: Signal) -&gt; Signal {
+        <span class="self">self</span>.a = a;
+        <span class="self">self</span>.b = b;
+        <span class="self">self</span>.eval();
+        <span class="self">self</span>.out
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Unit</span> <span class="kw">for</span> <span class="ident">Xor</span> {
-    <span class="kw">fn</span> <span class="ident">eval</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">out</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">and</span>
-            .<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">nand</span>.<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">a</span>, <span class="self">self</span>.<span class="ident">b</span>), <span class="self">self</span>.<span class="ident">or</span>.<span class="ident">sim</span>(<span class="self">self</span>.<span class="ident">a</span>, <span class="self">self</span>.<span class="ident">b</span>));
+<span class="kw">impl </span>Unit <span class="kw">for </span>Xor {
+    <span class="kw">fn </span>eval(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.out = <span class="self">self
+            </span>.and
+            .sim(<span class="self">self</span>.nand.sim(<span class="self">self</span>.a, <span class="self">self</span>.b), <span class="self">self</span>.or.sim(<span class="self">self</span>.a, <span class="self">self</span>.b));
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">run</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">xor</span> <span class="op">=</span> <span class="ident">Xor::default</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>run() {
+        <span class="kw">let </span><span class="kw-2">mut </span>xor = Xor::default();
 
-        <span class="ident">xor</span>.<span class="ident">sim</span>(<span class="ident">Signal::LO</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">xor</span>.<span class="ident">out</span>, <span class="ident">Signal::LO</span>);
+        xor.sim(Signal::LO, Signal::LO);
+        <span class="macro">assert_eq!</span>(xor.out, Signal::LO);
 
-        <span class="ident">xor</span>.<span class="ident">sim</span>(<span class="ident">Signal::HI</span>, <span class="ident">Signal::LO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">xor</span>.<span class="ident">out</span>, <span class="ident">Signal::HI</span>);
+        xor.sim(Signal::HI, Signal::LO);
+        <span class="macro">assert_eq!</span>(xor.out, Signal::HI);
 
-        <span class="ident">xor</span>.<span class="ident">sim</span>(<span class="ident">Signal::LO</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">xor</span>.<span class="ident">out</span>, <span class="ident">Signal::HI</span>);
+        xor.sim(Signal::LO, Signal::HI);
+        <span class="macro">assert_eq!</span>(xor.out, Signal::HI);
 
-        <span class="ident">xor</span>.<span class="ident">sim</span>(<span class="ident">Signal::HI</span>, <span class="ident">Signal::HI</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">xor</span>.<span class="ident">out</span>, <span class="ident">Signal::LO</span>);
+        xor.sim(Signal::HI, Signal::HI);
+        <span class="macro">assert_eq!</span>(xor.out, Signal::LO);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/mem/fast/ram.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ram.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/mem/fast/ram.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ram.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../acs/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -138,143 +138,143 @@
 <span id="136">136</span>
 <span id="137">137</span>
 <span id="138">138</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="macro">macro_rules!</span> <span class="ident">impl_fast_ram</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ram</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">size</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">address</span>:<span class="ident">ty</span>) =&gt; {
-        <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Signal</span>, <span class="ident">Signal16</span>, <span class="ident">Unit</span>};
-        <span class="kw">use</span> <span class="ident">std::ops</span>::{<span class="ident">Index</span>, <span class="ident">IndexMut</span>};
+</span><span class="macro">macro_rules! </span>impl_fast_ram {
+    (<span class="macro-nonterminal">$ram</span>:ident, <span class="macro-nonterminal">$size</span>:expr, <span class="macro-nonterminal">$address</span>:ty) =&gt; {
+        <span class="kw">use crate</span>::{Signal, Signal16, Unit};
+        <span class="kw">use </span>std::ops::{Index, IndexMut};
 
-        <span class="doccomment">/// Fast RAM which, as opposed to the other RAMs,</span>
-        <span class="doccomment">/// it does not carries out the simulation with other building blocks,</span>
-        <span class="doccomment">/// but it emulates it with native code.</span>
-        <span class="kw">pub</span> <span class="kw">struct</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ram</span> {
-            <span class="ident">inp</span>: <span class="ident">Signal16</span>,
-            <span class="ident">load</span>: <span class="ident">Signal</span>,
-            <span class="ident">address</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">address</span>,
-            <span class="ident">out</span>: <span class="ident">Signal16</span>,
+        <span class="doccomment">/// Fast RAM which, as opposed to the other RAMs,
+        /// it does not carries out the simulation with other building blocks,
+        /// but it emulates it with native code.
+        </span><span class="kw">pub struct </span><span class="macro-nonterminal">$ram </span>{
+            inp: Signal16,
+            load: Signal,
+            address: <span class="macro-nonterminal">$address</span>,
+            out: Signal16,
 
-            <span class="ident">selected</span>: <span class="ident">usize</span>,
-            <span class="kw">pub</span> <span class="ident">data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Signal16</span><span class="op">&gt;</span>,
+            selected: usize,
+            <span class="kw">pub </span>data: Vec&lt;Signal16&gt;,
         }
 
-        <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ram</span> {
-            <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-                <span class="self">Self</span> {
-                    <span class="ident">inp</span>: <span class="ident">Default::default</span>(),
-                    <span class="ident">load</span>: <span class="ident">Default::default</span>(),
-                    <span class="ident">address</span>: <span class="ident">Default::default</span>(),
-                    <span class="ident">out</span>: <span class="ident">Default::default</span>(),
-                    <span class="ident">selected</span>: <span class="ident">Default::default</span>(),
-                    <span class="ident">data</span>: <span class="macro">vec!</span>[<span class="ident">Signal16::default</span>(); <span class="macro-nonterminal">$</span><span class="macro-nonterminal">size</span>],
+        <span class="kw">impl </span>Default <span class="kw">for </span><span class="macro-nonterminal">$ram </span>{
+            <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+                <span class="self">Self </span>{
+                    inp: Default::default(),
+                    load: Default::default(),
+                    address: Default::default(),
+                    out: Default::default(),
+                    selected: Default::default(),
+                    data: <span class="macro">vec!</span>[Signal16::default(); <span class="macro-nonterminal">$size</span>],
                 }
             }
         }
 
-        <span class="kw">impl</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ram</span> {
-            <span class="doccomment">/// Carries out the simulation, taking as input:</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// - `inp`: data input</span>
-            <span class="doccomment">/// - `load`: whether to write `inp` into the RAM</span>
-            <span class="doccomment">/// - `address`: which register to select</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// It returns the value stored at `address. Furthermore, when `load` is</span>
-            <span class="doccomment">/// `HI`, `inp` is written at location `address`, and the loaded value will</span>
-            <span class="doccomment">/// be emitted from the next time step onward.</span>
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sim</span>(
-                <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-                <span class="ident">inp</span>: <span class="ident">Signal16</span>,
-                <span class="ident">load</span>: <span class="ident">Signal</span>,
-                <span class="ident">address</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">address</span><span class="op">&gt;</span>,
-            ) -&gt; <span class="ident">Signal16</span> {
-                <span class="self">self</span>.<span class="ident">inp</span> <span class="op">=</span> <span class="ident">inp</span>;
-                <span class="self">self</span>.<span class="ident">load</span> <span class="op">=</span> <span class="ident">load</span>;
-                <span class="self">self</span>.<span class="ident">address</span> <span class="op">=</span> <span class="ident">address</span>.<span class="ident">into</span>();
-                <span class="self">self</span>.<span class="ident">tick</span>();
-                <span class="self">self</span>.<span class="ident">out</span>
+        <span class="kw">impl </span><span class="macro-nonterminal">$ram </span>{
+            <span class="doccomment">/// Carries out the simulation, taking as input:
+            ///
+            /// - `inp`: data input
+            /// - `load`: whether to write `inp` into the RAM
+            /// - `address`: which register to select
+            ///
+            /// It returns the value stored at `address. Furthermore, when `load` is
+            /// `HI`, `inp` is written at location `address`, and the loaded value will
+            /// be emitted from the next time step onward.
+            </span><span class="kw">pub fn </span>sim(
+                <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+                inp: Signal16,
+                load: Signal,
+                address: <span class="kw">impl </span>Into&lt;<span class="macro-nonterminal">$address</span>&gt;,
+            ) -&gt; Signal16 {
+                <span class="self">self</span>.inp = inp;
+                <span class="self">self</span>.load = load;
+                <span class="self">self</span>.address = address.into();
+                <span class="self">self</span>.tick();
+                <span class="self">self</span>.out
             }
 
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_inp</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">inp</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Signal16</span><span class="op">&gt;</span>) {
-                <span class="self">self</span>.<span class="ident">inp</span> <span class="op">=</span> <span class="ident">inp</span>.<span class="ident">into</span>();
+            <span class="kw">pub fn </span>set_inp(<span class="kw-2">&amp;mut </span><span class="self">self</span>, inp: <span class="kw">impl </span>Into&lt;Signal16&gt;) {
+                <span class="self">self</span>.inp = inp.into();
             }
 
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_load</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">load</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Signal</span><span class="op">&gt;</span>) {
-                <span class="self">self</span>.<span class="ident">load</span> <span class="op">=</span> <span class="ident">load</span>.<span class="ident">into</span>();
+            <span class="kw">pub fn </span>set_load(<span class="kw-2">&amp;mut </span><span class="self">self</span>, load: <span class="kw">impl </span>Into&lt;Signal&gt;) {
+                <span class="self">self</span>.load = load.into();
             }
 
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_address</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">address</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">address</span><span class="op">&gt;</span>) {
-                <span class="self">self</span>.<span class="ident">address</span> <span class="op">=</span> <span class="ident">address</span>.<span class="ident">into</span>();
+            <span class="kw">pub fn </span>set_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, address: <span class="kw">impl </span>Into&lt;<span class="macro-nonterminal">$address</span>&gt;) {
+                <span class="self">self</span>.address = address.into();
             }
 
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">out</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Signal16</span> {
-                <span class="self">self</span>.<span class="ident">out</span>
+            <span class="kw">pub fn </span>out(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Signal16 {
+                <span class="self">self</span>.out
             }
         }
 
-        <span class="kw">impl</span> <span class="ident">Unit</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ram</span> {
-            <span class="kw">fn</span> <span class="ident">eval</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-                <span class="self">self</span>.<span class="ident">selected</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">address</span>.<span class="ident">into</span>();
-                <span class="self">self</span>.<span class="ident">out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">data</span>[<span class="self">self</span>.<span class="ident">selected</span>];
+        <span class="kw">impl </span>Unit <span class="kw">for </span><span class="macro-nonterminal">$ram </span>{
+            <span class="kw">fn </span>eval(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+                <span class="self">self</span>.selected = <span class="self">self</span>.address.into();
+                <span class="self">self</span>.out = <span class="self">self</span>.data[<span class="self">self</span>.selected];
             }
 
-            <span class="kw">fn</span> <span class="ident">tick</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-                <span class="self">self</span>.<span class="ident">selected</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">address</span>.<span class="ident">into</span>();
-                <span class="self">self</span>.<span class="ident">out</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">data</span>[<span class="self">self</span>.<span class="ident">selected</span>];
-                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">load</span>.<span class="ident">as_bool</span>() {
-                    <span class="self">self</span>.<span class="ident">data</span>[<span class="self">self</span>.<span class="ident">selected</span>] <span class="op">=</span> <span class="self">self</span>.<span class="ident">inp</span>;
+            <span class="kw">fn </span>tick(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+                <span class="self">self</span>.selected = <span class="self">self</span>.address.into();
+                <span class="self">self</span>.out = <span class="self">self</span>.data[<span class="self">self</span>.selected];
+                <span class="kw">if </span><span class="self">self</span>.load.as_bool() {
+                    <span class="self">self</span>.data[<span class="self">self</span>.selected] = <span class="self">self</span>.inp;
                 }
             }
         }
 
-        <span class="kw">impl</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ram</span> {
-            <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">i16</span>;
+        <span class="kw">impl </span>Index&lt;usize&gt; <span class="kw">for </span><span class="macro-nonterminal">$ram </span>{
+            <span class="kw">type </span>Output = i16;
 
-            <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Output</span> {
-                <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">index</span>].<span class="ident">get_values</span>()
+            <span class="kw">fn </span>index(<span class="kw-2">&amp;</span><span class="self">self</span>, index: usize) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Output {
+                <span class="self">self</span>.data[index].get_values()
             }
         }
 
-        <span class="kw">impl</span> <span class="ident">IndexMut</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ram</span> {
-            <span class="kw">fn</span> <span class="ident">index_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident"><span class="self">Self</span>::Output</span> {
-                <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">index</span>].<span class="ident">get_values_mut</span>()
+        <span class="kw">impl </span>IndexMut&lt;usize&gt; <span class="kw">for </span><span class="macro-nonterminal">$ram </span>{
+            <span class="kw">fn </span>index_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>, index: usize) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self</span>::Output {
+                <span class="self">self</span>.data[index].get_values_mut()
             }
         }
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-        <span class="kw">mod</span> <span class="ident">test</span> {
-            <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+        <span class="attribute">#[cfg(test)]
+        </span><span class="kw">mod </span>test {
+            <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-            <span class="attribute">#[<span class="ident">test</span>]</span>
-            <span class="kw">fn</span> <span class="ident">run</span>() {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ram</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ram::default</span>();
-                <span class="ident">ram</span>.<span class="ident">tick</span>();
-                <span class="macro">assert_eq!</span>(<span class="ident">ram</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
-                <span class="ident">ram</span>.<span class="ident">tock</span>();
-                <span class="macro">assert_eq!</span>(<span class="ident">ram</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
+            <span class="attribute">#[test]
+            </span><span class="kw">fn </span>run() {
+                <span class="kw">let </span><span class="kw-2">mut </span>ram = <span class="macro-nonterminal">$ram::default</span>();
+                ram.tick();
+                <span class="macro">assert_eq!</span>(ram.out, Signal16::FALSE);
+                ram.tock();
+                <span class="macro">assert_eq!</span>(ram.out, Signal16::FALSE);
 
-                <span class="ident">ram</span>.<span class="ident">load</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-                <span class="ident">ram</span>.<span class="ident">tick</span>();
-                <span class="macro">assert_eq!</span>(<span class="ident">ram</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
-                <span class="ident">ram</span>.<span class="ident">tock</span>();
-                <span class="macro">assert_eq!</span>(<span class="ident">ram</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
+                ram.load = Signal::HI;
+                ram.tick();
+                <span class="macro">assert_eq!</span>(ram.out, Signal16::FALSE);
+                ram.tock();
+                <span class="macro">assert_eq!</span>(ram.out, Signal16::FALSE);
 
-                <span class="ident">ram</span>.<span class="ident">load</span> <span class="op">=</span> <span class="ident">Signal::LO</span>;
-                <span class="ident">ram</span>.<span class="ident">inp</span> <span class="op">=</span> <span class="ident">Signal16::new</span>(<span class="number">11111</span>);
-                <span class="ident">ram</span>.<span class="ident">tick</span>();
-                <span class="macro">assert_eq!</span>(<span class="ident">ram</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
-                <span class="ident">ram</span>.<span class="ident">tock</span>();
-                <span class="macro">assert_eq!</span>(<span class="ident">ram</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
+                ram.load = Signal::LO;
+                ram.inp = Signal16::new(<span class="number">11111</span>);
+                ram.tick();
+                <span class="macro">assert_eq!</span>(ram.out, Signal16::FALSE);
+                ram.tock();
+                <span class="macro">assert_eq!</span>(ram.out, Signal16::FALSE);
 
-                <span class="ident">ram</span>.<span class="ident">load</span> <span class="op">=</span> <span class="ident">Signal::HI</span>;
-                <span class="ident">ram</span>.<span class="ident">tick</span>();
-                <span class="macro">assert_eq!</span>(<span class="ident">ram</span>.<span class="ident">out</span>, <span class="ident">Signal16::FALSE</span>);
-                <span class="ident">ram</span>.<span class="ident">tock</span>();
-                <span class="macro">assert_eq!</span>(<span class="ident">ram</span>.<span class="ident">out</span>, <span class="ident">ram</span>.<span class="ident">inp</span>);
+                ram.load = Signal::HI;
+                ram.tick();
+                <span class="macro">assert_eq!</span>(ram.out, Signal16::FALSE);
+                ram.tock();
+                <span class="macro">assert_eq!</span>(ram.out, ram.inp);
             }
         }
     };
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

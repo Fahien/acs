@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/vm/instruction.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>instruction.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" 
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/vm/instruction.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>instruction.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" 
         data-theme="ayu"
         data-use_system_theme="false"></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../acs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../acs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -154,159 +154,159 @@
 <span id="152">152</span>
 <span id="153">153</span>
 <span id="154">154</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright © 2022</span>
-<span class="comment">// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;</span>
-<span class="comment">// SPDX-License-Identifier: MIT</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright © 2022
+// Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
+// SPDX-License-Identifier: MIT
 
-<span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
+</span><span class="kw">use </span>std::str::FromStr;
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">code::VmCode</span>, <span class="ident">preprocessor::VmPreprocessedCode</span>, <span class="ident">segment::Segment</span>};
+<span class="kw">use crate</span>::{code::VmCode, preprocessor::VmPreprocessedCode, segment::Segment};
 
-<span class="doccomment">/// Sort of _intermediate code_ designed to run on a</span>
-<span class="doccomment">/// [stack machine](https://en.wikipedia.org/wiki/Stack_machine).</span>
-<span class="doccomment">/// Part of a two-tier compilation model, where a high level language is</span>
-<span class="doccomment">/// first translated to this representation and then to machine language.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">VmInstruction</span> {
-    <span class="doccomment">/// Pushes `segment[index]` on top of the stack</span>
-    <span class="ident">Push</span>(<span class="ident">Segment</span>, <span class="ident">u16</span>),
+<span class="doccomment">/// Sort of _intermediate code_ designed to run on a
+/// [stack machine](https://en.wikipedia.org/wiki/Stack_machine).
+/// Part of a two-tier compilation model, where a high level language is
+/// first translated to this representation and then to machine language.
+</span><span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>VmInstruction {
+    <span class="doccomment">/// Pushes `segment[index]` on top of the stack
+    </span>Push(Segment, u16),
 
-    <span class="doccomment">/// Pops an element from the stack and stores it into `segment[index]`</span>
-    <span class="ident">Pop</span>(<span class="ident">Segment</span>, <span class="ident">u16</span>),
+    <span class="doccomment">/// Pops an element from the stack and stores it into `segment[index]`
+    </span>Pop(Segment, u16),
 
-    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x + y`</span>
-    <span class="ident">Add</span>,
+    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x + y`
+    </span>Add,
 
-    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x - y`</span>
-    <span class="ident">Sub</span>,
+    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x - y`
+    </span>Sub,
 
-    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x == y`</span>
-    <span class="ident">Eq</span>,
+    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x == y`
+    </span>Eq,
 
-    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x &lt; y`</span>
-    <span class="ident">Lt</span>,
+    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x &lt; y`
+    </span>Lt,
 
-    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x &gt; y`</span>
-    <span class="ident">Gt</span>,
+    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x &gt; y`
+    </span>Gt,
 
-    <span class="doccomment">/// Pops `x`, and pushes `-x`</span>
-    <span class="ident">Neg</span>,
+    <span class="doccomment">/// Pops `x`, and pushes `-x`
+    </span>Neg,
 
-    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x &amp; y`</span>
-    <span class="ident">And</span>,
+    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x &amp; y`
+    </span>And,
 
-    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x | y`</span>
-    <span class="ident">Or</span>,
+    <span class="doccomment">/// Pops `y`, pops `x`, and pushes `x | y`
+    </span>Or,
 
-    <span class="doccomment">/// Pops `x`, and pushes `~x` (bitwise not)</span>
-    <span class="ident">Not</span>,
+    <span class="doccomment">/// Pops `x`, and pushes `~x` (bitwise not)
+    </span>Not,
 
-    <span class="doccomment">/// Marks current code location for jumping</span>
-    <span class="ident">Label</span>(<span class="ident">String</span>),
+    <span class="doccomment">/// Marks current code location for jumping
+    </span>Label(String),
 
-    <span class="doccomment">/// Unconditional jump to the location marked by the label</span>
-    <span class="ident">Goto</span>(<span class="ident">String</span>),
+    <span class="doccomment">/// Unconditional jump to the location marked by the label
+    </span>Goto(String),
 
-    <span class="doccomment">/// Pops topmost value from stack and, if it is not `0`,</span>
-    <span class="doccomment">/// jumps to the location marked by the label</span>
-    <span class="ident">IfGoto</span>(<span class="ident">String</span>),
+    <span class="doccomment">/// Pops topmost value from stack and, if it is not `0`,
+    /// jumps to the location marked by the label
+    </span>IfGoto(String),
 
-    <span class="doccomment">/// Marks the beginning of a function with a name and the number of</span>
-    <span class="doccomment">/// local variables</span>
-    <span class="ident">Function</span>(<span class="ident">String</span>, <span class="ident">u16</span>),
+    <span class="doccomment">/// Marks the beginning of a function with a name and the number of
+    /// local variables
+    </span>Function(String, u16),
 
-    <span class="doccomment">/// Calls the function with that name with the number of arguments</span>
-    <span class="doccomment">/// pushed onto the stack before calling.</span>
-    <span class="ident">Call</span>(<span class="ident">String</span>, <span class="ident">u16</span>),
+    <span class="doccomment">/// Calls the function with that name with the number of arguments
+    /// pushed onto the stack before calling.
+    </span>Call(String, u16),
 
-    <span class="doccomment">/// Jumps to the command following the `Call` command that called the</span>
-    <span class="doccomment">/// current function, copying a number of words as the return value at the</span>
-    <span class="doccomment">/// beginning of the `Argument` section.</span>
-    <span class="ident">Return</span>(<span class="ident">u16</span>),
+    <span class="doccomment">/// Jumps to the command following the `Call` command that called the
+    /// current function, copying a number of words as the return value at the
+    /// beginning of the `Argument` section.
+    </span>Return(u16),
 }
 
-<span class="kw">impl</span> <span class="ident">VmInstruction</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">code</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VmInstruction</span><span class="op">&gt;</span> {
-        <span class="ident">VmPreprocessedCode::builder</span>()
-            .<span class="ident">include</span>(<span class="ident">VmCode::new</span>(<span class="string">&quot;default&quot;</span>, <span class="ident">code</span>))
-            .<span class="ident">build</span>()
-            .<span class="ident">into</span>()
+<span class="kw">impl </span>VmInstruction {
+    <span class="kw">pub fn </span>parse(code: <span class="kw-2">&amp;</span>str) -&gt; Vec&lt;VmInstruction&gt; {
+        VmPreprocessedCode::builder()
+            .include(VmCode::new(<span class="string">&quot;default&quot;</span>, code))
+            .build()
+            .into()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">VmInstruction</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">String</span>;
+<span class="kw">impl </span>FromStr <span class="kw">for </span>VmInstruction {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= String;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">words</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">split</span>(<span class="string">&#39; &#39;</span>);
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>words = s.split(<span class="string">&#39; &#39;</span>);
 
-        <span class="kw">let</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let </span>command = words.next().unwrap();
 
-        <span class="kw">match</span> <span class="ident">command</span> {
-            <span class="string">&quot;push&quot;</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">segment</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">parse</span>().<span class="ident">unwrap</span>();
-                <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">parse</span>().<span class="ident">unwrap</span>();
-                <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Push</span>(<span class="ident">segment</span>, <span class="ident">value</span>))
+        <span class="kw">match </span>command {
+            <span class="string">&quot;push&quot; </span>=&gt; {
+                <span class="kw">let </span>segment = words.next().unwrap().parse().unwrap();
+                <span class="kw">let </span>value = words.next().unwrap().parse().unwrap();
+                <span class="prelude-val">Ok</span>(VmInstruction::Push(segment, value))
             }
-            <span class="string">&quot;pop&quot;</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">segment</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+            <span class="string">&quot;pop&quot; </span>=&gt; {
+                <span class="kw">let </span>segment = words.next().unwrap().parse().unwrap();
 
-                <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
-                <span class="kw">let</span> <span class="ident">parse_err</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to parse pop value: `{}`&quot;</span>, <span class="ident">value</span>);
-                <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">value</span>.<span class="ident">parse</span>().<span class="ident">expect</span>(<span class="kw-2">&amp;</span><span class="ident">parse_err</span>);
-                <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Pop</span>(<span class="ident">segment</span>, <span class="ident">value</span>))
+                <span class="kw">let </span>value = words.next().unwrap();
+                <span class="kw">let </span>parse_err = <span class="macro">format!</span>(<span class="string">&quot;Failed to parse pop value: `{}`&quot;</span>, value);
+                <span class="kw">let </span>value = value.parse().expect(<span class="kw-2">&amp;</span>parse_err);
+                <span class="prelude-val">Ok</span>(VmInstruction::Pop(segment, value))
             }
-            <span class="string">&quot;add&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Add</span>),
-            <span class="string">&quot;sub&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Sub</span>),
-            <span class="string">&quot;eq&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Eq</span>),
-            <span class="string">&quot;lt&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Lt</span>),
-            <span class="string">&quot;gt&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Gt</span>),
-            <span class="string">&quot;neg&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Neg</span>),
-            <span class="string">&quot;and&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::And</span>),
-            <span class="string">&quot;or&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Or</span>),
-            <span class="string">&quot;not&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Not</span>),
-            <span class="string">&quot;label&quot;</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">label</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">into</span>();
-                <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Label</span>(<span class="ident">label</span>))
+            <span class="string">&quot;add&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VmInstruction::Add),
+            <span class="string">&quot;sub&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VmInstruction::Sub),
+            <span class="string">&quot;eq&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VmInstruction::Eq),
+            <span class="string">&quot;lt&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VmInstruction::Lt),
+            <span class="string">&quot;gt&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VmInstruction::Gt),
+            <span class="string">&quot;neg&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VmInstruction::Neg),
+            <span class="string">&quot;and&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VmInstruction::And),
+            <span class="string">&quot;or&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VmInstruction::Or),
+            <span class="string">&quot;not&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VmInstruction::Not),
+            <span class="string">&quot;label&quot; </span>=&gt; {
+                <span class="kw">let </span>label = words.next().unwrap().into();
+                <span class="prelude-val">Ok</span>(VmInstruction::Label(label))
             }
-            <span class="string">&quot;if-goto&quot;</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">label</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">into</span>();
-                <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::IfGoto</span>(<span class="ident">label</span>))
+            <span class="string">&quot;if-goto&quot; </span>=&gt; {
+                <span class="kw">let </span>label = words.next().unwrap().into();
+                <span class="prelude-val">Ok</span>(VmInstruction::IfGoto(label))
             }
-            <span class="string">&quot;goto&quot;</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">label</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">into</span>();
-                <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Goto</span>(<span class="ident">label</span>))
+            <span class="string">&quot;goto&quot; </span>=&gt; {
+                <span class="kw">let </span>label = words.next().unwrap().into();
+                <span class="prelude-val">Ok</span>(VmInstruction::Goto(label))
             }
-            <span class="string">&quot;function&quot;</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">function</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">into</span>();
-                <span class="kw">let</span> <span class="ident">param_count</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">parse</span>().<span class="ident">unwrap</span>();
-                <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Function</span>(<span class="ident">function</span>, <span class="ident">param_count</span>))
+            <span class="string">&quot;function&quot; </span>=&gt; {
+                <span class="kw">let </span>function = words.next().unwrap().into();
+                <span class="kw">let </span>param_count = words.next().unwrap().parse().unwrap();
+                <span class="prelude-val">Ok</span>(VmInstruction::Function(function, param_count))
             }
-            <span class="string">&quot;return&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Return</span>(<span class="number">1</span>)),
-            <span class="string">&quot;call&quot;</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">function</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">into</span>();
-                <span class="kw">let</span> <span class="ident">arg_count</span> <span class="op">=</span> <span class="ident">words</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">parse</span>().<span class="ident">unwrap</span>();
-                <span class="prelude-val">Ok</span>(<span class="ident">VmInstruction::Call</span>(<span class="ident">function</span>, <span class="ident">arg_count</span>))
+            <span class="string">&quot;return&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VmInstruction::Return(<span class="number">1</span>)),
+            <span class="string">&quot;call&quot; </span>=&gt; {
+                <span class="kw">let </span>function = words.next().unwrap().into();
+                <span class="kw">let </span>arg_count = words.next().unwrap().parse().unwrap();
+                <span class="prelude-val">Ok</span>(VmInstruction::Call(function, arg_count))
             }
-            <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid command: `{}`&quot;</span>, <span class="ident">command</span>)),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid command: `{}`&quot;</span>, command)),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">VmPreprocessedCode</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VmInstruction</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">preprocessed_code</span>: <span class="ident">VmPreprocessedCode</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">preprocessed_code</span>
-            .<span class="ident">get_lines</span>()
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> <span class="ident">line</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>())
-            .<span class="ident">collect</span>()
+<span class="kw">impl </span>From&lt;VmPreprocessedCode&gt; <span class="kw">for </span>Vec&lt;VmInstruction&gt; {
+    <span class="kw">fn </span>from(preprocessed_code: VmPreprocessedCode) -&gt; <span class="self">Self </span>{
+        preprocessed_code
+            .get_lines()
+            .iter()
+            .map(|line| line.parse().unwrap())
+            .collect()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">VmCode</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VmInstruction</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">code</span>: <span class="ident">VmCode</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">VmPreprocessedCode::builder</span>().<span class="ident">include</span>(<span class="ident">code</span>).<span class="ident">build</span>().<span class="ident">into</span>()
+<span class="kw">impl </span>From&lt;VmCode&gt; <span class="kw">for </span>Vec&lt;VmInstruction&gt; {
+    <span class="kw">fn </span>from(code: VmCode) -&gt; <span class="self">Self </span>{
+        VmPreprocessedCode::builder().include(code).build().into()
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>
