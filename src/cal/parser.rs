@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 use crate::{
     error::CalError,
-    expression::{Expression, Term},
+    expression::{Expression, Operator, Term},
     statement::Statement,
     structure::{Function, Module, Type, Variable},
     tokenizer::*,
@@ -92,9 +92,33 @@ impl Parser {
         }
     }
 
+    fn parse_operator(&mut self) -> Result<Operator, CalError> {
+        if let Some(token) = self.tokens.next() {
+            match &token.value {
+                TokenKind::Symbol(symbol) => Ok(Operator::from_symbol(*symbol)?),
+                token_kind => Err(CalError::new(
+                    format!("Expected operator, found {:?}", token_kind),
+                    Range::default(),
+                )),
+            }
+        } else {
+            Err(CalError::new("Expected operator".into(), Range::default()))
+        }
+    }
+
     pub fn parse_expression(&mut self) -> Result<Expression, CalError> {
         let term = self.parse_term()?;
-        Ok(Expression::new(Box::new(term)))
+
+        // Following a term there can be an operator
+        let op_and_exprm = if self.tokens.peek_operator() {
+            let op = self.parse_operator()?;
+            let expression = self.parse_expression()?;
+            Some((op, Box::new(expression)))
+        } else {
+            None
+        };
+
+        Ok(Expression::new(Box::new(term), op_and_exprm))
     }
 
     fn parse_return(&mut self) -> Result<Option<Expression>, CalError> {

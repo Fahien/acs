@@ -324,6 +324,19 @@ impl Tokens {
         false
     }
 
+    /// Peeks the next token and returns whether it is an operator
+    pub fn peek_operator(&mut self) -> bool {
+        if let Some(Token {
+            value: TokenKind::Symbol(sym),
+            ..
+        }) = self.tokens.peek()
+        {
+            *sym == Symbol::Plus
+        } else {
+            false
+        }
+    }
+
     /// Skips the next token
     pub fn skip(&mut self) {
         self.tokens.next();
