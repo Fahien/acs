@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["VmCode","A VmCode unit represents a file with VM instructions"]]};

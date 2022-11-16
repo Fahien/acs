@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Mux16","Similar to the Mux gate, but it operates in bunches of 16 signals"]]};
