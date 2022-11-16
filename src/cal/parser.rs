@@ -7,7 +7,7 @@ use std::str::FromStr;
 use crate::{
     error::CalError,
     expression::{Expression, Operator, Term},
-    statement::Statement,
+    statement::{IfStatement, Statement},
     structure::{Function, Module, Type, Variable},
     tokenizer::*,
 };
@@ -42,7 +42,7 @@ impl Parser {
     fn parse_type(&mut self) -> Result<Type, CalError> {
         if let Some(token) = self.tokens.next() {
             if let TokenKind::Keyword(keyword) = token.value {
-                Ok(Type::from(keyword))
+                Type::from_keyword(keyword)
             } else {
                 Err(CalError::new(
                     format!("Expected type, found {:?}", token.value),
@@ -70,6 +70,8 @@ impl Parser {
     fn parse_term(&mut self) -> Result<Term, CalError> {
         if let Some(token) = self.tokens.next() {
             match &token.value {
+                TokenKind::Keyword(Keyword::True) => Ok(Term::BoolLiteral(true)),
+                TokenKind::Keyword(Keyword::False) => Ok(Term::BoolLiteral(false)),
                 TokenKind::Integer(int) => Ok(Term::IntLiteral(*int)),
                 TokenKind::Identifier(identifier) => {
                     // Parse subroutine call
@@ -145,6 +147,28 @@ impl Parser {
         Ok(Statement::Let(variable, assign_expression))
     }
 
+    pub fn parse_if(&mut self) -> Result<Statement, CalError> {
+        self.tokens.eat_keyword(Keyword::If)?;
+        let predicate = self.parse_expression()?;
+        self.tokens.eat_symbol(Symbol::LeftBrace)?;
+        let if_branch = self.parse_statements()?;
+        self.tokens.eat_symbol(Symbol::RightBrace)?;
+
+        let mut else_branch = vec![];
+        if self.tokens.peek_keyword(Keyword::Else) {
+            self.tokens.eat_keyword(Keyword::Else)?;
+            self.tokens.eat_symbol(Symbol::LeftBrace)?;
+            else_branch.extend(self.parse_statements()?);
+            self.tokens.eat_symbol(Symbol::RightBrace)?;
+        }
+
+        Ok(Statement::If(IfStatement::new(
+            predicate,
+            if_branch,
+            else_branch,
+        )))
+    }
+
     pub fn parse_statement(&mut self) -> Result<Option<Statement>, CalError> {
         if let Some(token) = self.tokens.peek().cloned() {
             match &token.value {
@@ -153,6 +177,7 @@ impl Parser {
                     Ok(Some(Statement::Return(self.parse_return()?)))
                 }
                 TokenKind::Keyword(Keyword::Let) => Ok(Some(self.parse_let()?)),
+                TokenKind::Keyword(Keyword::If) => Ok(Some(self.parse_if()?)),
                 _ => {
                     let expression = self.parse_expression()?;
                     if self.tokens.peek_symbol(Symbol::Semicolon) {

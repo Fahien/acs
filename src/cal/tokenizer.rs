@@ -324,6 +324,18 @@ impl Tokens {
         }
     }
 
+    /// Peeks the next token and returns whether it is that keyword
+    pub fn peek_keyword(&mut self, keyword: Keyword) -> bool {
+        if let Some(Token {
+            value: TokenKind::Keyword(kw),
+            ..
+        }) = self.tokens.peek()
+        {
+            return *kw == keyword;
+        }
+        false
+    }
+
     /// Peeks the next token and returns whether it is that symbol
     pub fn peek_symbol(&mut self, symbol: Symbol) -> bool {
         if let Some(Token {

@@ -119,3 +119,25 @@ fn add() -> Result<(), CalError> {
 
     Ok(())
 }
+
+#[test]
+fn if_statement() -> Result<(), CalError> {
+    let module: Module = "fn main() -> bool { if true { true } else { false } }".parse()?;
+    let function = &module.functions[0];
+    assert_eq!(function.name, "main");
+    assert_eq!(function.parameters.len(), 0);
+    assert_eq!(function.body_statements.len(), 1);
+    assert_eq!(function.local_count, 0);
+    assert_eq!(function.return_type, Type::Bool);
+
+    let statement = &function.body_statements[0];
+    let Statement::If(ifstat) = statement else {
+        panic!();
+    };
+    assert_eq!(ifstat.predicate.term.as_ref(), &Term::BoolLiteral(true));
+    assert!(ifstat.predicate.op_and_expr.is_none());
+    assert_eq!(ifstat.if_branch.len(), 1);
+    assert_eq!(ifstat.else_branch.len(), 1);
+
+    Ok(())
+}

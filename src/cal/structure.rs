@@ -2,7 +2,11 @@
 // Author: Antonio Caggiano <info@antoniocaggiano.eu>
 // SPDX-License-Identifier: MIT
 
-use crate::{statement::Statement, tokenizer::Keyword};
+use crate::{
+    error::CalError,
+    statement::Statement,
+    tokenizer::{Keyword, Range},
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Variable {
@@ -29,13 +33,18 @@ impl From<String> for Variable {
 pub enum Type {
     Void,
     I16,
+    Bool,
 }
 
-impl From<Keyword> for Type {
-    fn from(keyword: Keyword) -> Self {
+impl Type {
+    pub fn from_keyword(keyword: Keyword) -> Result<Self, CalError> {
         match keyword {
-            Keyword::I16 => Type::I16,
-            _ => panic!("Can not convert keyword `{:?}` to a `Type`", keyword),
+            Keyword::I16 => Ok(Type::I16),
+            Keyword::Bool => Ok(Type::Bool),
+            _ => Err(CalError::new(
+                format!("Failed to convert keyword `{:?}` to a `Type`", keyword),
+                Range::default(),
+            )),
         }
     }
 }

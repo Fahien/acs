@@ -23,6 +23,7 @@ impl Operator {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Term {
     IntLiteral(i16),
+    BoolLiteral(bool),
     /// Call a function with a list of arguments
     Call(String, Vec<Expression>),
     Variable(String),

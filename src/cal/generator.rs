@@ -34,7 +34,7 @@ impl Generator {
     fn get_type_size(&self, typ: &Type) -> u16 {
         match typ {
             Type::Void => 0,
-            Type::I16 => 2,
+            Type::I16 | Type::Bool => 2,
         }
     }
 
@@ -77,6 +77,7 @@ impl Generator {
                     ))
                 }
             }
+            _ => unimplemented!(),
         }
     }
 
@@ -133,6 +134,7 @@ impl Generator {
             Statement::Let(variable, assign_expression) => {
                 self.gen_let(variable, assign_expression)
             }
+            _ => unimplemented!(),
         }
     }
 
