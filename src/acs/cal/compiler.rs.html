@@ -31,14 +31,14 @@
 // SPDX-License-Identifier: MIT
 
 </span><span class="kw">use crate</span>::{
-    asm::instruction::AsmInstruction, error::CalError, generator::Generator, parser::Parser,
+    asm::instruction::AsmInstruction, error::CalError, generator::Generator, parser::parse,
     tokenizer::tokenize, VmTranslator,
 };
 
 <span class="doccomment">/// Compiles Cal source code and returns a series of asm instructions
 </span><span class="kw">pub fn </span>compile(input: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;AsmInstruction&gt;, CalError&gt; {
-    <span class="kw">let </span>module = Parser::new(tokenize(input)<span class="question-mark">?</span>).parse_module()<span class="question-mark">?</span>;
-    <span class="kw">let </span>vm_instructions = Generator::default().gen(<span class="kw-2">&amp;</span>[module]);
+    <span class="kw">let </span>module = parse(tokenize(input)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>vm_instructions = Generator::default().gen(<span class="kw-2">&amp;</span>[module])<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(VmTranslator::default().translate(vm_instructions))
 }
 

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Ram64","A Random Access Memory consisting of 64 16-bit register (8 `Ram8`)"]]};

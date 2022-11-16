@@ -58,6 +58,7 @@
 <span id="56">56</span>
 <span id="57">57</span>
 <span id="58">58</span>
+<span id="59">59</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -111,9 +112,10 @@
     }
 
     <span class="doccomment">/// Returns the segment and the offset of the variable with that `name`
-    </span><span class="kw">pub fn </span>get_segment_and_offset(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; (Segment, u16) {
-        <span class="kw">let </span>entry = <span class="self">self</span>.variables.get(name).unwrap();
-        (entry.segment, entry.offset)
+    </span><span class="kw">pub fn </span>get_segment_and_offset(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;(Segment, u16)&gt; {
+        <span class="self">self</span>.variables
+            .get(name)
+            .map(|entry| (entry.segment, entry.offset))
     }
 }
 </code></pre></div>
