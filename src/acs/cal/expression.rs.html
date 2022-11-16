@@ -44,6 +44,7 @@
 <span id="42">42</span>
 <span id="43">43</span>
 <span id="44">44</span>
+<span id="45">45</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -69,6 +70,7 @@
 <span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Term {
     IntLiteral(i16),
+    BoolLiteral(bool),
     <span class="doccomment">/// Call a function with a list of arguments
     </span>Call(String, Vec&lt;Expression&gt;),
     Variable(String),

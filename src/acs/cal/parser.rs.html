@@ -270,6 +270,31 @@
 <span id="268">268</span>
 <span id="269">269</span>
 <span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -279,7 +304,7 @@
 <span class="kw">use crate</span>::{
     error::CalError,
     expression::{Expression, Operator, Term},
-    statement::Statement,
+    statement::{IfStatement, Statement},
     structure::{Function, Module, Type, Variable},
     tokenizer::<span class="kw-2">*</span>,
 };
@@ -314,7 +339,7 @@
     <span class="kw">fn </span>parse_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Type, CalError&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
             <span class="kw">if let </span>TokenKind::Keyword(keyword) = token.value {
-                <span class="prelude-val">Ok</span>(Type::from(keyword))
+                Type::from_keyword(keyword)
             } <span class="kw">else </span>{
                 <span class="prelude-val">Err</span>(CalError::new(
                     <span class="macro">format!</span>(<span class="string">&quot;Expected type, found {:?}&quot;</span>, token.value),
@@ -342,6 +367,8 @@
     <span class="kw">fn </span>parse_term(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Term, CalError&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
             <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
+                TokenKind::Keyword(Keyword::True) =&gt; <span class="prelude-val">Ok</span>(Term::BoolLiteral(<span class="bool-val">true</span>)),
+                TokenKind::Keyword(Keyword::False) =&gt; <span class="prelude-val">Ok</span>(Term::BoolLiteral(<span class="bool-val">false</span>)),
                 TokenKind::Integer(int) =&gt; <span class="prelude-val">Ok</span>(Term::IntLiteral(<span class="kw-2">*</span>int)),
                 TokenKind::Identifier(identifier) =&gt; {
                     <span class="comment">// Parse subroutine call
@@ -417,6 +444,28 @@
         <span class="prelude-val">Ok</span>(Statement::Let(variable, assign_expression))
     }
 
+    <span class="kw">pub fn </span>parse_if(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Statement, CalError&gt; {
+        <span class="self">self</span>.tokens.eat_keyword(Keyword::If)<span class="question-mark">?</span>;
+        <span class="kw">let </span>predicate = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::LeftBrace)<span class="question-mark">?</span>;
+        <span class="kw">let </span>if_branch = <span class="self">self</span>.parse_statements()<span class="question-mark">?</span>;
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::RightBrace)<span class="question-mark">?</span>;
+
+        <span class="kw">let </span><span class="kw-2">mut </span>else_branch = <span class="macro">vec!</span>[];
+        <span class="kw">if </span><span class="self">self</span>.tokens.peek_keyword(Keyword::Else) {
+            <span class="self">self</span>.tokens.eat_keyword(Keyword::Else)<span class="question-mark">?</span>;
+            <span class="self">self</span>.tokens.eat_symbol(Symbol::LeftBrace)<span class="question-mark">?</span>;
+            else_branch.extend(<span class="self">self</span>.parse_statements()<span class="question-mark">?</span>);
+            <span class="self">self</span>.tokens.eat_symbol(Symbol::RightBrace)<span class="question-mark">?</span>;
+        }
+
+        <span class="prelude-val">Ok</span>(Statement::If(IfStatement::new(
+            predicate,
+            if_branch,
+            else_branch,
+        )))
+    }
+
     <span class="kw">pub fn </span>parse_statement(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Statement&gt;, CalError&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.peek().cloned() {
             <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
@@ -425,6 +474,7 @@
                     <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(Statement::Return(<span class="self">self</span>.parse_return()<span class="question-mark">?</span>)))
                 }
                 TokenKind::Keyword(Keyword::Let) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.parse_let()<span class="question-mark">?</span>)),
+                TokenKind::Keyword(Keyword::If) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.parse_if()<span class="question-mark">?</span>)),
                 <span class="kw">_ </span>=&gt; {
                     <span class="kw">let </span>expression = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
                     <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::Semicolon) {

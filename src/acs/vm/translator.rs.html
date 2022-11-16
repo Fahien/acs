@@ -681,7 +681,7 @@
             <span class="comment">// Get stack pointer
             // A=0
             </span>I::A(<span class="number">0</span>),
-            <span class="comment">// A=M[A]
+            <span class="comment">// A=M[0]-1
             </span>I::C(Dest::A, Comp::MMinusOne, Jump::No),
             <span class="comment">// M[A]=-M[A]
             </span>I::C(Dest::M, Comp::NotM, Jump::No),

@@ -12,6 +12,28 @@
 <span id="10">10</span>
 <span id="11">11</span>
 <span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -19,10 +41,32 @@
 </span><span class="kw">use crate</span>::{expression::Expression, structure::Variable};
 
 <span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>IfStatement {
+    <span class="kw">pub </span>predicate: Expression,
+    <span class="kw">pub </span>if_branch: Vec&lt;Statement&gt;,
+    <span class="kw">pub </span>else_branch: Vec&lt;Statement&gt;,
+}
+
+<span class="kw">impl </span>IfStatement {
+    <span class="kw">pub fn </span>new(
+        predicate: Expression,
+        if_branch: Vec&lt;Statement&gt;,
+        else_branch: Vec&lt;Statement&gt;,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            predicate,
+            if_branch,
+            else_branch,
+        }
+    }
+}
+
+<span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Statement {
     Expression(Expression),
     Return(<span class="prelude-ty">Option</span>&lt;Expression&gt;),
     Let(Variable, Expression),
+    If(IfStatement),
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

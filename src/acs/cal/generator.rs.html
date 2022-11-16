@@ -219,6 +219,40 @@
 <span id="217">217</span>
 <span id="218">218</span>
 <span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -227,7 +261,7 @@
     error::CalError,
     expression::{Expression, Operator, Term},
     segment::Segment,
-    statement::Statement,
+    statement::{IfStatement, Statement},
     structure::{Function, Module, Type, Variable},
     symboltable::SymbolTable,
     tokenizer::Range,
@@ -248,14 +282,22 @@
 </span><span class="attribute">#[derive(Default)]
 </span><span class="kw">pub struct </span>Generator {
     symbol_tables: Vec&lt;SymbolTable&gt;,
+    label_count: u32,
 }
 
 <span class="kw">impl </span>Generator {
+    <span class="doccomment">/// Generate a label at VM instructions level
+    </span><span class="kw">fn </span>next_label(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; String {
+        <span class="kw">let </span>ret = <span class="macro">format!</span>(<span class="string">&quot;VM_LABEL{}&quot;</span>, <span class="self">self</span>.label_count);
+        <span class="self">self</span>.label_count += <span class="number">1</span>;
+        ret
+    }
+
     <span class="doccomment">/// Returns the size in bytes of the type
     </span><span class="kw">fn </span>get_type_size(<span class="kw-2">&amp;</span><span class="self">self</span>, typ: <span class="kw-2">&amp;</span>Type) -&gt; u16 {
         <span class="kw">match </span>typ {
             Type::Void =&gt; <span class="number">0</span>,
-            Type::I16 =&gt; <span class="number">2</span>,
+            Type::I16 | Type::Bool =&gt; <span class="number">2</span>,
         }
     }
 
@@ -278,6 +320,11 @@
                 <span class="kw">let </span>integer = <span class="kw">unsafe </span>{ std::mem::transmute::&lt;i16, u16&gt;(<span class="kw-2">*</span>integer) };
                 <span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[VmInstruction::Push(Segment::Constant, integer)])
             }
+            Term::BoolLiteral(<span class="bool-val">false</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[VmInstruction::Push(Segment::Constant, <span class="number">0</span>)]),
+            Term::BoolLiteral(<span class="bool-val">true</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[
+                VmInstruction::Push(Segment::Constant, <span class="number">0</span>),
+                VmInstruction::Not,
+            ]),
             Term::Call(name, expressions) =&gt; {
                 <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="macro">vec!</span>[];
                 <span class="kw">for </span>expr <span class="kw">in </span>expressions {
@@ -347,6 +394,26 @@
         <span class="prelude-val">Ok</span>(ret)
     }
 
+    <span class="doccomment">/// Generates VM instructions for an if statement
+    </span><span class="kw">pub fn </span>gen_if(<span class="kw-2">&amp;mut </span><span class="self">self</span>, if_stat: <span class="kw-2">&amp;</span>IfStatement) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
+        <span class="kw">let </span>else_label = <span class="self">self</span>.next_label();
+        <span class="kw">let </span>endif_label = <span class="self">self</span>.next_label();
+
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">self</span>.gen_expression(<span class="kw-2">&amp;</span>if_stat.predicate)<span class="question-mark">?</span>;
+        ret.push(VmInstruction::Not);
+        ret.push(VmInstruction::IfGoto(else_label.clone()));
+
+        ret.extend(<span class="self">self</span>.gen_statements(<span class="kw-2">&amp;</span>if_stat.if_branch)<span class="question-mark">?</span>);
+        ret.push(VmInstruction::Goto(endif_label.clone()));
+
+        ret.push(VmInstruction::Label(else_label));
+        ret.extend(<span class="self">self</span>.gen_statements(<span class="kw-2">&amp;</span>if_stat.else_branch)<span class="question-mark">?</span>);
+
+        ret.push(VmInstruction::Label(endif_label));
+
+        <span class="prelude-val">Ok</span>(ret)
+    }
+
     <span class="kw">pub fn </span>gen_statement(<span class="kw-2">&amp;mut </span><span class="self">self</span>, statement: <span class="kw-2">&amp;</span>Statement) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
         <span class="kw">match </span>statement {
             Statement::Return(expr) =&gt; <span class="self">self</span>.gen_return(expr),
@@ -354,6 +421,7 @@
             Statement::Let(variable, assign_expression) =&gt; {
                 <span class="self">self</span>.gen_let(variable, assign_expression)
             }
+            Statement::If(ifstat) =&gt; <span class="self">self</span>.gen_if(ifstat),
         }
     }
 
