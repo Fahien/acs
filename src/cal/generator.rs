@@ -6,7 +6,7 @@ use crate::{
     error::CalError,
     expression::{Expression, Operator, Term},
     segment::Segment,
-    statement::Statement,
+    statement::{IfStatement, Statement},
     structure::{Function, Module, Type, Variable},
     symboltable::SymbolTable,
     tokenizer::Range,
@@ -27,9 +27,17 @@ fn preamble() -> Vec<VmInstruction> {
 #[derive(Default)]
 pub struct Generator {
     symbol_tables: Vec<SymbolTable>,
+    label_count: u32,
 }
 
 impl Generator {
+    /// Generate a label at VM instructions level
+    fn next_label(&mut self) -> String {
+        let ret = format!("VM_LABEL{}", self.label_count);
+        self.label_count += 1;
+        ret
+    }
+
     /// Returns the size in bytes of the type
     fn get_type_size(&self, typ: &Type) -> u16 {
         match typ {
@@ -57,6 +65,11 @@ impl Generator {
                 let integer = unsafe { std::mem::transmute::<i16, u16>(*integer) };
                 Ok(vec![VmInstruction::Push(Segment::Constant, integer)])
             }
+            Term::BoolLiteral(false) => Ok(vec![VmInstruction::Push(Segment::Constant, 0)]),
+            Term::BoolLiteral(true) => Ok(vec![
+                VmInstruction::Push(Segment::Constant, 0),
+                VmInstruction::Not,
+            ]),
             Term::Call(name, expressions) => {
                 let mut ret = vec![];
                 for expr in expressions {
@@ -77,7 +90,6 @@ impl Generator {
                     ))
                 }
             }
-            _ => unimplemented!(),
         }
     }
 
@@ -127,6 +139,26 @@ impl Generator {
         Ok(ret)
     }
 
+    /// Generates VM instructions for an if statement
+    pub fn gen_if(&mut self, if_stat: &IfStatement) -> Result<Vec<VmInstruction>, CalError> {
+        let else_label = self.next_label();
+        let endif_label = self.next_label();
+
+        let mut ret = self.gen_expression(&if_stat.predicate)?;
+        ret.push(VmInstruction::Not);
+        ret.push(VmInstruction::IfGoto(else_label.clone()));
+
+        ret.extend(self.gen_statements(&if_stat.if_branch)?);
+        ret.push(VmInstruction::Goto(endif_label.clone()));
+
+        ret.push(VmInstruction::Label(else_label));
+        ret.extend(self.gen_statements(&if_stat.else_branch)?);
+
+        ret.push(VmInstruction::Label(endif_label));
+
+        Ok(ret)
+    }
+
     pub fn gen_statement(&mut self, statement: &Statement) -> Result<Vec<VmInstruction>, CalError> {
         match statement {
             Statement::Return(expr) => self.gen_return(expr),
@@ -134,7 +166,7 @@ impl Generator {
             Statement::Let(variable, assign_expression) => {
                 self.gen_let(variable, assign_expression)
             }
-            _ => unimplemented!(),
+            Statement::If(ifstat) => self.gen_if(ifstat),
         }
     }
 

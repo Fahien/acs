@@ -167,3 +167,44 @@ fn add() -> Result<(), CalError> {
     assert_eq!(vm_instructions[3], VmInstruction::Add);
     Ok(())
 }
+
+#[test]
+fn if_statement() -> Result<(), CalError> {
+    let vm_instructions = "fn main() -> bool { if true { true } else { false } }".generate()?;
+    let VmInstruction::Function(name, 0) = &vm_instructions[0] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+    assert_eq!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Constant, 0),
+    );
+    assert_eq!(vm_instructions[2], VmInstruction::Not);
+    assert_eq!(vm_instructions[3], VmInstruction::Not);
+    assert_eq!(
+        vm_instructions[4],
+        VmInstruction::IfGoto(String::from("VM_LABEL0"))
+    );
+    assert_eq!(
+        vm_instructions[5],
+        VmInstruction::Push(Segment::Constant, 0)
+    );
+    assert_eq!(vm_instructions[6], VmInstruction::Not);
+    assert_eq!(
+        vm_instructions[7],
+        VmInstruction::Goto(String::from("VM_LABEL1"))
+    );
+    assert_eq!(
+        vm_instructions[8],
+        VmInstruction::Label(String::from("VM_LABEL0"))
+    );
+    assert_eq!(
+        vm_instructions[9],
+        VmInstruction::Push(Segment::Constant, 0)
+    );
+    assert_eq!(
+        vm_instructions[10],
+        VmInstruction::Label(String::from("VM_LABEL1"))
+    );
+    Ok(())
+}
