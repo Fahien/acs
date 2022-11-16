@@ -144,3 +144,26 @@ fn add() -> Result<(), CalError> {
     tokens.eat_symbol(Symbol::RightBrace)?;
     Ok(())
 }
+
+#[test]
+fn if_statement() -> Result<(), CalError> {
+    let mut tokens = "fn main() -> bool { if true { true } else { false } }".tokenize()?;
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("main")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::RightArrow)?;
+    tokens.eat_keyword(Keyword::Bool)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_keyword(Keyword::If)?;
+    tokens.eat_keyword(Keyword::True)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_keyword(Keyword::True)?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    tokens.eat_keyword(Keyword::Else)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_keyword(Keyword::False)?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    Ok(())
+}

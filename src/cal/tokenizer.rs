@@ -34,14 +34,24 @@ pub enum Keyword {
     I16,
     Return,
     Let,
+    Bool,
+    True,
+    False,
+    If,
+    Else,
 }
 
 impl Keyword {
-    pub const MAP: [(&'static str, Keyword); 4] = [
+    pub const MAP: [(&'static str, Keyword); 9] = [
         ("fn ", Keyword::Function),
         ("i16", Keyword::I16),
         ("return", Keyword::Return),
         ("let ", Keyword::Let),
+        ("bool", Keyword::Bool),
+        ("true", Keyword::True),
+        ("false", Keyword::False),
+        ("if", Keyword::If),
+        ("else", Keyword::Else),
     ];
 }
 
