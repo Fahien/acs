@@ -23,6 +23,31 @@ fn preamble() -> Vec<VmInstruction> {
     ]
 }
 
+/// The peek function is added at the beginning of the program and it can be
+/// used to read a word (2 bytes) from an address in memory
+fn peek() -> Vec<VmInstruction> {
+    vec![
+        VmInstruction::Function("peek".into(), 0),
+        VmInstruction::Push(Segment::Argument, 0),
+        VmInstruction::Pop(Segment::Pointer, 0),
+        VmInstruction::Push(Segment::This, 0),
+        VmInstruction::Return(1),
+    ]
+}
+
+/// The poke function is added at the beginning of the program and it can be
+/// used to write a word (2 bytes) at an address in memory
+fn poke() -> Vec<VmInstruction> {
+    vec![
+        VmInstruction::Function("poke".into(), 0),
+        VmInstruction::Push(Segment::Argument, 0),
+        VmInstruction::Pop(Segment::Pointer, 0),
+        VmInstruction::Push(Segment::Argument, 1),
+        VmInstruction::Pop(Segment::This, 0),
+        VmInstruction::Return(0),
+    ]
+}
+
 /// Generates VM instructions from parsed code.
 #[derive(Default)]
 pub struct Generator {
@@ -256,6 +281,8 @@ impl Generator {
     /// Generates VM instructions for a series of modules
     pub fn gen(&mut self, modules: &[Module]) -> Result<Vec<VmInstruction>, CalError> {
         let mut instructions = preamble();
+        instructions.extend(peek());
+        instructions.extend(poke());
         for module in modules {
             instructions.extend(self.gen_module(module)?);
         }
