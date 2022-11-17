@@ -140,3 +140,25 @@ fn if_statement() -> Result<(), CalError> {
     assert_eq!(computer.get_memory().ram[256], -1);
     Ok(())
 }
+
+#[test]
+fn while_statement() -> Result<(), CalError> {
+    let asm_instructions = "fn main() -> bool { while true { return true; } false }".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], -1);
+
+    let asm_instructions = "fn main() -> bool { while false { return false; } true }".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], -1);
+    Ok(())
+}
