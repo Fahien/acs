@@ -397,6 +397,34 @@
 <span id="395">395</span>
 <span id="396">396</span>
 <span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -480,6 +508,14 @@
     </span>Plus,
     <span class="doccomment">/// `-`
     </span>Minus,
+    <span class="doccomment">/// `==`
+    </span>Eq,
+    <span class="doccomment">/// `!=`
+    </span>Ne,
+    <span class="doccomment">/// `&lt;`
+    </span>Lt,
+    <span class="doccomment">/// `&gt;`
+    </span>Gt,
 }
 
 <span class="doccomment">/// We have various kinds of tokens
@@ -535,7 +571,22 @@
         }
         <span class="prelude-val">Some</span>(<span class="string">&#39;;&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Semicolon, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="prelude-val">Some</span>(<span class="string">&#39;:&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Colon, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
-        <span class="prelude-val">Some</span>(<span class="string">&#39;=&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Assign, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
+        <span class="prelude-val">Some</span>(<span class="string">&#39;=&#39;</span>) =&gt; {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="string">&#39;=&#39;</span>) = chars.next() {
+                <span class="prelude-val">Some</span>((Symbol::Eq, <span class="kw-2">&amp;</span>input[<span class="number">2</span>..]))
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Some</span>((Symbol::Assign, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..]))
+            }
+        }
+        <span class="prelude-val">Some</span>(<span class="string">&#39;&lt;&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Lt, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
+        <span class="prelude-val">Some</span>(<span class="string">&#39;&gt;&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Gt, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
+        <span class="prelude-val">Some</span>(<span class="string">&#39;!&#39;</span>) =&gt; {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="string">&#39;=&#39;</span>) = chars.next() {
+                <span class="prelude-val">Some</span>((Symbol::Ne, <span class="kw-2">&amp;</span>input[<span class="number">2</span>..]))
+            } <span class="kw">else </span>{
+                <span class="prelude-val">None
+            </span>}
+        }
         <span class="prelude-val">Some</span>(<span class="string">&#39;,&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Comma, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="prelude-val">Some</span>(<span class="string">&#39;+&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Plus, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
@@ -756,7 +807,12 @@
             ..
         }) = <span class="self">self</span>.tokens.peek()
         {
-            <span class="kw-2">*</span>sym == Symbol::Plus || <span class="kw-2">*</span>sym == Symbol::Minus
+            <span class="kw-2">*</span>sym == Symbol::Plus
+                || <span class="kw-2">*</span>sym == Symbol::Minus
+                || <span class="kw-2">*</span>sym == Symbol::Eq
+                || <span class="kw-2">*</span>sym == Symbol::Ne
+                || <span class="kw-2">*</span>sym == Symbol::Lt
+                || <span class="kw-2">*</span>sym == Symbol::Gt
         } <span class="kw">else </span>{
             <span class="bool-val">false
         </span>}

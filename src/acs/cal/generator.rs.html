@@ -275,6 +275,10 @@
 <span id="273">273</span>
 <span id="274">274</span>
 <span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -371,10 +375,14 @@
     }
 
     <span class="doccomment">/// Generate a VM instruction for an operator
-    </span><span class="kw">fn </span>gen_operator(<span class="kw-2">&amp;</span><span class="self">self</span>, op: <span class="kw-2">&amp;</span>Operator) -&gt; VmInstruction {
+    </span><span class="kw">fn </span>gen_operator(<span class="kw-2">&amp;</span><span class="self">self</span>, op: <span class="kw-2">&amp;</span>Operator) -&gt; Vec&lt;VmInstruction&gt; {
         <span class="kw">match </span>op {
-            Operator::Add =&gt; VmInstruction::Add,
-            Operator::Sub =&gt; VmInstruction::Sub,
+            Operator::Add =&gt; <span class="macro">vec!</span>[VmInstruction::Add],
+            Operator::Sub =&gt; <span class="macro">vec!</span>[VmInstruction::Sub],
+            Operator::Eq =&gt; <span class="macro">vec!</span>[VmInstruction::Eq],
+            Operator::Ne =&gt; <span class="macro">vec!</span>[VmInstruction::Eq, VmInstruction::Not],
+            Operator::Lt =&gt; <span class="macro">vec!</span>[VmInstruction::Lt],
+            Operator::Gt =&gt; <span class="macro">vec!</span>[VmInstruction::Gt],
         }
     }
 
@@ -385,7 +393,7 @@
         <span class="comment">// Generate instructions for the operator and the right side expression
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>((op, expr)) = <span class="kw-2">&amp;</span>expr.op_and_expr {
             ret.extend(<span class="self">self</span>.gen_expression(expr.as_ref())<span class="question-mark">?</span>);
-            ret.push(<span class="self">self</span>.gen_operator(op));
+            ret.extend(<span class="self">self</span>.gen_operator(op));
         }
 
         <span class="prelude-val">Ok</span>(ret)
