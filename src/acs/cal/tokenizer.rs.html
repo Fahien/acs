@@ -395,6 +395,8 @@
 <span id="393">393</span>
 <span id="394">394</span>
 <span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -436,10 +438,11 @@
     False,
     If,
     Else,
+    While,
 }
 
 <span class="kw">impl </span>Keyword {
-    <span class="kw">pub const </span>MAP: [(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, Keyword); <span class="number">9</span>] = [
+    <span class="kw">pub const </span>MAP: [(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, Keyword); <span class="number">10</span>] = [
         (<span class="string">&quot;fn &quot;</span>, Keyword::Function),
         (<span class="string">&quot;i16&quot;</span>, Keyword::I16),
         (<span class="string">&quot;return&quot;</span>, Keyword::Return),
@@ -449,6 +452,7 @@
         (<span class="string">&quot;false&quot;</span>, Keyword::False),
         (<span class="string">&quot;if&quot;</span>, Keyword::If),
         (<span class="string">&quot;else&quot;</span>, Keyword::Else),
+        (<span class="string">&quot;while&quot;</span>, Keyword::While),
     ];
 }
 

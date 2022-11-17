@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["Statement",""]],"struct":[["IfStatement",""]]};
+window.SIDEBAR_ITEMS = {"enum":[["Statement",""]],"struct":[["IfStatement",""],["WhileStatement",""]]};

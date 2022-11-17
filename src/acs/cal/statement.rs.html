@@ -34,6 +34,19 @@
 <span id="32">32</span>
 <span id="33">33</span>
 <span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -62,11 +75,24 @@
 }
 
 <span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>WhileStatement {
+    <span class="kw">pub </span>predicate: Expression,
+    <span class="kw">pub </span>body: Vec&lt;Statement&gt;,
+}
+
+<span class="kw">impl </span>WhileStatement {
+    <span class="kw">pub fn </span>new(predicate: Expression, body: Vec&lt;Statement&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ predicate, body }
+    }
+}
+
+<span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Statement {
     Expression(Expression),
     Return(<span class="prelude-ty">Option</span>&lt;Expression&gt;),
     Let(Variable, Expression),
     If(IfStatement),
+    While(WhileStatement),
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="acs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

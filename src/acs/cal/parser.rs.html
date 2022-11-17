@@ -295,6 +295,17 @@
 <span id="293">293</span>
 <span id="294">294</span>
 <span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -304,7 +315,7 @@
 <span class="kw">use crate</span>::{
     error::CalError,
     expression::{Expression, Operator, Term},
-    statement::{IfStatement, Statement},
+    statement::{IfStatement, Statement, WhileStatement},
     structure::{Function, Module, Type, Variable},
     tokenizer::<span class="kw-2">*</span>,
 };
@@ -466,6 +477,16 @@
         )))
     }
 
+    <span class="kw">pub fn </span>parse_while(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Statement, CalError&gt; {
+        <span class="self">self</span>.tokens.eat_keyword(Keyword::While)<span class="question-mark">?</span>;
+        <span class="kw">let </span>predicate = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::LeftBrace)<span class="question-mark">?</span>;
+        <span class="kw">let </span>body = <span class="self">self</span>.parse_statements()<span class="question-mark">?</span>;
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::RightBrace)<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(Statement::While(WhileStatement::new(predicate, body)))
+    }
+
     <span class="kw">pub fn </span>parse_statement(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Statement&gt;, CalError&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.peek().cloned() {
             <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
@@ -475,6 +496,7 @@
                 }
                 TokenKind::Keyword(Keyword::Let) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.parse_let()<span class="question-mark">?</span>)),
                 TokenKind::Keyword(Keyword::If) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.parse_if()<span class="question-mark">?</span>)),
+                TokenKind::Keyword(Keyword::While) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.parse_while()<span class="question-mark">?</span>)),
                 <span class="kw">_ </span>=&gt; {
                     <span class="kw">let </span>expression = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
                     <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::Semicolon) {
