@@ -6,7 +6,7 @@ use crate::{
     error::CalError,
     expression::{Expression, Operator, Term},
     segment::Segment,
-    statement::{IfStatement, Statement},
+    statement::{IfStatement, Statement, WhileStatement},
     structure::{Function, Module, Type, Variable},
     symboltable::SymbolTable,
     tokenizer::Range,
@@ -159,6 +159,27 @@ impl Generator {
         Ok(ret)
     }
 
+    /// Generates VM instructions for a while statement
+    pub fn gen_while(
+        &mut self,
+        while_stat: &WhileStatement,
+    ) -> Result<Vec<VmInstruction>, CalError> {
+        let while_label = self.next_label();
+        let endwhile_label = self.next_label();
+
+        let mut ret = vec![VmInstruction::Label(while_label.clone())];
+        ret.extend(self.gen_expression(&while_stat.predicate)?);
+        ret.push(VmInstruction::Not);
+        ret.push(VmInstruction::IfGoto(endwhile_label.clone()));
+
+        ret.extend(self.gen_statements(&while_stat.body)?);
+        ret.push(VmInstruction::Goto(while_label));
+
+        ret.push(VmInstruction::Label(endwhile_label));
+
+        Ok(ret)
+    }
+
     pub fn gen_statement(&mut self, statement: &Statement) -> Result<Vec<VmInstruction>, CalError> {
         match statement {
             Statement::Return(expr) => self.gen_return(expr),
@@ -167,7 +188,7 @@ impl Generator {
                 self.gen_let(variable, assign_expression)
             }
             Statement::If(ifstat) => self.gen_if(ifstat),
-            _ => unimplemented!(),
+            Statement::While(whilestat) => self.gen_while(whilestat),
         }
     }
 

@@ -208,3 +208,59 @@ fn if_statement() -> Result<(), CalError> {
     );
     Ok(())
 }
+
+#[test]
+fn while_statement() -> Result<(), CalError> {
+    let vm_instructions = "fn main() -> bool { while true { return true; } false }".generate()?;
+    let mut index = 0;
+    let VmInstruction::Function(name, 0) = &vm_instructions[index] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Label(String::from("VM_LABEL0"))
+    );
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 0),
+    );
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Not);
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Not);
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::IfGoto(String::from("VM_LABEL1"))
+    );
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 0)
+    );
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Not);
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Return(1));
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Goto(String::from("VM_LABEL0"))
+    );
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Label(String::from("VM_LABEL1"))
+    );
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 0)
+    );
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Return(1));
+    Ok(())
+}
