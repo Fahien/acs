@@ -8,6 +8,14 @@ use crate::{error::CalError, tokenizer::Symbol};
 pub enum Operator {
     Add,
     Sub,
+    // `==`
+    Eq,
+    // `!=`
+    Ne,
+    // `<`
+    Lt,
+    // `>`
+    Gt,
 }
 
 impl Operator {
@@ -15,6 +23,10 @@ impl Operator {
         match sym {
             Symbol::Plus => Ok(Self::Add),
             Symbol::Minus => Ok(Self::Sub),
+            Symbol::Eq => Ok(Self::Eq),
+            Symbol::Ne => Ok(Self::Ne),
+            Symbol::Lt => Ok(Self::Lt),
+            Symbol::Gt => Ok(Self::Gt),
             _ => Err(format!("Failed to convert `{:?}` to an operator", sym).into()),
         }
     }

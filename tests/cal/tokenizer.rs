@@ -189,3 +189,44 @@ fn while_statement() -> Result<(), CalError> {
     tokens.eat_symbol(Symbol::RightBrace)?;
     Ok(())
 }
+
+#[test]
+fn cmp() -> Result<(), CalError> {
+    let mut tokens = r#"
+        fn main() -> bool {
+            1 == 1;
+            1 != 2;
+            1 < 2;
+            2 > 1
+        }"#
+    .tokenize()?;
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("main")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::RightArrow)?;
+    tokens.eat_keyword(Keyword::Bool)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+
+    tokens.eat_integer(1)?;
+    tokens.eat_symbol(Symbol::Eq)?;
+    tokens.eat_integer(1)?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+
+    tokens.eat_integer(1)?;
+    tokens.eat_symbol(Symbol::Ne)?;
+    tokens.eat_integer(2)?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+
+    tokens.eat_integer(1)?;
+    tokens.eat_symbol(Symbol::Lt)?;
+    tokens.eat_integer(2)?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+
+    tokens.eat_integer(2)?;
+    tokens.eat_symbol(Symbol::Gt)?;
+    tokens.eat_integer(1)?;
+
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    Ok(())
+}

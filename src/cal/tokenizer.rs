@@ -81,6 +81,14 @@ pub enum Symbol {
     Plus,
     /// `-`
     Minus,
+    /// `==`
+    Eq,
+    /// `!=`
+    Ne,
+    /// `<`
+    Lt,
+    /// `>`
+    Gt,
 }
 
 /// We have various kinds of tokens
@@ -136,7 +144,22 @@ fn strip_symbol(input: &str) -> Option<(Symbol, &str)> {
         }
         Some(';') => Some((Symbol::Semicolon, &input[1..])),
         Some(':') => Some((Symbol::Colon, &input[1..])),
-        Some('=') => Some((Symbol::Assign, &input[1..])),
+        Some('=') => {
+            if let Some('=') = chars.next() {
+                Some((Symbol::Eq, &input[2..]))
+            } else {
+                Some((Symbol::Assign, &input[1..]))
+            }
+        }
+        Some('<') => Some((Symbol::Lt, &input[1..])),
+        Some('>') => Some((Symbol::Gt, &input[1..])),
+        Some('!') => {
+            if let Some('=') = chars.next() {
+                Some((Symbol::Ne, &input[2..]))
+            } else {
+                None
+            }
+        }
         Some(',') => Some((Symbol::Comma, &input[1..])),
         Some('+') => Some((Symbol::Plus, &input[1..])),
         _ => None,
@@ -357,7 +380,12 @@ impl Tokens {
             ..
         }) = self.tokens.peek()
         {
-            *sym == Symbol::Plus || *sym == Symbol::Minus
+            *sym == Symbol::Plus
+                || *sym == Symbol::Minus
+                || *sym == Symbol::Eq
+                || *sym == Symbol::Ne
+                || *sym == Symbol::Lt
+                || *sym == Symbol::Gt
         } else {
             false
         }

@@ -162,3 +162,71 @@ fn while_statement() -> Result<(), CalError> {
 
     Ok(())
 }
+
+#[test]
+fn cmp() -> Result<(), CalError> {
+    let module: Module = r#"
+        fn main() -> bool {
+            1 == 1;
+            1 != 2;
+            1 < 2;
+            2 > 1
+        }"#
+    .parse()?;
+    let function = &module.functions[0];
+    assert_eq!(function.name, "main");
+    assert_eq!(function.parameters.len(), 0);
+    assert_eq!(function.body_statements.len(), 4);
+    assert_eq!(function.local_count, 0);
+    assert_eq!(function.return_type, Type::Bool);
+
+    let statement = &function.body_statements[0];
+    let Statement::Expression(eq_expr) = statement else {
+        panic!();
+    };
+    assert_eq!(eq_expr.term.as_ref(), &Term::IntLiteral(1));
+    let Some((op, rhs_expr)) = &eq_expr.op_and_expr else {
+        panic!();
+    };
+    assert_eq!(*op, Operator::Eq);
+    assert_eq!(rhs_expr.term.as_ref(), &Term::IntLiteral(1));
+    assert!(rhs_expr.op_and_expr.is_none());
+
+    let statement = &function.body_statements[1];
+    let Statement::Expression(eq_expr) = statement else {
+        panic!();
+    };
+    assert_eq!(eq_expr.term.as_ref(), &Term::IntLiteral(1));
+    let Some((op, rhs_expr)) = &eq_expr.op_and_expr else {
+        panic!();
+    };
+    assert_eq!(*op, Operator::Ne);
+    assert_eq!(rhs_expr.term.as_ref(), &Term::IntLiteral(2));
+    assert!(rhs_expr.op_and_expr.is_none());
+
+    let statement = &function.body_statements[2];
+    let Statement::Expression(eq_expr) = statement else {
+        panic!();
+    };
+    assert_eq!(eq_expr.term.as_ref(), &Term::IntLiteral(1));
+    let Some((op, rhs_expr)) = &eq_expr.op_and_expr else {
+        panic!();
+    };
+    assert_eq!(*op, Operator::Lt);
+    assert_eq!(rhs_expr.term.as_ref(), &Term::IntLiteral(2));
+    assert!(rhs_expr.op_and_expr.is_none());
+
+    let statement = &function.body_statements[3];
+    let Statement::Expression(eq_expr) = statement else {
+        panic!();
+    };
+    assert_eq!(eq_expr.term.as_ref(), &Term::IntLiteral(2));
+    let Some((op, rhs_expr)) = &eq_expr.op_and_expr else {
+        panic!();
+    };
+    assert_eq!(*op, Operator::Gt);
+    assert_eq!(rhs_expr.term.as_ref(), &Term::IntLiteral(1));
+    assert!(rhs_expr.op_and_expr.is_none());
+
+    Ok(())
+}

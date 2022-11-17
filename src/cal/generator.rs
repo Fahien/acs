@@ -94,10 +94,14 @@ impl Generator {
     }
 
     /// Generate a VM instruction for an operator
-    fn gen_operator(&self, op: &Operator) -> VmInstruction {
+    fn gen_operator(&self, op: &Operator) -> Vec<VmInstruction> {
         match op {
-            Operator::Add => VmInstruction::Add,
-            Operator::Sub => VmInstruction::Sub,
+            Operator::Add => vec![VmInstruction::Add],
+            Operator::Sub => vec![VmInstruction::Sub],
+            Operator::Eq => vec![VmInstruction::Eq],
+            Operator::Ne => vec![VmInstruction::Eq, VmInstruction::Not],
+            Operator::Lt => vec![VmInstruction::Lt],
+            Operator::Gt => vec![VmInstruction::Gt],
         }
     }
 
@@ -108,7 +112,7 @@ impl Generator {
         // Generate instructions for the operator and the right side expression
         if let Some((op, expr)) = &expr.op_and_expr {
             ret.extend(self.gen_expression(expr.as_ref())?);
-            ret.push(self.gen_operator(op));
+            ret.extend(self.gen_operator(op));
         }
 
         Ok(ret)

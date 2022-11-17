@@ -162,3 +162,79 @@ fn while_statement() -> Result<(), CalError> {
     assert_eq!(computer.get_memory().ram[256], -1);
     Ok(())
 }
+
+#[test]
+fn cmp() -> Result<(), CalError> {
+    let asm_instructions = r#"fn main() -> bool { 1 == 1 }"#.compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], -1);
+
+    let asm_instructions = r#"fn main() -> bool { 1 == 2 }"#.compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], 0);
+
+    let asm_instructions = r#"fn main() -> bool { 1 != 2 }"#.compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], -1);
+
+    let asm_instructions = r#"fn main() -> bool { 1 != 1 }"#.compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], 0);
+
+    let asm_instructions = r#"fn main() -> bool { 1 < 2 }"#.compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], -1);
+
+    let asm_instructions = r#"fn main() -> bool { 1 < 1 }"#.compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], 0);
+
+    let asm_instructions = r#"fn main() -> bool { 2 > 1 }"#.compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], -1);
+
+    let asm_instructions = r#"fn main() -> bool { 1 > 1 }"#.compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], 0);
+    Ok(())
+}

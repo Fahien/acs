@@ -264,3 +264,78 @@ fn while_statement() -> Result<(), CalError> {
     assert_eq!(vm_instructions[index], VmInstruction::Return(1));
     Ok(())
 }
+
+#[test]
+fn cmp() -> Result<(), CalError> {
+    let vm_instructions = r#"
+        fn main() -> bool {
+            1 == 1;
+            1 != 2;
+            1 < 2;
+            2 > 1
+        }"#
+    .generate()?;
+    let mut index = 0;
+    let VmInstruction::Function(name, 0) = &vm_instructions[index] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 1),
+    );
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Eq);
+
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 2),
+    );
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Eq);
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Not);
+
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 2),
+    );
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Lt);
+
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 2)
+    );
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 1),
+    );
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Gt);
+
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Return(1));
+    Ok(())
+}
