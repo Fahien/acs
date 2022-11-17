@@ -1,6 +1,6 @@
 [package]
 name = "acs"
-version = "0.8.9"
+version = "0.8.10"
 edition = "2021"
 authors = ["Antonio Caggiano <info@antoniocaggiano.eu>"]
 license = "MIT"

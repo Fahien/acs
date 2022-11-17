@@ -39,10 +39,11 @@ pub enum Keyword {
     False,
     If,
     Else,
+    While,
 }
 
 impl Keyword {
-    pub const MAP: [(&'static str, Keyword); 9] = [
+    pub const MAP: [(&'static str, Keyword); 10] = [
         ("fn ", Keyword::Function),
         ("i16", Keyword::I16),
         ("return", Keyword::Return),
@@ -52,6 +53,7 @@ impl Keyword {
         ("false", Keyword::False),
         ("if", Keyword::If),
         ("else", Keyword::Else),
+        ("while", Keyword::While),
     ];
 }
 
