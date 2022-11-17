@@ -26,9 +26,22 @@ impl IfStatement {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct WhileStatement {
+    pub predicate: Expression,
+    pub body: Vec<Statement>,
+}
+
+impl WhileStatement {
+    pub fn new(predicate: Expression, body: Vec<Statement>) -> Self {
+        Self { predicate, body }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Statement {
     Expression(Expression),
     Return(Option<Expression>),
     Let(Variable, Expression),
     If(IfStatement),
+    While(WhileStatement),
 }

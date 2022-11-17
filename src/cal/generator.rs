@@ -167,6 +167,7 @@ impl Generator {
                 self.gen_let(variable, assign_expression)
             }
             Statement::If(ifstat) => self.gen_if(ifstat),
+            _ => unimplemented!(),
         }
     }
 

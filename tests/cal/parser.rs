@@ -141,3 +141,24 @@ fn if_statement() -> Result<(), CalError> {
 
     Ok(())
 }
+
+#[test]
+fn while_statement() -> Result<(), CalError> {
+    let module: Module = "fn main() -> bool { while true { return true; } false }".parse()?;
+    let function = &module.functions[0];
+    assert_eq!(function.name, "main");
+    assert_eq!(function.parameters.len(), 0);
+    assert_eq!(function.body_statements.len(), 2);
+    assert_eq!(function.local_count, 0);
+    assert_eq!(function.return_type, Type::Bool);
+
+    let statement = &function.body_statements[0];
+    let Statement::While(whilestat) = statement else {
+        panic!();
+    };
+    assert_eq!(whilestat.predicate.term.as_ref(), &Term::BoolLiteral(true));
+    assert!(whilestat.predicate.op_and_expr.is_none());
+    assert_eq!(whilestat.body.len(), 1);
+
+    Ok(())
+}

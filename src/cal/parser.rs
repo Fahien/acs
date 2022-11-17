@@ -7,7 +7,7 @@ use std::str::FromStr;
 use crate::{
     error::CalError,
     expression::{Expression, Operator, Term},
-    statement::{IfStatement, Statement},
+    statement::{IfStatement, Statement, WhileStatement},
     structure::{Function, Module, Type, Variable},
     tokenizer::*,
 };
@@ -169,6 +169,16 @@ impl Parser {
         )))
     }
 
+    pub fn parse_while(&mut self) -> Result<Statement, CalError> {
+        self.tokens.eat_keyword(Keyword::While)?;
+        let predicate = self.parse_expression()?;
+        self.tokens.eat_symbol(Symbol::LeftBrace)?;
+        let body = self.parse_statements()?;
+        self.tokens.eat_symbol(Symbol::RightBrace)?;
+
+        Ok(Statement::While(WhileStatement::new(predicate, body)))
+    }
+
     pub fn parse_statement(&mut self) -> Result<Option<Statement>, CalError> {
         if let Some(token) = self.tokens.peek().cloned() {
             match &token.value {
@@ -178,6 +188,7 @@ impl Parser {
                 }
                 TokenKind::Keyword(Keyword::Let) => Ok(Some(self.parse_let()?)),
                 TokenKind::Keyword(Keyword::If) => Ok(Some(self.parse_if()?)),
+                TokenKind::Keyword(Keyword::While) => Ok(Some(self.parse_while()?)),
                 _ => {
                     let expression = self.parse_expression()?;
                     if self.tokens.peek_symbol(Symbol::Semicolon) {
