@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["acs"];
+window.ALL_CRATES = ["acs","calc"];

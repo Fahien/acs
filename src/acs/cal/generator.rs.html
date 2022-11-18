@@ -279,6 +279,33 @@
 <span id="277">277</span>
 <span id="278">278</span>
 <span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -301,6 +328,31 @@
         VmInstruction::Call(<span class="string">&quot;main&quot;</span>.into(), <span class="number">0</span>),
         VmInstruction::Label(<span class="string">&quot;END&quot;</span>.into()),
         VmInstruction::Goto(<span class="string">&quot;END&quot;</span>.into()),
+    ]
+}
+
+<span class="doccomment">/// The peek function is added at the beginning of the program and it can be
+/// used to read a word (2 bytes) from an address in memory
+</span><span class="kw">fn </span>peek() -&gt; Vec&lt;VmInstruction&gt; {
+    <span class="macro">vec!</span>[
+        VmInstruction::Function(<span class="string">&quot;peek&quot;</span>.into(), <span class="number">0</span>),
+        VmInstruction::Push(Segment::Argument, <span class="number">0</span>),
+        VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>),
+        VmInstruction::Push(Segment::This, <span class="number">0</span>),
+        VmInstruction::Return(<span class="number">1</span>),
+    ]
+}
+
+<span class="doccomment">/// The poke function is added at the beginning of the program and it can be
+/// used to write a word (2 bytes) at an address in memory
+</span><span class="kw">fn </span>poke() -&gt; Vec&lt;VmInstruction&gt; {
+    <span class="macro">vec!</span>[
+        VmInstruction::Function(<span class="string">&quot;poke&quot;</span>.into(), <span class="number">0</span>),
+        VmInstruction::Push(Segment::Argument, <span class="number">0</span>),
+        VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>),
+        VmInstruction::Push(Segment::Argument, <span class="number">1</span>),
+        VmInstruction::Pop(Segment::This, <span class="number">0</span>),
+        VmInstruction::Return(<span class="number">0</span>),
     ]
 }
 
@@ -537,6 +589,8 @@
     <span class="doccomment">/// Generates VM instructions for a series of modules
     </span><span class="kw">pub fn </span>gen(<span class="kw-2">&amp;mut </span><span class="self">self</span>, modules: <span class="kw-2">&amp;</span>[Module]) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>instructions = preamble();
+        instructions.extend(peek());
+        instructions.extend(poke());
         <span class="kw">for </span>module <span class="kw">in </span>modules {
             instructions.extend(<span class="self">self</span>.gen_module(module)<span class="question-mark">?</span>);
         }
