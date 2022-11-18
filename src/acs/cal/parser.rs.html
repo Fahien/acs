@@ -306,6 +306,17 @@
 <span id="304">304</span>
 <span id="305">305</span>
 <span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -367,10 +378,10 @@
         <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::RightParen) {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(expressions);
         }
-        expressions.extend(<span class="self">self</span>.parse_expression());
+        expressions.extend(<span class="self">self</span>.parse_expression(<span class="bool-val">false</span>));
         <span class="kw">while </span><span class="self">self</span>.tokens.peek_symbol(Symbol::Comma) {
             <span class="self">self</span>.tokens.skip();
-            expressions.push(<span class="self">self</span>.parse_expression()<span class="question-mark">?</span>);
+            expressions.push(<span class="self">self</span>.parse_expression(<span class="bool-val">false</span>)<span class="question-mark">?</span>);
         }
         <span class="prelude-val">Ok</span>(expressions)
     }
@@ -402,10 +413,21 @@
         }
     }
 
-    <span class="kw">fn </span>parse_operator(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Operator, CalError&gt; {
+    <span class="kw">fn </span>parse_operator(<span class="kw-2">&amp;mut </span><span class="self">self</span>, assign_allow: bool) -&gt; <span class="prelude-ty">Result</span>&lt;Operator, CalError&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
             <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
-                TokenKind::Symbol(symbol) =&gt; <span class="prelude-val">Ok</span>(Operator::from_symbol(<span class="kw-2">*</span>symbol)<span class="question-mark">?</span>),
+                TokenKind::Symbol(symbol) =&gt; {
+                    <span class="kw">let </span>op = Operator::from_symbol(<span class="kw-2">*</span>symbol)<span class="question-mark">?</span>;
+                    <span class="kw">if </span>op == Operator::Assign &amp;&amp; !assign_allow {
+                        <span class="prelude-val">Err</span>(CalError::new(
+                            <span class="string">&quot;Can not use `=` in this expression&quot;</span>.into(),
+                            token.range,
+                        ))
+                    } <span class="kw">else </span>{
+                        <span class="prelude-val">Ok</span>(op)
+                    }
+                }
+
                 token_kind =&gt; <span class="prelude-val">Err</span>(CalError::new(
                     <span class="macro">format!</span>(<span class="string">&quot;Expected operator, found {:?}&quot;</span>, token_kind),
                     Range::default(),
@@ -416,13 +438,13 @@
         }
     }
 
-    <span class="kw">pub fn </span>parse_expression(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Expression, CalError&gt; {
+    <span class="kw">pub fn </span>parse_expression(<span class="kw-2">&amp;mut </span><span class="self">self</span>, assign_allow: bool) -&gt; <span class="prelude-ty">Result</span>&lt;Expression, CalError&gt; {
         <span class="kw">let </span>term = <span class="self">self</span>.parse_term()<span class="question-mark">?</span>;
 
         <span class="comment">// Following a term there can be an operator
         </span><span class="kw">let </span>op_and_exprm = <span class="kw">if </span><span class="self">self</span>.tokens.peek_operator() {
-            <span class="kw">let </span>op = <span class="self">self</span>.parse_operator()<span class="question-mark">?</span>;
-            <span class="kw">let </span>expression = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+            <span class="kw">let </span>op = <span class="self">self</span>.parse_operator(assign_allow)<span class="question-mark">?</span>;
+            <span class="kw">let </span>expression = <span class="self">self</span>.parse_expression(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
             <span class="prelude-val">Some</span>((op, Box::new(expression)))
         } <span class="kw">else </span>{
             <span class="prelude-val">None
@@ -437,7 +459,7 @@
             <span class="self">self</span>.tokens.skip();
             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
         } <span class="kw">else </span>{
-            <span class="kw">let </span>expression = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+            <span class="kw">let </span>expression = <span class="self">self</span>.parse_expression(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
             <span class="self">self</span>.tokens.eat_symbol(Symbol::Semicolon)<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(expression))
         }
@@ -450,14 +472,14 @@
         <span class="kw">let </span>variable_type = <span class="self">self</span>.parse_type()<span class="question-mark">?</span>;
         <span class="kw">let </span>variable = Variable::new(variable_name, variable_type);
         <span class="self">self</span>.tokens.eat_symbol(Symbol::Assign)<span class="question-mark">?</span>;
-        <span class="kw">let </span>assign_expression = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+        <span class="kw">let </span>assign_expression = <span class="self">self</span>.parse_expression(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.tokens.eat_symbol(Symbol::Semicolon)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(Statement::Let(variable, assign_expression))
     }
 
     <span class="kw">pub fn </span>parse_if(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Statement, CalError&gt; {
         <span class="self">self</span>.tokens.eat_keyword(Keyword::If)<span class="question-mark">?</span>;
-        <span class="kw">let </span>predicate = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+        <span class="kw">let </span>predicate = <span class="self">self</span>.parse_expression(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.tokens.eat_symbol(Symbol::LeftBrace)<span class="question-mark">?</span>;
         <span class="kw">let </span>if_branch = <span class="self">self</span>.parse_statements()<span class="question-mark">?</span>;
         <span class="self">self</span>.tokens.eat_symbol(Symbol::RightBrace)<span class="question-mark">?</span>;
@@ -479,7 +501,7 @@
 
     <span class="kw">pub fn </span>parse_while(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Statement, CalError&gt; {
         <span class="self">self</span>.tokens.eat_keyword(Keyword::While)<span class="question-mark">?</span>;
-        <span class="kw">let </span>predicate = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+        <span class="kw">let </span>predicate = <span class="self">self</span>.parse_expression(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.tokens.eat_symbol(Symbol::LeftBrace)<span class="question-mark">?</span>;
         <span class="kw">let </span>body = <span class="self">self</span>.parse_statements()<span class="question-mark">?</span>;
         <span class="self">self</span>.tokens.eat_symbol(Symbol::RightBrace)<span class="question-mark">?</span>;
@@ -498,7 +520,7 @@
                 TokenKind::Keyword(Keyword::If) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.parse_if()<span class="question-mark">?</span>)),
                 TokenKind::Keyword(Keyword::While) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.parse_while()<span class="question-mark">?</span>)),
                 <span class="kw">_ </span>=&gt; {
-                    <span class="kw">let </span>expression = <span class="self">self</span>.parse_expression()<span class="question-mark">?</span>;
+                    <span class="kw">let </span>expression = <span class="self">self</span>.parse_expression(<span class="bool-val">true</span>)<span class="question-mark">?</span>;
                     <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::Semicolon) {
                         <span class="self">self</span>.tokens.skip();
                     } <span class="kw">else if </span>!<span class="self">self</span>.tokens.peek_symbol(Symbol::RightBrace) {

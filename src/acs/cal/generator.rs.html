@@ -306,6 +306,39 @@
 <span id="304">304</span>
 <span id="305">305</span>
 <span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -435,20 +468,53 @@
             Operator::Ne =&gt; <span class="macro">vec!</span>[VmInstruction::Eq, VmInstruction::Not],
             Operator::Lt =&gt; <span class="macro">vec!</span>[VmInstruction::Lt],
             Operator::Gt =&gt; <span class="macro">vec!</span>[VmInstruction::Gt],
+            <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(),
+        }
+    }
+
+    <span class="kw">pub fn </span>gen_assign_expression(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        term: <span class="kw-2">&amp;</span>Term,
+        rhs: <span class="kw-2">&amp;</span>Expression,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
+        <span class="comment">// Get variable name from previous term
+        </span><span class="kw">if let </span>Term::Variable(name) = term {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>((segment, offset)) =
+                <span class="self">self</span>.get_current_symbol_table().get_segment_and_offset(name)
+            {
+                <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">self</span>.gen_expression(rhs)<span class="question-mark">?</span>;
+                ret.push(VmInstruction::Pop(segment, offset));
+                <span class="prelude-val">Ok</span>(ret)
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(CalError::new(
+                    <span class="macro">format!</span>(<span class="string">&quot;Undefined variable `{}`&quot;</span>, name),
+                    Range::default(),
+                ))
+            }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(CalError::new(
+                <span class="macro">format!</span>(<span class="string">&quot;Expected variable to the left of `=`, found {:?}&quot;</span>, term),
+                Range::default(),
+            ))
         }
     }
 
     <span class="kw">pub fn </span>gen_expression(<span class="kw-2">&amp;</span><span class="self">self</span>, expr: <span class="kw-2">&amp;</span>Expression) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
-        <span class="comment">// Generate instructions for the term
-        </span><span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">self</span>.gen_term(expr.term.as_ref())<span class="question-mark">?</span>;
-
-        <span class="comment">// Generate instructions for the operator and the right side expression
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>((op, expr)) = <span class="kw-2">&amp;</span>expr.op_and_expr {
-            ret.extend(<span class="self">self</span>.gen_expression(expr.as_ref())<span class="question-mark">?</span>);
-            ret.extend(<span class="self">self</span>.gen_operator(op));
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((op, rhs)) = <span class="kw-2">&amp;</span>expr.op_and_expr {
+            <span class="kw">if </span><span class="kw-2">*</span>op == Operator::Assign {
+                <span class="comment">// Special case for assign expression
+                </span><span class="self">self</span>.gen_assign_expression(expr.term.as_ref(), rhs.as_ref())
+            } <span class="kw">else </span>{
+                <span class="comment">// Common case
+                </span><span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">self</span>.gen_term(expr.term.as_ref())<span class="question-mark">?</span>;
+                ret.extend(<span class="self">self</span>.gen_expression(rhs.as_ref())<span class="question-mark">?</span>);
+                ret.extend(<span class="self">self</span>.gen_operator(op));
+                <span class="prelude-val">Ok</span>(ret)
+            }
+        } <span class="kw">else </span>{
+            <span class="comment">// Generate instructions for the term only
+            </span><span class="self">self</span>.gen_term(expr.term.as_ref())
         }
-
-        <span class="prelude-val">Ok</span>(ret)
     }
 
     <span class="kw">pub fn </span>gen_return(

@@ -57,6 +57,9 @@
 <span id="55">55</span>
 <span id="56">56</span>
 <span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -75,6 +78,8 @@
     </span>Lt,
     <span class="comment">// `&gt;`
     </span>Gt,
+    <span class="doccomment">/// `=`
+    </span>Assign,
 }
 
 <span class="kw">impl </span>Operator {
@@ -86,6 +91,7 @@
             Symbol::Ne =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Ne),
             Symbol::Lt =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Lt),
             Symbol::Gt =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Gt),
+            Symbol::Assign =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Assign),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Failed to convert `{:?}` to an operator&quot;</span>, sym).into()),
         }
     }
