@@ -238,3 +238,16 @@ fn cmp() -> Result<(), CalError> {
     assert_eq!(computer.get_memory().ram[256], 0);
     Ok(())
 }
+
+#[test]
+fn assign_expression() -> Result<(), CalError> {
+    let asm_instructions = r#"fn main() -> i16 { let a: i16 = 0; a = 1; a }"#.compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..256 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], 1);
+    Ok(())
+}

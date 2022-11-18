@@ -230,3 +230,33 @@ fn cmp() -> Result<(), CalError> {
 
     Ok(())
 }
+
+#[test]
+fn assign_expression() -> Result<(), CalError> {
+    let module: Module = r#"
+        fn main() {
+            a = 0;
+        }"#
+    .parse()?;
+    let function = &module.functions[0];
+    assert_eq!(function.name, "main");
+    assert_eq!(function.parameters.len(), 0);
+    assert_eq!(function.body_statements.len(), 1);
+    assert_eq!(function.local_count, 0);
+    assert_eq!(function.return_type, Type::Void);
+
+    let statement = &function.body_statements[0];
+    let Statement::Expression(expr) = statement else {
+        panic!();
+    };
+
+    assert_eq!(expr.term.as_ref(), &Term::Variable(String::from("a")));
+    let Some((op, rhs)) = expr.op_and_expr.as_ref() else {
+        panic!();
+    };
+    assert_eq!(*op, Operator::Assign);
+    assert_eq!(rhs.term.as_ref(), &Term::IntLiteral(0));
+    assert!(rhs.op_and_expr.is_none());
+
+    Ok(())
+}

@@ -230,3 +230,23 @@ fn cmp() -> Result<(), CalError> {
     tokens.eat_symbol(Symbol::RightBrace)?;
     Ok(())
 }
+
+#[test]
+fn assign_expression() -> Result<(), CalError> {
+    let mut tokens = r#"
+        fn main() {
+            a = 0;
+        }"#
+    .tokenize()?;
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("main")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_identifier("a")?;
+    tokens.eat_symbol(Symbol::Assign)?;
+    tokens.eat_integer(0)?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    Ok(())
+}

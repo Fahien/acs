@@ -127,20 +127,53 @@ impl Generator {
             Operator::Ne => vec![VmInstruction::Eq, VmInstruction::Not],
             Operator::Lt => vec![VmInstruction::Lt],
             Operator::Gt => vec![VmInstruction::Gt],
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn gen_assign_expression(
+        &self,
+        term: &Term,
+        rhs: &Expression,
+    ) -> Result<Vec<VmInstruction>, CalError> {
+        // Get variable name from previous term
+        if let Term::Variable(name) = term {
+            if let Some((segment, offset)) =
+                self.get_current_symbol_table().get_segment_and_offset(name)
+            {
+                let mut ret = self.gen_expression(rhs)?;
+                ret.push(VmInstruction::Pop(segment, offset));
+                Ok(ret)
+            } else {
+                Err(CalError::new(
+                    format!("Undefined variable `{}`", name),
+                    Range::default(),
+                ))
+            }
+        } else {
+            Err(CalError::new(
+                format!("Expected variable to the left of `=`, found {:?}", term),
+                Range::default(),
+            ))
         }
     }
 
     pub fn gen_expression(&self, expr: &Expression) -> Result<Vec<VmInstruction>, CalError> {
-        // Generate instructions for the term
-        let mut ret = self.gen_term(expr.term.as_ref())?;
-
-        // Generate instructions for the operator and the right side expression
-        if let Some((op, expr)) = &expr.op_and_expr {
-            ret.extend(self.gen_expression(expr.as_ref())?);
-            ret.extend(self.gen_operator(op));
+        if let Some((op, rhs)) = &expr.op_and_expr {
+            if *op == Operator::Assign {
+                // Special case for assign expression
+                self.gen_assign_expression(expr.term.as_ref(), rhs.as_ref())
+            } else {
+                // Common case
+                let mut ret = self.gen_term(expr.term.as_ref())?;
+                ret.extend(self.gen_expression(rhs.as_ref())?);
+                ret.extend(self.gen_operator(op));
+                Ok(ret)
+            }
+        } else {
+            // Generate instructions for the term only
+            self.gen_term(expr.term.as_ref())
         }
-
-        Ok(ret)
     }
 
     pub fn gen_return(

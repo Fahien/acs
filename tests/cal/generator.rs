@@ -339,3 +339,44 @@ fn cmp() -> Result<(), CalError> {
     assert_eq!(vm_instructions[index], VmInstruction::Return(1));
     Ok(())
 }
+
+#[test]
+fn assign_expression() -> Result<(), CalError> {
+    let vm_instructions = r#"
+    fn main() {
+        let a: i16 = 0;
+        a = 1;
+    }"#
+    .generate()?;
+
+    let mut index = 0;
+    let VmInstruction::Function(name, 1) = &vm_instructions[index] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 0)
+    );
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Pop(Segment::Local, 0)
+    );
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    index += 1;
+    assert_eq!(
+        vm_instructions[index],
+        VmInstruction::Pop(Segment::Local, 0)
+    );
+    index += 1;
+    assert_eq!(vm_instructions[index], VmInstruction::Return(0));
+
+    Ok(())
+}

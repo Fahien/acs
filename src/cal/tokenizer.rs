@@ -386,6 +386,7 @@ impl Tokens {
                 || *sym == Symbol::Ne
                 || *sym == Symbol::Lt
                 || *sym == Symbol::Gt
+                || *sym == Symbol::Assign
         } else {
             false
         }

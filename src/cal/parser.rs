@@ -59,10 +59,10 @@ impl Parser {
         if self.tokens.peek_symbol(Symbol::RightParen) {
             return Ok(expressions);
         }
-        expressions.extend(self.parse_expression());
+        expressions.extend(self.parse_expression(false));
         while self.tokens.peek_symbol(Symbol::Comma) {
             self.tokens.skip();
-            expressions.push(self.parse_expression()?);
+            expressions.push(self.parse_expression(false)?);
         }
         Ok(expressions)
     }
@@ -94,10 +94,21 @@ impl Parser {
         }
     }
 
-    fn parse_operator(&mut self) -> Result<Operator, CalError> {
+    fn parse_operator(&mut self, assign_allow: bool) -> Result<Operator, CalError> {
         if let Some(token) = self.tokens.next() {
             match &token.value {
-                TokenKind::Symbol(symbol) => Ok(Operator::from_symbol(*symbol)?),
+                TokenKind::Symbol(symbol) => {
+                    let op = Operator::from_symbol(*symbol)?;
+                    if op == Operator::Assign && !assign_allow {
+                        Err(CalError::new(
+                            "Can not use `=` in this expression".into(),
+                            token.range,
+                        ))
+                    } else {
+                        Ok(op)
+                    }
+                }
+
                 token_kind => Err(CalError::new(
                     format!("Expected operator, found {:?}", token_kind),
                     Range::default(),
@@ -108,13 +119,13 @@ impl Parser {
         }
     }
 
-    pub fn parse_expression(&mut self) -> Result<Expression, CalError> {
+    pub fn parse_expression(&mut self, assign_allow: bool) -> Result<Expression, CalError> {
         let term = self.parse_term()?;
 
         // Following a term there can be an operator
         let op_and_exprm = if self.tokens.peek_operator() {
-            let op = self.parse_operator()?;
-            let expression = self.parse_expression()?;
+            let op = self.parse_operator(assign_allow)?;
+            let expression = self.parse_expression(false)?;
             Some((op, Box::new(expression)))
         } else {
             None
@@ -129,7 +140,7 @@ impl Parser {
             self.tokens.skip();
             Ok(None)
         } else {
-            let expression = self.parse_expression()?;
+            let expression = self.parse_expression(false)?;
             self.tokens.eat_symbol(Symbol::Semicolon)?;
             Ok(Some(expression))
         }
@@ -142,14 +153,14 @@ impl Parser {
         let variable_type = self.parse_type()?;
         let variable = Variable::new(variable_name, variable_type);
         self.tokens.eat_symbol(Symbol::Assign)?;
-        let assign_expression = self.parse_expression()?;
+        let assign_expression = self.parse_expression(false)?;
         self.tokens.eat_symbol(Symbol::Semicolon)?;
         Ok(Statement::Let(variable, assign_expression))
     }
 
     pub fn parse_if(&mut self) -> Result<Statement, CalError> {
         self.tokens.eat_keyword(Keyword::If)?;
-        let predicate = self.parse_expression()?;
+        let predicate = self.parse_expression(false)?;
         self.tokens.eat_symbol(Symbol::LeftBrace)?;
         let if_branch = self.parse_statements()?;
         self.tokens.eat_symbol(Symbol::RightBrace)?;
@@ -171,7 +182,7 @@ impl Parser {
 
     pub fn parse_while(&mut self) -> Result<Statement, CalError> {
         self.tokens.eat_keyword(Keyword::While)?;
-        let predicate = self.parse_expression()?;
+        let predicate = self.parse_expression(false)?;
         self.tokens.eat_symbol(Symbol::LeftBrace)?;
         let body = self.parse_statements()?;
         self.tokens.eat_symbol(Symbol::RightBrace)?;
@@ -190,7 +201,7 @@ impl Parser {
                 TokenKind::Keyword(Keyword::If) => Ok(Some(self.parse_if()?)),
                 TokenKind::Keyword(Keyword::While) => Ok(Some(self.parse_while()?)),
                 _ => {
-                    let expression = self.parse_expression()?;
+                    let expression = self.parse_expression(true)?;
                     if self.tokens.peek_symbol(Symbol::Semicolon) {
                         self.tokens.skip();
                     } else if !self.tokens.peek_symbol(Symbol::RightBrace) {

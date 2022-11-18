@@ -16,6 +16,8 @@ pub enum Operator {
     Lt,
     // `>`
     Gt,
+    /// `=`
+    Assign,
 }
 
 impl Operator {
@@ -27,6 +29,7 @@ impl Operator {
             Symbol::Ne => Ok(Self::Ne),
             Symbol::Lt => Ok(Self::Lt),
             Symbol::Gt => Ok(Self::Gt),
+            Symbol::Assign => Ok(Self::Assign),
             _ => Err(format!("Failed to convert `{:?}` to an operator", sym).into()),
         }
     }
