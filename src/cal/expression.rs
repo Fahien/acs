@@ -6,8 +6,14 @@ use crate::{error::CalError, tokenizer::Symbol};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Operator {
+    /// `+`
     Add,
+    /// `-`
     Sub,
+    /// `*`
+    Mul,
+    /// `/`
+    Div,
     // `==`
     Eq,
     // `!=`
@@ -25,6 +31,8 @@ impl Operator {
         match sym {
             Symbol::Plus => Ok(Self::Add),
             Symbol::Minus => Ok(Self::Sub),
+            Symbol::Asterisk => Ok(Self::Mul),
+            Symbol::Slash => Ok(Self::Div),
             Symbol::Eq => Ok(Self::Eq),
             Symbol::Ne => Ok(Self::Ne),
             Symbol::Lt => Ok(Self::Lt),

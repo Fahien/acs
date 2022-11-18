@@ -12,6 +12,7 @@ pub mod statement;
 pub mod structure;
 
 pub mod generator;
+pub mod preamble;
 pub mod symboltable;
 
 pub mod compiler;

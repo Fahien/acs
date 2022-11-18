@@ -260,3 +260,26 @@ fn assign_expression() -> Result<(), CalError> {
 
     Ok(())
 }
+
+#[test]
+fn mul() -> Result<(), CalError> {
+    let module: Module = "fn main() { 1 * 2; }".parse()?;
+    let function = &module.functions[0];
+    assert_eq!(function.name, "main");
+    assert_eq!(function.parameters.len(), 0);
+    assert_eq!(function.body_statements.len(), 1);
+    assert_eq!(function.local_count, 0);
+    assert_eq!(function.return_type, Type::Void);
+
+    let statement = &function.body_statements[0];
+    let Statement::Expression(expression) = statement else {
+        panic!();
+    };
+    assert_eq!(*expression.term.as_ref(), Term::IntLiteral(1));
+    let (op, rhs) = expression.op_and_expr.as_ref().unwrap();
+    assert_eq!(*op, Operator::Mul);
+    assert_eq!(*rhs.term.as_ref(), Term::IntLiteral(2));
+    assert!(rhs.op_and_expr.is_none());
+
+    Ok(())
+}

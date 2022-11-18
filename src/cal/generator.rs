@@ -5,6 +5,7 @@
 use crate::{
     error::CalError,
     expression::{Expression, Operator, Term},
+    preamble::preamble,
     segment::Segment,
     statement::{IfStatement, Statement, WhileStatement},
     structure::{Function, Module, Type, Variable},
@@ -12,41 +13,6 @@ use crate::{
     tokenizer::Range,
     vm::instruction::VmInstruction,
 };
-
-/// The preable is added at the beginning of the program and it is responsible
-/// of calling the main function and going into and endless loop when returning
-fn preamble() -> Vec<VmInstruction> {
-    vec![
-        VmInstruction::Call("main".into(), 0),
-        VmInstruction::Label("END".into()),
-        VmInstruction::Goto("END".into()),
-    ]
-}
-
-/// The peek function is added at the beginning of the program and it can be
-/// used to read a word (2 bytes) from an address in memory
-fn peek() -> Vec<VmInstruction> {
-    vec![
-        VmInstruction::Function("peek".into(), 0),
-        VmInstruction::Push(Segment::Argument, 0),
-        VmInstruction::Pop(Segment::Pointer, 0),
-        VmInstruction::Push(Segment::This, 0),
-        VmInstruction::Return(1),
-    ]
-}
-
-/// The poke function is added at the beginning of the program and it can be
-/// used to write a word (2 bytes) at an address in memory
-fn poke() -> Vec<VmInstruction> {
-    vec![
-        VmInstruction::Function("poke".into(), 0),
-        VmInstruction::Push(Segment::Argument, 0),
-        VmInstruction::Pop(Segment::Pointer, 0),
-        VmInstruction::Push(Segment::Argument, 1),
-        VmInstruction::Pop(Segment::This, 0),
-        VmInstruction::Return(0),
-    ]
-}
 
 /// Generates VM instructions from parsed code.
 #[derive(Default)]
@@ -123,6 +89,8 @@ impl Generator {
         match op {
             Operator::Add => vec![VmInstruction::Add],
             Operator::Sub => vec![VmInstruction::Sub],
+            Operator::Mul => vec![VmInstruction::Call(String::from("mul"), 2)],
+            Operator::Div => vec![VmInstruction::Call(String::from("div"), 2)],
             Operator::Eq => vec![VmInstruction::Eq],
             Operator::Ne => vec![VmInstruction::Eq, VmInstruction::Not],
             Operator::Lt => vec![VmInstruction::Lt],
@@ -314,8 +282,6 @@ impl Generator {
     /// Generates VM instructions for a series of modules
     pub fn gen(&mut self, modules: &[Module]) -> Result<Vec<VmInstruction>, CalError> {
         let mut instructions = preamble();
-        instructions.extend(peek());
-        instructions.extend(poke());
         for module in modules {
             instructions.extend(self.gen_module(module)?);
         }

@@ -81,6 +81,10 @@ pub enum Symbol {
     Plus,
     /// `-`
     Minus,
+    /// `*`
+    Asterisk,
+    /// `/`
+    Slash,
     /// `==`
     Eq,
     /// `!=`
@@ -162,6 +166,8 @@ fn strip_symbol(input: &str) -> Option<(Symbol, &str)> {
         }
         Some(',') => Some((Symbol::Comma, &input[1..])),
         Some('+') => Some((Symbol::Plus, &input[1..])),
+        Some('*') => Some((Symbol::Asterisk, &input[1..])),
+        Some('/') => Some((Symbol::Slash, &input[1..])),
         _ => None,
     }
 }
@@ -382,6 +388,8 @@ impl Tokens {
         {
             *sym == Symbol::Plus
                 || *sym == Symbol::Minus
+                || *sym == Symbol::Asterisk
+                || *sym == Symbol::Slash
                 || *sym == Symbol::Eq
                 || *sym == Symbol::Ne
                 || *sym == Symbol::Lt

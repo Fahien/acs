@@ -380,3 +380,25 @@ fn assign_expression() -> Result<(), CalError> {
 
     Ok(())
 }
+
+#[test]
+fn mul() -> Result<(), CalError> {
+    let vm_instructions = "fn main() { 1 * 2; }".generate()?;
+    let VmInstruction::Function(name, 0) = &vm_instructions[0] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+    assert_eq!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    assert_eq!(
+        vm_instructions[2],
+        VmInstruction::Push(Segment::Constant, 2)
+    );
+    assert_eq!(
+        vm_instructions[3],
+        VmInstruction::Call(String::from("mul"), 2)
+    );
+    Ok(())
+}
