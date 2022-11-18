@@ -5,13 +5,13 @@
 use std::{
     env,
     error::Error,
-    fs::{read_to_string, File},
+    fs::{read, File},
     io::{self, BufRead},
     path::Path,
     time::{Duration, Instant},
 };
 
-use acs::{Assembler, Computer, Unit};
+use acs::{asm::instruction::AsmInstruction, Computer, Unit};
 use sdl::{event::Event, keyboard::Keycode, pixels::PixelFormatEnum};
 use sdl2 as sdl;
 
@@ -33,9 +33,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let asm_path = args.get(1).expect("Expected one cli argument: asm_path");
     let mut computer = Computer::default();
 
-    let code = read_to_string(asm_path).expect("Failed to read string from asm");
-    let mut assembler = Assembler::default();
-    let instructions = assembler.assemble(code);
+    let bytes = read(asm_path).unwrap();
+    let words =
+        unsafe { std::slice::from_raw_parts(bytes.as_ptr() as *const u16, bytes.len() / 2) };
+    let mut instructions = vec![];
+    for instr in words {
+        let asmi = AsmInstruction::from(*instr);
+        instructions.push(asmi);
+    }
     computer.set_instructions(instructions);
 
     let sdl = sdl::init()?;
@@ -47,7 +52,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let height = screen.get_height();
 
     let window = video
-        .window("acs", width, height)
+        .window("acs", width * 2, height * 2)
         .position_centered()
         .opengl()
         .build()?;

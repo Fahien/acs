@@ -1,6 +1,6 @@
 [package]
 name = "acs"
-version = "0.8.11"
+version = "0.8.12"
 edition = "2021"
 authors = ["Antonio Caggiano <info@antoniocaggiano.eu>"]
 license = "MIT"
@@ -10,8 +10,12 @@ crate-type = ["cdylib", "rlib"]
 
 [[bin]]
 name = "acsim"
-path = "src/sim/main.rs"
+path = "src/bin/sim/main.rs"
 required-features = ["sim"]
+
+[[bin]]
+name = "calc"
+path = "src/bin/compiler/main.rs"
 
 [[test]]
 name = "vm"
