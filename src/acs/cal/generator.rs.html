@@ -305,40 +305,6 @@
 <span id="303">303</span>
 <span id="304">304</span>
 <span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
-<span id="325">325</span>
-<span id="326">326</span>
-<span id="327">327</span>
-<span id="328">328</span>
-<span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
-<span id="332">332</span>
-<span id="333">333</span>
-<span id="334">334</span>
-<span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
-<span id="338">338</span>
-<span id="339">339</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -346,6 +312,7 @@
 </span><span class="kw">use crate</span>::{
     error::CalError,
     expression::{Expression, Operator, Term},
+    preamble::preamble,
     segment::Segment,
     statement::{IfStatement, Statement, WhileStatement},
     structure::{Function, Module, Type, Variable},
@@ -353,41 +320,6 @@
     tokenizer::Range,
     vm::instruction::VmInstruction,
 };
-
-<span class="doccomment">/// The preable is added at the beginning of the program and it is responsible
-/// of calling the main function and going into and endless loop when returning
-</span><span class="kw">fn </span>preamble() -&gt; Vec&lt;VmInstruction&gt; {
-    <span class="macro">vec!</span>[
-        VmInstruction::Call(<span class="string">&quot;main&quot;</span>.into(), <span class="number">0</span>),
-        VmInstruction::Label(<span class="string">&quot;END&quot;</span>.into()),
-        VmInstruction::Goto(<span class="string">&quot;END&quot;</span>.into()),
-    ]
-}
-
-<span class="doccomment">/// The peek function is added at the beginning of the program and it can be
-/// used to read a word (2 bytes) from an address in memory
-</span><span class="kw">fn </span>peek() -&gt; Vec&lt;VmInstruction&gt; {
-    <span class="macro">vec!</span>[
-        VmInstruction::Function(<span class="string">&quot;peek&quot;</span>.into(), <span class="number">0</span>),
-        VmInstruction::Push(Segment::Argument, <span class="number">0</span>),
-        VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>),
-        VmInstruction::Push(Segment::This, <span class="number">0</span>),
-        VmInstruction::Return(<span class="number">1</span>),
-    ]
-}
-
-<span class="doccomment">/// The poke function is added at the beginning of the program and it can be
-/// used to write a word (2 bytes) at an address in memory
-</span><span class="kw">fn </span>poke() -&gt; Vec&lt;VmInstruction&gt; {
-    <span class="macro">vec!</span>[
-        VmInstruction::Function(<span class="string">&quot;poke&quot;</span>.into(), <span class="number">0</span>),
-        VmInstruction::Push(Segment::Argument, <span class="number">0</span>),
-        VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>),
-        VmInstruction::Push(Segment::Argument, <span class="number">1</span>),
-        VmInstruction::Pop(Segment::This, <span class="number">0</span>),
-        VmInstruction::Return(<span class="number">0</span>),
-    ]
-}
 
 <span class="doccomment">/// Generates VM instructions from parsed code.
 </span><span class="attribute">#[derive(Default)]
@@ -464,6 +396,8 @@
         <span class="kw">match </span>op {
             Operator::Add =&gt; <span class="macro">vec!</span>[VmInstruction::Add],
             Operator::Sub =&gt; <span class="macro">vec!</span>[VmInstruction::Sub],
+            Operator::Mul =&gt; <span class="macro">vec!</span>[VmInstruction::Call(String::from(<span class="string">&quot;mul&quot;</span>), <span class="number">2</span>)],
+            Operator::Div =&gt; <span class="macro">vec!</span>[VmInstruction::Call(String::from(<span class="string">&quot;div&quot;</span>), <span class="number">2</span>)],
             Operator::Eq =&gt; <span class="macro">vec!</span>[VmInstruction::Eq],
             Operator::Ne =&gt; <span class="macro">vec!</span>[VmInstruction::Eq, VmInstruction::Not],
             Operator::Lt =&gt; <span class="macro">vec!</span>[VmInstruction::Lt],
@@ -655,8 +589,6 @@
     <span class="doccomment">/// Generates VM instructions for a series of modules
     </span><span class="kw">pub fn </span>gen(<span class="kw-2">&amp;mut </span><span class="self">self</span>, modules: <span class="kw-2">&amp;</span>[Module]) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>instructions = preamble();
-        instructions.extend(peek());
-        instructions.extend(poke());
         <span class="kw">for </span>module <span class="kw">in </span>modules {
             instructions.extend(<span class="self">self</span>.gen_module(module)<span class="question-mark">?</span>);
         }

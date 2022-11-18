@@ -426,6 +426,14 @@
 <span id="424">424</span>
 <span id="425">425</span>
 <span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -509,6 +517,10 @@
     </span>Plus,
     <span class="doccomment">/// `-`
     </span>Minus,
+    <span class="doccomment">/// `*`
+    </span>Asterisk,
+    <span class="doccomment">/// `/`
+    </span>Slash,
     <span class="doccomment">/// `==`
     </span>Eq,
     <span class="doccomment">/// `!=`
@@ -590,6 +602,8 @@
         }
         <span class="prelude-val">Some</span>(<span class="string">&#39;,&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Comma, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="prelude-val">Some</span>(<span class="string">&#39;+&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Plus, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
+        <span class="prelude-val">Some</span>(<span class="string">&#39;*&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Asterisk, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
+        <span class="prelude-val">Some</span>(<span class="string">&#39;/&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Slash, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
     }
 }
@@ -810,6 +824,8 @@
         {
             <span class="kw-2">*</span>sym == Symbol::Plus
                 || <span class="kw-2">*</span>sym == Symbol::Minus
+                || <span class="kw-2">*</span>sym == Symbol::Asterisk
+                || <span class="kw-2">*</span>sym == Symbol::Slash
                 || <span class="kw-2">*</span>sym == Symbol::Eq
                 || <span class="kw-2">*</span>sym == Symbol::Ne
                 || <span class="kw-2">*</span>sym == Symbol::Lt
