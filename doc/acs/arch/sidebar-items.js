@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["computer",""],["cpu",""],["fast",""],["keyboard",""],["memory",""],["rom32k",""],["screen",""]]};

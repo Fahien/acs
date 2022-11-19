@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Or8Way","8-way Or gate"]]};
