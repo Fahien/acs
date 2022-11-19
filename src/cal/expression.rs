@@ -24,6 +24,10 @@ pub enum Operator {
     Gt,
     /// `=`
     Assign,
+    /// `&`
+    And,
+    /// `|`
+    Or,
 }
 
 impl Operator {
@@ -38,6 +42,8 @@ impl Operator {
             Symbol::Lt => Ok(Self::Lt),
             Symbol::Gt => Ok(Self::Gt),
             Symbol::Assign => Ok(Self::Assign),
+            Symbol::Ampersand => Ok(Self::And),
+            Symbol::VerticalBar => Ok(Self::Or),
             _ => Err(format!("Failed to convert `{:?}` to an operator", sym).into()),
         }
     }

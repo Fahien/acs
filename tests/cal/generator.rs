@@ -402,3 +402,41 @@ fn mul() -> Result<(), CalError> {
     );
     Ok(())
 }
+
+#[test]
+fn and() -> Result<(), CalError> {
+    let vm_instructions = "fn main() { 1 & 2; }".generate()?;
+    let VmInstruction::Function(name, 0) = &vm_instructions[0] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+    assert_eq!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    assert_eq!(
+        vm_instructions[2],
+        VmInstruction::Push(Segment::Constant, 2)
+    );
+    assert_eq!(vm_instructions[3], VmInstruction::And);
+    Ok(())
+}
+
+#[test]
+fn or() -> Result<(), CalError> {
+    let vm_instructions = "fn main() { 1 | 2; }".generate()?;
+    let VmInstruction::Function(name, 0) = &vm_instructions[0] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+    assert_eq!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    assert_eq!(
+        vm_instructions[2],
+        VmInstruction::Push(Segment::Constant, 2)
+    );
+    assert_eq!(vm_instructions[3], VmInstruction::Or);
+    Ok(())
+}

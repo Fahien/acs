@@ -266,3 +266,35 @@ fn mul() -> Result<(), CalError> {
     tokens.eat_symbol(Symbol::RightBrace)?;
     Ok(())
 }
+
+#[test]
+fn and() -> Result<(), CalError> {
+    let mut tokens = "fn main() { 1 & 2; }".tokenize()?;
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("main")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_integer(1)?;
+    tokens.eat_symbol(Symbol::Ampersand)?;
+    tokens.eat_integer(2)?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    Ok(())
+}
+
+#[test]
+fn or() -> Result<(), CalError> {
+    let mut tokens = "fn main() { 1 | 2; }".tokenize()?;
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("main")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_integer(1)?;
+    tokens.eat_symbol(Symbol::VerticalBar)?;
+    tokens.eat_integer(2)?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    Ok(())
+}

@@ -93,6 +93,10 @@ pub enum Symbol {
     Lt,
     /// `>`
     Gt,
+    /// `&`
+    Ampersand,
+    /// `|`
+    VerticalBar,
 }
 
 /// We have various kinds of tokens
@@ -168,6 +172,8 @@ fn strip_symbol(input: &str) -> Option<(Symbol, &str)> {
         Some('+') => Some((Symbol::Plus, &input[1..])),
         Some('*') => Some((Symbol::Asterisk, &input[1..])),
         Some('/') => Some((Symbol::Slash, &input[1..])),
+        Some('&') => Some((Symbol::Ampersand, &input[1..])),
+        Some('|') => Some((Symbol::VerticalBar, &input[1..])),
         _ => None,
     }
 }
@@ -395,6 +401,8 @@ impl Tokens {
                 || *sym == Symbol::Lt
                 || *sym == Symbol::Gt
                 || *sym == Symbol::Assign
+                || *sym == Symbol::Ampersand
+                || *sym == Symbol::VerticalBar
         } else {
             false
         }

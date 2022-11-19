@@ -95,6 +95,8 @@ impl Generator {
             Operator::Ne => vec![VmInstruction::Eq, VmInstruction::Not],
             Operator::Lt => vec![VmInstruction::Lt],
             Operator::Gt => vec![VmInstruction::Gt],
+            Operator::And => vec![VmInstruction::And],
+            Operator::Or => vec![VmInstruction::Or],
             _ => unimplemented!(),
         }
     }
