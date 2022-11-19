@@ -97,6 +97,8 @@ pub enum Symbol {
     Ampersand,
     /// `|`
     VerticalBar,
+    /// `%`
+    Percent,
 }
 
 /// We have various kinds of tokens
@@ -174,6 +176,7 @@ fn strip_symbol(input: &str) -> Option<(Symbol, &str)> {
         Some('/') => Some((Symbol::Slash, &input[1..])),
         Some('&') => Some((Symbol::Ampersand, &input[1..])),
         Some('|') => Some((Symbol::VerticalBar, &input[1..])),
+        Some('%') => Some((Symbol::Percent, &input[1..])),
         _ => None,
     }
 }
@@ -403,6 +406,7 @@ impl Tokens {
                 || *sym == Symbol::Assign
                 || *sym == Symbol::Ampersand
                 || *sym == Symbol::VerticalBar
+                || *sym == Symbol::Percent
         } else {
             false
         }

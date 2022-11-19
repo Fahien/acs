@@ -28,6 +28,8 @@ pub enum Operator {
     And,
     /// `|`
     Or,
+    /// `%`
+    Mod,
 }
 
 impl Operator {
@@ -44,6 +46,7 @@ impl Operator {
             Symbol::Assign => Ok(Self::Assign),
             Symbol::Ampersand => Ok(Self::And),
             Symbol::VerticalBar => Ok(Self::Or),
+            Symbol::Percent => Ok(Self::Mod),
             _ => Err(format!("Failed to convert `{:?}` to an operator", sym).into()),
         }
     }

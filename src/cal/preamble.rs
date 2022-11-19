@@ -102,6 +102,40 @@ fn div() -> Vec<VmInstruction> {
     ]
 }
 
+/// Generates a bunch of instructions for the built-in modulo function
+fn modulo() -> Vec<VmInstruction> {
+    vec![
+        VmInstruction::Function("mod".into(), 2),
+        VmInstruction::Push(Segment::Constant, u16::MAX),
+        VmInstruction::Pop(Segment::Local, 1), // quotient
+        VmInstruction::Push(Segment::Argument, 1),
+        VmInstruction::Push(Segment::Constant, 0),
+        VmInstruction::Eq,
+        VmInstruction::IfGoto("MOD_END".into()),
+        VmInstruction::Push(Segment::Argument, 0),
+        VmInstruction::Pop(Segment::Local, 0), // remainder
+        VmInstruction::Push(Segment::Constant, 0),
+        VmInstruction::Pop(Segment::Local, 1), // quotient
+        VmInstruction::Label("MOD_WHILE".into()),
+        VmInstruction::Push(Segment::Local, 0), // end if remainder < divisor
+        VmInstruction::Push(Segment::Argument, 1),
+        VmInstruction::Lt,
+        VmInstruction::IfGoto("MOD_END".into()),
+        VmInstruction::Push(Segment::Local, 0), // r - divisor
+        VmInstruction::Push(Segment::Argument, 1),
+        VmInstruction::Sub,
+        VmInstruction::Pop(Segment::Local, 0),
+        VmInstruction::Push(Segment::Local, 1), // increment quotient
+        VmInstruction::Push(Segment::Constant, 1),
+        VmInstruction::Add,
+        VmInstruction::Pop(Segment::Local, 1),
+        VmInstruction::Goto("MOD_WHILE".into()),
+        VmInstruction::Label("MOD_END".into()),
+        VmInstruction::Push(Segment::Local, 0),
+        VmInstruction::Return(1),
+    ]
+}
+
 /// The preable is added at the beginning of the program
 pub fn preamble() -> Vec<VmInstruction> {
     let mut ret = sys();
@@ -109,5 +143,6 @@ pub fn preamble() -> Vec<VmInstruction> {
     ret.extend(poke());
     ret.extend(mul());
     ret.extend(div());
+    ret.extend(modulo());
     ret
 }

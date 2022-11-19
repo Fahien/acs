@@ -97,6 +97,7 @@ impl Generator {
             Operator::Gt => vec![VmInstruction::Gt],
             Operator::And => vec![VmInstruction::And],
             Operator::Or => vec![VmInstruction::Or],
+            Operator::Mod => vec![VmInstruction::Call(String::from("mod"), 2)],
             _ => unimplemented!(),
         }
     }

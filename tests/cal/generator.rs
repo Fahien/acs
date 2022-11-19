@@ -440,3 +440,25 @@ fn or() -> Result<(), CalError> {
     assert_eq!(vm_instructions[3], VmInstruction::Or);
     Ok(())
 }
+
+#[test]
+fn modulo() -> Result<(), CalError> {
+    let vm_instructions = "fn main() { 2 % 1; }".generate()?;
+    let VmInstruction::Function(name, 0) = &vm_instructions[0] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+    assert_eq!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Constant, 2)
+    );
+    assert_eq!(
+        vm_instructions[2],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    assert_eq!(
+        vm_instructions[3],
+        VmInstruction::Call(String::from("mod"), 2)
+    );
+    Ok(())
+}
