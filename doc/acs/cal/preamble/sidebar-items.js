@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["preamble","The preable is added at the beginning of the program"]]};

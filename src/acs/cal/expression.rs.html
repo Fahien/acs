@@ -74,6 +74,9 @@
 <span id="72">72</span>
 <span id="73">73</span>
 <span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -104,6 +107,8 @@
     </span>And,
     <span class="doccomment">/// `|`
     </span>Or,
+    <span class="doccomment">/// `%`
+    </span>Mod,
 }
 
 <span class="kw">impl </span>Operator {
@@ -120,6 +125,7 @@
             Symbol::Assign =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Assign),
             Symbol::Ampersand =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::And),
             Symbol::VerticalBar =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Or),
+            Symbol::Percent =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Mod),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Failed to convert `{:?}` to an operator&quot;</span>, sym).into()),
         }
     }

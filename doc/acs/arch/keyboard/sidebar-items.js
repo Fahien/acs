@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Keyboard","Built-in register chip acting as a keyboard"]]};

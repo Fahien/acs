@@ -307,6 +307,7 @@
 <span id="305">305</span>
 <span id="306">306</span>
 <span id="307">307</span>
+<span id="308">308</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -406,6 +407,7 @@
             Operator::Gt =&gt; <span class="macro">vec!</span>[VmInstruction::Gt],
             Operator::And =&gt; <span class="macro">vec!</span>[VmInstruction::And],
             Operator::Or =&gt; <span class="macro">vec!</span>[VmInstruction::Or],
+            Operator::Mod =&gt; <span class="macro">vec!</span>[VmInstruction::Call(String::from(<span class="string">&quot;mod&quot;</span>), <span class="number">2</span>)],
             <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(),
         }
     }

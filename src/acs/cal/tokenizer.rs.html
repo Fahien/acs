@@ -442,6 +442,10 @@
 <span id="440">440</span>
 <span id="441">441</span>
 <span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -541,6 +545,8 @@
     </span>Ampersand,
     <span class="doccomment">/// `|`
     </span>VerticalBar,
+    <span class="doccomment">/// `%`
+    </span>Percent,
 }
 
 <span class="doccomment">/// We have various kinds of tokens
@@ -618,6 +624,7 @@
         <span class="prelude-val">Some</span>(<span class="string">&#39;/&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Slash, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="prelude-val">Some</span>(<span class="string">&#39;&amp;&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Ampersand, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="prelude-val">Some</span>(<span class="string">&#39;|&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::VerticalBar, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
+        <span class="prelude-val">Some</span>(<span class="string">&#39;%&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Percent, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
     }
 }
@@ -847,6 +854,7 @@
                 || <span class="kw-2">*</span>sym == Symbol::Assign
                 || <span class="kw-2">*</span>sym == Symbol::Ampersand
                 || <span class="kw-2">*</span>sym == Symbol::VerticalBar
+                || <span class="kw-2">*</span>sym == Symbol::Percent
         } <span class="kw">else </span>{
             <span class="bool-val">false
         </span>}
