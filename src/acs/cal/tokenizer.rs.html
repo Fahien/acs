@@ -434,6 +434,14 @@
 <span id="432">432</span>
 <span id="433">433</span>
 <span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -529,6 +537,10 @@
     </span>Lt,
     <span class="doccomment">/// `&gt;`
     </span>Gt,
+    <span class="doccomment">/// `&amp;`
+    </span>Ampersand,
+    <span class="doccomment">/// `|`
+    </span>VerticalBar,
 }
 
 <span class="doccomment">/// We have various kinds of tokens
@@ -604,6 +616,8 @@
         <span class="prelude-val">Some</span>(<span class="string">&#39;+&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Plus, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="prelude-val">Some</span>(<span class="string">&#39;*&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Asterisk, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="prelude-val">Some</span>(<span class="string">&#39;/&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Slash, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
+        <span class="prelude-val">Some</span>(<span class="string">&#39;&amp;&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::Ampersand, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
+        <span class="prelude-val">Some</span>(<span class="string">&#39;|&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::VerticalBar, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
     }
 }
@@ -831,6 +845,8 @@
                 || <span class="kw-2">*</span>sym == Symbol::Lt
                 || <span class="kw-2">*</span>sym == Symbol::Gt
                 || <span class="kw-2">*</span>sym == Symbol::Assign
+                || <span class="kw-2">*</span>sym == Symbol::Ampersand
+                || <span class="kw-2">*</span>sym == Symbol::VerticalBar
         } <span class="kw">else </span>{
             <span class="bool-val">false
         </span>}
