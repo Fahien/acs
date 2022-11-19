@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Register16","Fast 16-bit register which, as opposed to the other `Register16`, it does not carries out the simulation with other building blocks, but it emulates it with native code."]]};
