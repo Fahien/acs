@@ -446,6 +446,50 @@
 <span id="444">444</span>
 <span id="445">445</span>
 <span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -650,9 +694,40 @@
     <span class="prelude-val">None
 </span>}
 
-<span class="doccomment">/// Tries to strip an integer from the input and, if succedes, returns
+<span class="doccomment">/// Tries to strip a binary integer (`0b0101`) from the input and, if succedes,
+/// returns the integer and the new string stripped of that integer
+</span><span class="kw">fn </span>strip_binary_integer(input: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;(i16, <span class="kw-2">&amp;</span>str)&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>chars = input.chars();
+    <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="string">&#39;0&#39;</span>) = chars.next() <span class="kw">else </span>{
+        <span class="kw">return </span><span class="prelude-val">None</span>;
+    };
+    <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="string">&#39;b&#39;</span>) = chars.next() <span class="kw">else </span>{
+        <span class="kw">return </span><span class="prelude-val">None</span>;
+    };
+
+    <span class="kw">let </span><span class="kw-2">mut </span>cut_index = <span class="number">2</span>;
+    <span class="kw">for </span>c <span class="kw">in </span>chars {
+        <span class="kw">if </span>c == <span class="string">&#39;0&#39; </span>|| c == <span class="string">&#39;1&#39; </span>{
+            cut_index += <span class="number">1</span>;
+        } <span class="kw">else </span>{
+            <span class="kw">break</span>;
+        }
+    }
+    <span class="kw">if </span>cut_index &lt; <span class="number">3 </span>{
+        <span class="kw">return </span><span class="prelude-val">None</span>;
+    }
+
+    <span class="kw">let </span>(integer_str, stripped_input) = input.split_at(cut_index);
+    <span class="kw">if let </span><span class="prelude-val">Ok</span>(integer) = i16::from_str_radix(<span class="kw-2">&amp;</span>integer_str[<span class="number">2</span>..], <span class="number">2</span>) {
+        <span class="prelude-val">Some</span>((integer, stripped_input))
+    } <span class="kw">else </span>{
+        <span class="prelude-val">None
+    </span>}
+}
+
+<span class="doccomment">/// Tries to strip a regular integer from the input and, if succedes, returns
 /// the integer and the new string stripped of that integer
-</span><span class="kw">fn </span>strip_integer(input: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;(i16, <span class="kw-2">&amp;</span>str)&gt; {
+</span><span class="kw">fn </span>strip_regular_integer(input: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;(i16, <span class="kw-2">&amp;</span>str)&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>cut_index = <span class="number">0</span>;
     <span class="kw">for </span>c <span class="kw">in </span>input.chars() {
         <span class="kw">if </span>c.is_numeric() {
@@ -661,16 +736,29 @@
             <span class="kw">break</span>;
         }
     }
-    <span class="kw">if </span>cut_index &gt; <span class="number">0 </span>{
-        <span class="kw">let </span>(integer_str, stripped_input) = input.split_at(cut_index);
-        <span class="kw">if let </span><span class="prelude-val">Ok</span>(integer) = integer_str.parse() {
-            <span class="prelude-val">Some</span>((integer, stripped_input))
-        } <span class="kw">else </span>{
-            <span class="prelude-val">None
-        </span>}
+    <span class="kw">if </span>cut_index == <span class="number">0 </span>{
+        <span class="kw">return </span><span class="prelude-val">None</span>;
+    }
+
+    <span class="kw">let </span>(integer_str, stripped_input) = input.split_at(cut_index);
+    <span class="kw">if let </span><span class="prelude-val">Ok</span>(integer) = integer_str.parse() {
+        <span class="prelude-val">Some</span>((integer, stripped_input))
     } <span class="kw">else </span>{
         <span class="prelude-val">None
     </span>}
+}
+
+<span class="doccomment">/// Tries to strip an integer from the input and, if succedes, returns
+/// the integer and the new string stripped of that integer
+</span><span class="kw">fn </span>strip_integer(input: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;(i16, <span class="kw-2">&amp;</span>str)&gt; {
+    <span class="comment">// Try reading binary integer
+    </span><span class="kw">let </span>ret = strip_binary_integer(input);
+    <span class="kw">if </span>ret.is_some() {
+        ret
+    } <span class="kw">else </span>{
+        <span class="comment">// Otherwise read a regular integer
+        </span>strip_regular_integer(input)
+    }
 }
 
 <span class="doccomment">/// This struct behaves like a peekable iterator of tokens with methods to _eat_
