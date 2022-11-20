@@ -202,9 +202,40 @@ fn strip_identifier(input: &str) -> Option<(&str, &str)> {
     None
 }
 
-/// Tries to strip an integer from the input and, if succedes, returns
+/// Tries to strip a binary integer (`0b0101`) from the input and, if succedes,
+/// returns the integer and the new string stripped of that integer
+fn strip_binary_integer(input: &str) -> Option<(i16, &str)> {
+    let mut chars = input.chars();
+    let Some('0') = chars.next() else {
+        return None;
+    };
+    let Some('b') = chars.next() else {
+        return None;
+    };
+
+    let mut cut_index = 2;
+    for c in chars {
+        if c == '0' || c == '1' {
+            cut_index += 1;
+        } else {
+            break;
+        }
+    }
+    if cut_index < 3 {
+        return None;
+    }
+
+    let (integer_str, stripped_input) = input.split_at(cut_index);
+    if let Ok(integer) = i16::from_str_radix(&integer_str[2..], 2) {
+        Some((integer, stripped_input))
+    } else {
+        None
+    }
+}
+
+/// Tries to strip a regular integer from the input and, if succedes, returns
 /// the integer and the new string stripped of that integer
-fn strip_integer(input: &str) -> Option<(i16, &str)> {
+fn strip_regular_integer(input: &str) -> Option<(i16, &str)> {
     let mut cut_index = 0;
     for c in input.chars() {
         if c.is_numeric() {
@@ -213,15 +244,28 @@ fn strip_integer(input: &str) -> Option<(i16, &str)> {
             break;
         }
     }
-    if cut_index > 0 {
-        let (integer_str, stripped_input) = input.split_at(cut_index);
-        if let Ok(integer) = integer_str.parse() {
-            Some((integer, stripped_input))
-        } else {
-            None
-        }
+    if cut_index == 0 {
+        return None;
+    }
+
+    let (integer_str, stripped_input) = input.split_at(cut_index);
+    if let Ok(integer) = integer_str.parse() {
+        Some((integer, stripped_input))
     } else {
         None
+    }
+}
+
+/// Tries to strip an integer from the input and, if succedes, returns
+/// the integer and the new string stripped of that integer
+fn strip_integer(input: &str) -> Option<(i16, &str)> {
+    // Try reading binary integer
+    let ret = strip_binary_integer(input);
+    if ret.is_some() {
+        ret
+    } else {
+        // Otherwise read a regular integer
+        strip_regular_integer(input)
     }
 }
 

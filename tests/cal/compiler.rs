@@ -17,7 +17,7 @@ fn hello_void() -> Result<(), CalError> {
 }
 
 #[test]
-fn return_zero() -> Result<(), CalError> {
+fn return_integer() -> Result<(), CalError> {
     let asm_instructions = "fn main() -> i16 { 1 }".compile()?;
     let mut computer = Computer::default();
     computer.set_instructions(asm_instructions);
@@ -35,6 +35,15 @@ fn return_zero() -> Result<(), CalError> {
     }
     assert_eq!(computer.get_memory().ram[0], 257);
     assert_eq!(computer.get_memory().ram[256], 2);
+
+    let asm_instructions = "fn main() -> i16 { 0b11 }".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..128 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], 3);
     Ok(())
 }
 
