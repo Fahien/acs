@@ -314,3 +314,30 @@ fn modulo() -> Result<(), CalError> {
     tokens.eat_symbol(Symbol::RightBrace)?;
     Ok(())
 }
+
+#[test]
+fn array() -> Result<(), CalError> {
+    let mut tokens = "fn main() { let a: [i16; 2] = [1, 2]; }".tokenize()?;
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("main")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_keyword(Keyword::Let)?;
+    tokens.eat_identifier("a")?;
+    tokens.eat_symbol(Symbol::Colon)?;
+    tokens.eat_symbol(Symbol::LeftBracket)?;
+    tokens.eat_keyword(Keyword::I16)?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+    tokens.eat_integer(2)?;
+    tokens.eat_symbol(Symbol::RightBracket)?;
+    tokens.eat_symbol(Symbol::Assign)?;
+    tokens.eat_symbol(Symbol::LeftBracket)?;
+    tokens.eat_integer(1)?;
+    tokens.eat_symbol(Symbol::Comma)?;
+    tokens.eat_integer(2)?;
+    tokens.eat_symbol(Symbol::RightBracket)?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    Ok(())
+}

@@ -34,6 +34,8 @@ pub enum Type {
     Void,
     I16,
     Bool,
+    /// An array is defined by the _type_ and the _number_ of its elements
+    Array(Box<Type>, u16),
 }
 
 impl Type {
@@ -54,8 +56,6 @@ pub struct Function {
     pub return_type: Type,
     pub name: String,
     pub parameters: Vec<Variable>,
-    /// Number of local variables
-    pub local_count: u16,
     pub body_statements: Vec<Statement>,
 }
 

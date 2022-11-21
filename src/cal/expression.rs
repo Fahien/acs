@@ -53,10 +53,11 @@ impl Operator {
 }
 
 /// An enum for literals will come in handy when defining arrays
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Literal {
     I16(i16),
     Bool(bool),
+    Array(Vec<Literal>),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
