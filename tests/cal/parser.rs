@@ -4,7 +4,7 @@
 
 use acs::{
     error::CalError,
-    expression::{Operator, Term},
+    expression::{Literal, Operator, Term},
     statement::Statement,
     structure::{Module, Type},
 };
@@ -111,10 +111,10 @@ fn add() -> Result<(), CalError> {
     let Statement::Expression(expression) = statement else {
         panic!();
     };
-    assert_eq!(*expression.term.as_ref(), Term::IntLiteral(1));
+    assert_eq!(*expression.term.as_ref(), Term::Literal(Literal::I16(1)));
     let (op, rhs) = expression.op_and_expr.as_ref().unwrap();
     assert_eq!(*op, Operator::Add);
-    assert_eq!(*rhs.term.as_ref(), Term::IntLiteral(2));
+    assert_eq!(*rhs.term.as_ref(), Term::Literal(Literal::I16(2)));
     assert!(rhs.op_and_expr.is_none());
 
     Ok(())
@@ -134,7 +134,10 @@ fn if_statement() -> Result<(), CalError> {
     let Statement::If(ifstat) = statement else {
         panic!();
     };
-    assert_eq!(ifstat.predicate.term.as_ref(), &Term::BoolLiteral(true));
+    assert_eq!(
+        ifstat.predicate.term.as_ref(),
+        &Term::Literal(Literal::Bool(true))
+    );
     assert!(ifstat.predicate.op_and_expr.is_none());
     assert_eq!(ifstat.if_branch.len(), 1);
     assert_eq!(ifstat.else_branch.len(), 1);
@@ -156,7 +159,10 @@ fn while_statement() -> Result<(), CalError> {
     let Statement::While(whilestat) = statement else {
         panic!();
     };
-    assert_eq!(whilestat.predicate.term.as_ref(), &Term::BoolLiteral(true));
+    assert_eq!(
+        whilestat.predicate.term.as_ref(),
+        &Term::Literal(Literal::Bool(true))
+    );
     assert!(whilestat.predicate.op_and_expr.is_none());
     assert_eq!(whilestat.body.len(), 1);
 
@@ -184,48 +190,48 @@ fn cmp() -> Result<(), CalError> {
     let Statement::Expression(eq_expr) = statement else {
         panic!();
     };
-    assert_eq!(eq_expr.term.as_ref(), &Term::IntLiteral(1));
+    assert_eq!(eq_expr.term.as_ref(), &Term::Literal(Literal::I16(1)));
     let Some((op, rhs_expr)) = &eq_expr.op_and_expr else {
         panic!();
     };
     assert_eq!(*op, Operator::Eq);
-    assert_eq!(rhs_expr.term.as_ref(), &Term::IntLiteral(1));
+    assert_eq!(rhs_expr.term.as_ref(), &Term::Literal(Literal::I16(1)));
     assert!(rhs_expr.op_and_expr.is_none());
 
     let statement = &function.body_statements[1];
     let Statement::Expression(eq_expr) = statement else {
         panic!();
     };
-    assert_eq!(eq_expr.term.as_ref(), &Term::IntLiteral(1));
+    assert_eq!(eq_expr.term.as_ref(), &Term::Literal(Literal::I16(1)));
     let Some((op, rhs_expr)) = &eq_expr.op_and_expr else {
         panic!();
     };
     assert_eq!(*op, Operator::Ne);
-    assert_eq!(rhs_expr.term.as_ref(), &Term::IntLiteral(2));
+    assert_eq!(rhs_expr.term.as_ref(), &Term::Literal(Literal::I16(2)));
     assert!(rhs_expr.op_and_expr.is_none());
 
     let statement = &function.body_statements[2];
     let Statement::Expression(eq_expr) = statement else {
         panic!();
     };
-    assert_eq!(eq_expr.term.as_ref(), &Term::IntLiteral(1));
+    assert_eq!(eq_expr.term.as_ref(), &Term::Literal(Literal::I16(1)));
     let Some((op, rhs_expr)) = &eq_expr.op_and_expr else {
         panic!();
     };
     assert_eq!(*op, Operator::Lt);
-    assert_eq!(rhs_expr.term.as_ref(), &Term::IntLiteral(2));
+    assert_eq!(rhs_expr.term.as_ref(), &Term::Literal(Literal::I16(2)));
     assert!(rhs_expr.op_and_expr.is_none());
 
     let statement = &function.body_statements[3];
     let Statement::Expression(eq_expr) = statement else {
         panic!();
     };
-    assert_eq!(eq_expr.term.as_ref(), &Term::IntLiteral(2));
+    assert_eq!(eq_expr.term.as_ref(), &Term::Literal(Literal::I16(2)));
     let Some((op, rhs_expr)) = &eq_expr.op_and_expr else {
         panic!();
     };
     assert_eq!(*op, Operator::Gt);
-    assert_eq!(rhs_expr.term.as_ref(), &Term::IntLiteral(1));
+    assert_eq!(rhs_expr.term.as_ref(), &Term::Literal(Literal::I16(1)));
     assert!(rhs_expr.op_and_expr.is_none());
 
     Ok(())
@@ -255,7 +261,7 @@ fn assign_expression() -> Result<(), CalError> {
         panic!();
     };
     assert_eq!(*op, Operator::Assign);
-    assert_eq!(rhs.term.as_ref(), &Term::IntLiteral(0));
+    assert_eq!(rhs.term.as_ref(), &Term::Literal(Literal::I16(0)));
     assert!(rhs.op_and_expr.is_none());
 
     Ok(())
@@ -275,10 +281,10 @@ fn mul() -> Result<(), CalError> {
     let Statement::Expression(expression) = statement else {
         panic!();
     };
-    assert_eq!(*expression.term.as_ref(), Term::IntLiteral(1));
+    assert_eq!(*expression.term.as_ref(), Term::Literal(Literal::I16(1)));
     let (op, rhs) = expression.op_and_expr.as_ref().unwrap();
     assert_eq!(*op, Operator::Mul);
-    assert_eq!(*rhs.term.as_ref(), Term::IntLiteral(2));
+    assert_eq!(*rhs.term.as_ref(), Term::Literal(Literal::I16(2)));
     assert!(rhs.op_and_expr.is_none());
 
     Ok(())
@@ -298,10 +304,10 @@ fn and() -> Result<(), CalError> {
     let Statement::Expression(expression) = statement else {
         panic!();
     };
-    assert_eq!(*expression.term.as_ref(), Term::IntLiteral(1));
+    assert_eq!(*expression.term.as_ref(), Term::Literal(Literal::I16(1)));
     let (op, rhs) = expression.op_and_expr.as_ref().unwrap();
     assert_eq!(*op, Operator::And);
-    assert_eq!(*rhs.term.as_ref(), Term::IntLiteral(2));
+    assert_eq!(*rhs.term.as_ref(), Term::Literal(Literal::I16(2)));
     assert!(rhs.op_and_expr.is_none());
 
     Ok(())
@@ -321,10 +327,10 @@ fn or() -> Result<(), CalError> {
     let Statement::Expression(expression) = statement else {
         panic!();
     };
-    assert_eq!(*expression.term.as_ref(), Term::IntLiteral(1));
+    assert_eq!(*expression.term.as_ref(), Term::Literal(Literal::I16(1)));
     let (op, rhs) = expression.op_and_expr.as_ref().unwrap();
     assert_eq!(*op, Operator::Or);
-    assert_eq!(*rhs.term.as_ref(), Term::IntLiteral(2));
+    assert_eq!(*rhs.term.as_ref(), Term::Literal(Literal::I16(2)));
     assert!(rhs.op_and_expr.is_none());
 
     Ok(())

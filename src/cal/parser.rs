@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 use crate::{
     error::CalError,
-    expression::{Expression, Operator, Term},
+    expression::{Expression, Literal, Operator, Term},
     statement::{IfStatement, Statement, WhileStatement},
     structure::{Function, Module, Type, Variable},
     tokenizer::*,
@@ -70,9 +70,9 @@ impl Parser {
     fn parse_term(&mut self) -> Result<Term, CalError> {
         if let Some(token) = self.tokens.next() {
             match &token.value {
-                TokenKind::Keyword(Keyword::True) => Ok(Term::BoolLiteral(true)),
-                TokenKind::Keyword(Keyword::False) => Ok(Term::BoolLiteral(false)),
-                TokenKind::Integer(int) => Ok(Term::IntLiteral(*int)),
+                TokenKind::Keyword(Keyword::True) => Ok(Term::Literal(Literal::Bool(true))),
+                TokenKind::Keyword(Keyword::False) => Ok(Term::Literal(Literal::Bool(false))),
+                TokenKind::Integer(int) => Ok(Term::Literal(Literal::I16(*int))),
                 TokenKind::Identifier(identifier) => {
                     // Parse subroutine call
                     if self.tokens.peek_symbol(Symbol::LeftParen) {

@@ -4,7 +4,7 @@
 
 use crate::{
     error::CalError,
-    expression::{Expression, Operator, Term},
+    expression::{Expression, Literal, Operator, Term},
     preamble::preamble,
     segment::Segment,
     statement::{IfStatement, Statement, WhileStatement},
@@ -50,17 +50,23 @@ impl Generator {
         self.symbol_tables.last_mut().unwrap()
     }
 
-    fn gen_term(&self, term: &Term) -> Result<Vec<VmInstruction>, CalError> {
-        match term {
-            Term::IntLiteral(integer) => {
+    fn gen_literal(&self, literal: &Literal) -> Result<Vec<VmInstruction>, CalError> {
+        match literal {
+            Literal::I16(integer) => {
                 let integer = unsafe { std::mem::transmute::<i16, u16>(*integer) };
                 Ok(vec![VmInstruction::Push(Segment::Constant, integer)])
             }
-            Term::BoolLiteral(false) => Ok(vec![VmInstruction::Push(Segment::Constant, 0)]),
-            Term::BoolLiteral(true) => Ok(vec![
+            Literal::Bool(false) => Ok(vec![VmInstruction::Push(Segment::Constant, 0)]),
+            Literal::Bool(true) => Ok(vec![
                 VmInstruction::Push(Segment::Constant, 0),
                 VmInstruction::Not,
             ]),
+        }
+    }
+
+    fn gen_term(&self, term: &Term) -> Result<Vec<VmInstruction>, CalError> {
+        match term {
+            Term::Literal(literal) => self.gen_literal(literal),
             Term::Call(name, expressions) => {
                 let mut ret = vec![];
                 for expr in expressions {
