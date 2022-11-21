@@ -39,15 +39,33 @@ impl Parser {
         }
     }
 
+    fn parse_array_type(&mut self) -> Result<Type, CalError> {
+        // Left bracket is alreay consumed at this point
+        // Type of the element of the array
+        let elem_type = self.parse_type()?;
+        self.tokens.eat_symbol(Symbol::Semicolon)?;
+        match self.parse_int_literal() {
+            Ok(Literal::I16(count)) if count > 0 => {
+                self.tokens.eat_symbol(Symbol::RightBracket)?;
+                Ok(Type::Array(Box::new(elem_type), count as u16))
+            }
+            Ok(other_literal) => Err(CalError::new(
+                format!("Expected int literal, found {:?}", other_literal),
+                Range::default(),
+            )),
+            Err(err) => Err(err),
+        }
+    }
+
     fn parse_type(&mut self) -> Result<Type, CalError> {
         if let Some(token) = self.tokens.next() {
-            if let TokenKind::Keyword(keyword) = token.value {
-                Type::from_keyword(keyword)
-            } else {
-                Err(CalError::new(
+            match token.value {
+                TokenKind::Keyword(keyword) => Type::from_keyword(keyword),
+                TokenKind::Symbol(Symbol::LeftBracket) => self.parse_array_type(),
+                _ => Err(CalError::new(
                     format!("Expected type, found {:?}", token.value),
                     token.range,
-                ))
+                )),
             }
         } else {
             Err(CalError::new("Expected type".into(), Range::default()))
@@ -67,12 +85,54 @@ impl Parser {
         Ok(expressions)
     }
 
+    fn parse_int_literal(&mut self) -> Result<Literal, CalError> {
+        if let Some(token) = self.tokens.peek().cloned() {
+            if let TokenKind::Integer(int) = &token.value {
+                self.tokens.skip();
+                Ok(Literal::I16(*int))
+            } else {
+                Err(CalError::new(
+                    format!("Expected integer, found: {:?}", token.value),
+                    token.range,
+                ))
+            }
+        } else {
+            Err(CalError::new("Expected integer".into(), Range::default()))
+        }
+    }
+
+    fn parse_array_literal(&mut self) -> Result<Literal, CalError> {
+        // Left bracket is already consumed at this point
+        let mut values = vec![];
+
+        loop {
+            // Check whether array literal is finished
+            if self.tokens.peek_symbol(Symbol::RightBracket) {
+                self.tokens.skip();
+                return Ok(Literal::Array(values));
+            }
+
+            values.push(self.parse_int_literal()?);
+
+            if self.tokens.peek_symbol(Symbol::RightBracket) {
+                self.tokens.skip();
+                break; // Array literal is finished
+            } else {
+                self.tokens.eat_symbol(Symbol::Comma)?;
+            }
+        }
+        Ok(Literal::Array(values))
+    }
+
     fn parse_term(&mut self) -> Result<Term, CalError> {
         if let Some(token) = self.tokens.next() {
             match &token.value {
                 TokenKind::Keyword(Keyword::True) => Ok(Term::Literal(Literal::Bool(true))),
                 TokenKind::Keyword(Keyword::False) => Ok(Term::Literal(Literal::Bool(false))),
                 TokenKind::Integer(int) => Ok(Term::Literal(Literal::I16(*int))),
+                TokenKind::Symbol(Symbol::LeftBracket) => {
+                    Ok(Term::Literal(self.parse_array_literal()?))
+                }
                 TokenKind::Identifier(identifier) => {
                     // Parse subroutine call
                     if self.tokens.peek_symbol(Symbol::LeftParen) {
@@ -229,14 +289,6 @@ impl Parser {
         Ok(statements)
     }
 
-    /// Returns the number of local variables in the `statements`
-    pub fn count_local_variables(statements: &[Statement]) -> usize {
-        statements
-            .iter()
-            .filter(|s| matches!(s, Statement::Let(_, _)))
-            .count()
-    }
-
     pub fn parse_parameters(&mut self) -> Result<Vec<Variable>, CalError> {
         let mut ret = vec![];
 
@@ -274,13 +326,10 @@ impl Parser {
         let body_statements = self.parse_statements()?;
         self.tokens.eat_symbol(Symbol::RightBrace)?;
 
-        let local_count = Self::count_local_variables(&body_statements) as u16;
-
         Ok(Function {
             return_type,
             name,
             parameters,
-            local_count,
             body_statements,
         })
     }

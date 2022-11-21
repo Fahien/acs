@@ -325,3 +325,17 @@ fn modulo() -> Result<(), CalError> {
     assert_eq!(computer.get_memory().ram[256], 1);
     Ok(())
 }
+
+#[test]
+fn array() -> Result<(), CalError> {
+    let asm_instructions = "fn main() -> [i16; 2] { [1, 2] }".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..1024 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 258);
+    assert_eq!(computer.get_memory().ram[256], 1);
+    assert_eq!(computer.get_memory().ram[257], 2);
+    Ok(())
+}

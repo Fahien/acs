@@ -462,3 +462,26 @@ fn modulo() -> Result<(), CalError> {
     );
     Ok(())
 }
+
+#[test]
+fn array() -> Result<(), CalError> {
+    let vm_instructions = "fn main() -> [i16; 2] { let a: [i16; 2] = [1, 2]; a }".generate()?;
+    let VmInstruction::Function(name, 2) = &vm_instructions[0] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+    assert_eq!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    assert_eq!(
+        vm_instructions[2],
+        VmInstruction::Push(Segment::Constant, 2)
+    );
+    assert_eq!(vm_instructions[3], VmInstruction::Pop(Segment::Local, 1));
+    assert_eq!(vm_instructions[4], VmInstruction::Pop(Segment::Local, 0));
+    assert_eq!(vm_instructions[5], VmInstruction::Push(Segment::Local, 0));
+    assert_eq!(vm_instructions[6], VmInstruction::Push(Segment::Local, 1));
+    assert_eq!(vm_instructions[7], VmInstruction::Return(2));
+    Ok(())
+}

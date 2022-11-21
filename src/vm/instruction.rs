@@ -56,7 +56,7 @@ pub enum VmInstruction {
     IfGoto(String),
 
     /// Marks the beginning of a function with a name and the number of
-    /// local variables
+    /// words to allocate for the local segment
     Function(String, u16),
 
     /// Calls the function with that name with the number of arguments

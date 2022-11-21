@@ -30,10 +30,12 @@ impl Generator {
     }
 
     /// Returns the size in bytes of the type
+    #[allow(clippy::only_used_in_recursion)]
     fn get_type_size(&self, typ: &Type) -> u16 {
         match typ {
             Type::Void => 0,
             Type::I16 | Type::Bool => 2,
+            Type::Array(elem_type, count) => self.get_type_size(elem_type.as_ref()) * count,
         }
     }
 
@@ -50,6 +52,7 @@ impl Generator {
         self.symbol_tables.last_mut().unwrap()
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     fn gen_literal(&self, literal: &Literal) -> Result<Vec<VmInstruction>, CalError> {
         match literal {
             Literal::I16(integer) => {
@@ -61,6 +64,30 @@ impl Generator {
                 VmInstruction::Push(Segment::Constant, 0),
                 VmInstruction::Not,
             ]),
+            Literal::Array(values) => {
+                let mut ret = vec![];
+                for literal in values {
+                    ret.extend(self.gen_literal(literal)?);
+                }
+                Ok(ret)
+            }
+        }
+    }
+
+    /// Generates VM instructions to push a variable's onto the VM stack
+    fn gen_variable(&self, name: &str) -> Result<Vec<VmInstruction>, CalError> {
+        if let Some(entry) = self.get_current_symbol_table().get(name) {
+            let mut ret = vec![];
+            let word_count = self.get_type_size_in_words(&entry.variable.typ);
+            for i in 0..word_count {
+                ret.push(VmInstruction::Push(entry.segment, entry.offset + i));
+            }
+            Ok(ret)
+        } else {
+            Err(CalError::new(
+                format!("Undefined variable `{}`", name),
+                Range::default(),
+            ))
         }
     }
 
@@ -75,18 +102,7 @@ impl Generator {
                 ret.push(VmInstruction::Call(name.clone(), expressions.len() as u16));
                 Ok(ret)
             }
-            Term::Variable(name) => {
-                if let Some((segment, offset)) =
-                    self.get_current_symbol_table().get_segment_and_offset(name)
-                {
-                    Ok(vec![VmInstruction::Push(segment, offset)])
-                } else {
-                    Err(CalError::new(
-                        format!("Undefined variable `{}`", name),
-                        Range::default(),
-                    ))
-                }
-            }
+            Term::Variable(name) => self.gen_variable(name),
         }
     }
 
@@ -108,6 +124,23 @@ impl Generator {
         }
     }
 
+    /// Generates VM instructions to copy the stack backwards into the memory
+    /// segment representing a certain variable
+    pub fn gen_copy_stack_into_variable(
+        &self,
+        variable: &Variable,
+        segment: Segment,
+        offset: u16,
+    ) -> Result<Vec<VmInstruction>, CalError> {
+        let mut ret = vec![];
+        // We need to copy the stack backwards according to the size of the variable
+        let word_count = self.get_type_size_in_words(&variable.typ);
+        for i in 0..word_count {
+            ret.push(VmInstruction::Pop(segment, offset + word_count - i - 1));
+        }
+        Ok(ret)
+    }
+
     pub fn gen_assign_expression(
         &self,
         term: &Term,
@@ -115,11 +148,13 @@ impl Generator {
     ) -> Result<Vec<VmInstruction>, CalError> {
         // Get variable name from previous term
         if let Term::Variable(name) = term {
-            if let Some((segment, offset)) =
-                self.get_current_symbol_table().get_segment_and_offset(name)
-            {
+            if let Some(entry) = self.get_current_symbol_table().get(name) {
                 let mut ret = self.gen_expression(rhs)?;
-                ret.push(VmInstruction::Pop(segment, offset));
+                ret.extend(self.gen_copy_stack_into_variable(
+                    &entry.variable,
+                    entry.segment,
+                    entry.offset,
+                )?);
                 Ok(ret)
             } else {
                 Err(CalError::new(
@@ -174,7 +209,7 @@ impl Generator {
         let mut ret = vec![];
         ret.extend(self.gen_expression(assign_expression)?);
         let offset = self.get_current_symbol_table_mut().insert_local(variable);
-        ret.push(VmInstruction::Pop(Segment::Local, offset));
+        ret.extend(self.gen_copy_stack_into_variable(variable, Segment::Local, offset)?);
         Ok(ret)
     }
 
@@ -242,14 +277,27 @@ impl Generator {
         Ok(ret)
     }
 
+    /// Calculates and returns the size of the local segment
+    fn get_local_size_in_words(&self, statements: &[Statement]) -> u16 {
+        let mut ret = 0;
+        for s in statements {
+            if let Statement::Let(variable, _) = s {
+                ret += self.get_type_size_in_words(&variable.typ);
+            }
+        }
+        ret
+    }
+
     /// Generates VM instructions for a function
     pub fn gen_function(&mut self, function: &Function) -> Result<Vec<VmInstruction>, CalError> {
         // New symbol table
         self.symbol_tables.push(SymbolTable::default());
 
+        let local_size_in_words = self.get_local_size_in_words(&function.body_statements);
+
         let mut ret = vec![VmInstruction::Function(
             function.name.clone(),
-            function.local_count,
+            local_size_in_words,
         )];
 
         // Add function arguments to symbol table

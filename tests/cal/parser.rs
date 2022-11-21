@@ -17,7 +17,6 @@ fn hello_void() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert!(function.parameters.is_empty());
     assert!(function.body_statements.is_empty());
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::Void);
     Ok(())
 }
@@ -29,7 +28,6 @@ fn return_zero() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert!(function.parameters.is_empty());
     assert_eq!(function.body_statements.len(), 1);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::I16);
 
     let module: Module = "fn main() -> i16 { return 0; }".parse()?;
@@ -37,7 +35,6 @@ fn return_zero() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert!(function.parameters.is_empty());
     assert_eq!(function.body_statements.len(), 1);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::I16);
     Ok(())
 }
@@ -49,7 +46,6 @@ fn def_local() -> Result<(), CalError> {
     assert_eq!(function.name, "def_local");
     assert!(function.parameters.is_empty());
     assert_eq!(function.body_statements.len(), 2);
-    assert_eq!(function.local_count, 2);
     assert_eq!(function.return_type, Type::Void);
     Ok(())
 }
@@ -61,7 +57,6 @@ fn call_function() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert!(function.parameters.is_empty());
     assert_eq!(function.body_statements.len(), 1);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::Void);
     let statement = &function.body_statements[0];
     if let Statement::Expression(expression) = statement {
@@ -79,7 +74,6 @@ fn one_parameter() -> Result<(), CalError> {
     assert_eq!(function.name, "identity");
     assert_eq!(function.parameters.len(), 1);
     assert_eq!(function.body_statements.len(), 1);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::I16);
     Ok(())
 }
@@ -92,7 +86,6 @@ fn multi_parameters() -> Result<(), CalError> {
     assert_eq!(function.name, "ignore_y");
     assert_eq!(function.parameters.len(), 2);
     assert_eq!(function.body_statements.len(), 1);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::I16);
     Ok(())
 }
@@ -104,7 +97,6 @@ fn add() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert_eq!(function.parameters.len(), 0);
     assert_eq!(function.body_statements.len(), 1);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::Void);
 
     let statement = &function.body_statements[0];
@@ -127,7 +119,6 @@ fn if_statement() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert_eq!(function.parameters.len(), 0);
     assert_eq!(function.body_statements.len(), 1);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::Bool);
 
     let statement = &function.body_statements[0];
@@ -152,7 +143,6 @@ fn while_statement() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert_eq!(function.parameters.len(), 0);
     assert_eq!(function.body_statements.len(), 2);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::Bool);
 
     let statement = &function.body_statements[0];
@@ -183,7 +173,6 @@ fn cmp() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert_eq!(function.parameters.len(), 0);
     assert_eq!(function.body_statements.len(), 4);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::Bool);
 
     let statement = &function.body_statements[0];
@@ -248,7 +237,6 @@ fn assign_expression() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert_eq!(function.parameters.len(), 0);
     assert_eq!(function.body_statements.len(), 1);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::Void);
 
     let statement = &function.body_statements[0];
@@ -274,7 +262,6 @@ fn mul() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert_eq!(function.parameters.len(), 0);
     assert_eq!(function.body_statements.len(), 1);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::Void);
 
     let statement = &function.body_statements[0];
@@ -297,7 +284,6 @@ fn and() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert_eq!(function.parameters.len(), 0);
     assert_eq!(function.body_statements.len(), 1);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::Void);
 
     let statement = &function.body_statements[0];
@@ -320,7 +306,6 @@ fn or() -> Result<(), CalError> {
     assert_eq!(function.name, "main");
     assert_eq!(function.parameters.len(), 0);
     assert_eq!(function.body_statements.len(), 1);
-    assert_eq!(function.local_count, 0);
     assert_eq!(function.return_type, Type::Void);
 
     let statement = &function.body_statements[0];
@@ -332,6 +317,33 @@ fn or() -> Result<(), CalError> {
     assert_eq!(*op, Operator::Or);
     assert_eq!(*rhs.term.as_ref(), Term::Literal(Literal::I16(2)));
     assert!(rhs.op_and_expr.is_none());
+
+    Ok(())
+}
+
+#[test]
+fn array() -> Result<(), CalError> {
+    let module: Module = "fn main() { let a: [i16; 2] = [1, 2]; }".parse()?;
+    let function = &module.functions[0];
+    assert_eq!(function.name, "main");
+    assert_eq!(function.parameters.len(), 0);
+    assert_eq!(function.body_statements.len(), 1);
+    assert_eq!(function.return_type, Type::Void);
+
+    let statement = &function.body_statements[0];
+    let Statement::Let(variable, rhs) = statement else {
+        panic!();
+    };
+    assert_eq!(variable.name, "a");
+    assert_eq!(variable.typ, Type::Array(Box::new(Type::I16), 2));
+    let Term::Literal(Literal::Array(array)) = rhs.term.as_ref() else {
+        panic!();
+    };
+    assert!(rhs.op_and_expr.is_none());
+
+    assert_eq!(array.len(), 2);
+    assert_eq!(array[0], Literal::I16(1));
+    assert_eq!(array[1], Literal::I16(2));
 
     Ok(())
 }

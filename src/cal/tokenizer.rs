@@ -63,6 +63,10 @@ pub enum Symbol {
     LeftParen,
     /// ')'
     RightParen,
+    /// `[`
+    LeftBracket,
+    /// `]`
+    RightBracket,
     /// '{'
     LeftBrace,
     /// '}'
@@ -143,6 +147,8 @@ fn strip_symbol(input: &str) -> Option<(Symbol, &str)> {
     match chars.next() {
         Some('(') => Some((Symbol::LeftParen, &input[1..])),
         Some(')') => Some((Symbol::RightParen, &input[1..])),
+        Some('[') => Some((Symbol::LeftBracket, &input[1..])),
+        Some(']') => Some((Symbol::RightBracket, &input[1..])),
         Some('{') => Some((Symbol::LeftBrace, &input[1..])),
         Some('}') => Some((Symbol::RightBrace, &input[1..])),
         Some('-') => {

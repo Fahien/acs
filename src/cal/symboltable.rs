@@ -56,4 +56,8 @@ impl SymbolTable {
             .get(name)
             .map(|entry| (entry.segment, entry.offset))
     }
+
+    pub fn get(&self, name: &str) -> Option<&SymbolEntry> {
+        self.variables.get(name)
+    }
 }
