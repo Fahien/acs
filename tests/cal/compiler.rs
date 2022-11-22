@@ -348,3 +348,17 @@ fn array() -> Result<(), CalError> {
     assert_eq!(computer.get_memory().ram[256], 2);
     Ok(())
 }
+
+#[test]
+fn character() -> Result<(), CalError> {
+    let asm_instructions = "fn main() -> char { 'a' }".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..1024 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], 97);
+
+    Ok(())
+}

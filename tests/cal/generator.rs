@@ -485,3 +485,20 @@ fn array() -> Result<(), CalError> {
     assert_eq!(vm_instructions[7], VmInstruction::Return(2));
     Ok(())
 }
+
+#[test]
+fn character() -> Result<(), CalError> {
+    let vm_instructions = "fn main() -> char { let a: char = 'a'; a }".generate()?;
+    let VmInstruction::Function(name, 1) = &vm_instructions[0] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+    assert_eq!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Constant, 'a' as u16)
+    );
+    assert_eq!(vm_instructions[2], VmInstruction::Pop(Segment::Local, 0));
+    assert_eq!(vm_instructions[3], VmInstruction::Push(Segment::Local, 0));
+    assert_eq!(vm_instructions[4], VmInstruction::Return(1));
+    Ok(())
+}
