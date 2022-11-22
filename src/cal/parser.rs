@@ -157,6 +157,7 @@ impl Parser {
                 TokenKind::Symbol(Symbol::LeftBracket) => {
                     Ok(Term::Literal(self.parse_array_literal()?))
                 }
+                TokenKind::Char(c) => Ok(Term::Literal(Literal::Char(*c))),
                 TokenKind::Identifier(identifier) => self.parse_identifier_term(identifier),
                 _ => Err(CalError::new(
                     format!("Failed to parse term, found {:?}", token.value),

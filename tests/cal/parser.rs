@@ -347,3 +347,24 @@ fn array() -> Result<(), CalError> {
 
     Ok(())
 }
+
+#[test]
+fn character() -> Result<(), CalError> {
+    let module: Module = "fn main() { let a: char = 'a'; }".parse()?;
+    let function = &module.functions[0];
+    assert_eq!(function.name, "main");
+    assert_eq!(function.parameters.len(), 0);
+    assert_eq!(function.body_statements.len(), 1);
+    assert_eq!(function.return_type, Type::Void);
+
+    let statement = &function.body_statements[0];
+    let Statement::Let(variable, rhs) = statement else {
+        panic!();
+    };
+    assert_eq!(variable.name, "a");
+    assert_eq!(variable.typ, Type::Char);
+    assert_eq!(rhs.term.as_ref(), &Term::Literal(Literal::Char('a')));
+    assert!(rhs.op_and_expr.is_none());
+
+    Ok(())
+}

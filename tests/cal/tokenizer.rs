@@ -341,3 +341,22 @@ fn array() -> Result<(), CalError> {
     tokens.eat_symbol(Symbol::RightBrace)?;
     Ok(())
 }
+
+#[test]
+fn character() -> Result<(), CalError> {
+    let mut tokens = "fn main() { let a: char = 'a'; }".tokenize()?;
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("main")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_keyword(Keyword::Let)?;
+    tokens.eat_identifier("a")?;
+    tokens.eat_symbol(Symbol::Colon)?;
+    tokens.eat_keyword(Keyword::Char)?;
+    tokens.eat_symbol(Symbol::Assign)?;
+    tokens.eat_character('a')?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    Ok(())
+}

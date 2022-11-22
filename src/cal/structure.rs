@@ -34,6 +34,7 @@ pub enum Type {
     Void,
     I16,
     Bool,
+    Char,
     /// An array is defined by the _type_ and the _number_ of its elements
     Array(Box<Type>, u16),
 }
@@ -43,6 +44,7 @@ impl Type {
         match keyword {
             Keyword::I16 => Ok(Type::I16),
             Keyword::Bool => Ok(Type::Bool),
+            Keyword::Char => Ok(Type::Char),
             _ => Err(CalError::new(
                 format!("Failed to convert keyword `{:?}` to a `Type`", keyword),
                 Range::default(),

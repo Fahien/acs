@@ -34,7 +34,7 @@ impl Generator {
     fn get_type_size(&self, typ: &Type) -> u16 {
         match typ {
             Type::Void => 0,
-            Type::I16 | Type::Bool => 2,
+            Type::I16 | Type::Bool | Type::Char => 2,
             Type::Array(elem_type, count) => self.get_type_size(elem_type.as_ref()) * count,
         }
     }
@@ -64,6 +64,7 @@ impl Generator {
                 VmInstruction::Push(Segment::Constant, 0),
                 VmInstruction::Not,
             ]),
+            Literal::Char(c) => Ok(vec![VmInstruction::Push(Segment::Constant, *c as u16)]),
             Literal::Array(values) => {
                 let mut ret = vec![];
                 for literal in values {

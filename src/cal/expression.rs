@@ -57,6 +57,7 @@ impl Operator {
 pub enum Literal {
     I16(i16),
     Bool(bool),
+    Char(char),
     Array(Vec<Literal>),
 }
 

@@ -32,6 +32,7 @@ impl Range {
 pub enum Keyword {
     Function,
     I16,
+    Char,
     Return,
     Let,
     Bool,
@@ -43,9 +44,10 @@ pub enum Keyword {
 }
 
 impl Keyword {
-    pub const MAP: [(&'static str, Keyword); 10] = [
+    pub const MAP: [(&'static str, Keyword); 11] = [
         ("fn ", Keyword::Function),
         ("i16", Keyword::I16),
+        ("char", Keyword::Char),
         ("return", Keyword::Return),
         ("let ", Keyword::Let),
         ("bool", Keyword::Bool),
@@ -113,6 +115,7 @@ pub enum TokenKind {
     /// Sequence of letters, digits, and underscore, not starting with digit
     Identifier(String),
     Integer(i16),
+    Char(char),
 }
 
 /// Useful for lexical analysys, with the tokenizer we transform series of
@@ -185,6 +188,19 @@ fn strip_symbol(input: &str) -> Option<(Symbol, &str)> {
         Some('%') => Some((Symbol::Percent, &input[1..])),
         _ => None,
     }
+}
+
+/// Tries to strip a character from the input and, if it succedes, returns
+/// the character and the new string stripped of that character
+fn strip_character(input: &str) -> Option<(char, &str)> {
+    let mut chars = input.chars();
+    if let Some('\'') = chars.next() {
+        let character = chars.next().unwrap();
+        if let Some('\'') = chars.next() {
+            return Some((character, &input[3..]));
+        }
+    }
+    None
 }
 
 /// Tries to strip an identifier from the input and, if succedes, returns
@@ -310,6 +326,12 @@ impl Tokens {
                     TokenKind::Symbol(symbol),
                     Range::from_str(input, code),
                 ));
+            } else if let Some((character, stripped_input)) = strip_character(input) {
+                input = stripped_input;
+                ret.push(Token::new(
+                    TokenKind::Char(character),
+                    Range::from_str(input, code),
+                ));
             } else if let Some((identifier, stripped_input)) = strip_identifier(input) {
                 input = stripped_input;
                 ret.push(Token::new(
@@ -409,6 +431,24 @@ impl Tokens {
         } else {
             Err(CalError::new(
                 format!("Expected integer {:?}", int),
+                Range::default(),
+            ))
+        }
+    }
+
+    /// Eats a character and advances to the next token
+    pub fn eat_character(&mut self, ch: char) -> Result<(), CalError> {
+        if let Some(token) = self.tokens.next() {
+            match &token.value {
+                TokenKind::Char(c) if *c == ch => Ok(()),
+                _ => Err(CalError::new(
+                    format!("Expected character: {:?}, found {:?}", ch, token),
+                    token.range,
+                )),
+            }
+        } else {
+            Err(CalError::new(
+                format!("Expected character {:?}", ch),
                 Range::default(),
             ))
         }
