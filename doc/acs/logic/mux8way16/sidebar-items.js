@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Mux8Way16","8-way 16-bit multiplexor"]]};

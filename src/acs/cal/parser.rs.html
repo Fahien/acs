@@ -317,6 +317,70 @@
 <span id="315">315</span>
 <span id="316">316</span>
 <span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -325,7 +389,7 @@
 
 <span class="kw">use crate</span>::{
     error::CalError,
-    expression::{Expression, Operator, Term},
+    expression::{Expression, Literal, Operator, Term},
     statement::{IfStatement, Statement, WhileStatement},
     structure::{Function, Module, Type, Variable},
     tokenizer::<span class="kw-2">*</span>,
@@ -358,15 +422,33 @@
         }
     }
 
+    <span class="kw">fn </span>parse_array_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Type, CalError&gt; {
+        <span class="comment">// Left bracket is alreay consumed at this point
+        // Type of the element of the array
+        </span><span class="kw">let </span>elem_type = <span class="self">self</span>.parse_type()<span class="question-mark">?</span>;
+        <span class="self">self</span>.tokens.eat_symbol(Symbol::Semicolon)<span class="question-mark">?</span>;
+        <span class="kw">match </span><span class="self">self</span>.parse_int_literal() {
+            <span class="prelude-val">Ok</span>(Literal::I16(count)) <span class="kw">if </span>count &gt; <span class="number">0 </span>=&gt; {
+                <span class="self">self</span>.tokens.eat_symbol(Symbol::RightBracket)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(Type::Array(Box::new(elem_type), count <span class="kw">as </span>u16))
+            }
+            <span class="prelude-val">Ok</span>(other_literal) =&gt; <span class="prelude-val">Err</span>(CalError::new(
+                <span class="macro">format!</span>(<span class="string">&quot;Expected int literal, found {:?}&quot;</span>, other_literal),
+                Range::default(),
+            )),
+            <span class="prelude-val">Err</span>(err) =&gt; <span class="prelude-val">Err</span>(err),
+        }
+    }
+
     <span class="kw">fn </span>parse_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Type, CalError&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
-            <span class="kw">if let </span>TokenKind::Keyword(keyword) = token.value {
-                Type::from_keyword(keyword)
-            } <span class="kw">else </span>{
-                <span class="prelude-val">Err</span>(CalError::new(
+            <span class="kw">match </span>token.value {
+                TokenKind::Keyword(keyword) =&gt; Type::from_keyword(keyword),
+                TokenKind::Symbol(Symbol::LeftBracket) =&gt; <span class="self">self</span>.parse_array_type(),
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(CalError::new(
                     <span class="macro">format!</span>(<span class="string">&quot;Expected type, found {:?}&quot;</span>, token.value),
                     token.range,
-                ))
+                )),
             }
         } <span class="kw">else </span>{
             <span class="prelude-val">Err</span>(CalError::new(<span class="string">&quot;Expected type&quot;</span>.into(), Range::default()))
@@ -386,23 +468,80 @@
         <span class="prelude-val">Ok</span>(expressions)
     }
 
+    <span class="kw">fn </span>parse_int_literal(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Literal, CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.peek().cloned() {
+            <span class="kw">if let </span>TokenKind::Integer(int) = <span class="kw-2">&amp;</span>token.value {
+                <span class="self">self</span>.tokens.skip();
+                <span class="prelude-val">Ok</span>(Literal::I16(<span class="kw-2">*</span>int))
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(CalError::new(
+                    <span class="macro">format!</span>(<span class="string">&quot;Expected integer, found: {:?}&quot;</span>, token.value),
+                    token.range,
+                ))
+            }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(CalError::new(<span class="string">&quot;Expected integer&quot;</span>.into(), Range::default()))
+        }
+    }
+
+    <span class="kw">fn </span>parse_array_literal(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Literal, CalError&gt; {
+        <span class="comment">// Left bracket is already consumed at this point
+        </span><span class="kw">let </span><span class="kw-2">mut </span>values = <span class="macro">vec!</span>[];
+
+        <span class="comment">// Check whether array literal is finished
+        </span><span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::RightBracket) {
+            <span class="self">self</span>.tokens.skip();
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(Literal::Array(values));
+        }
+
+        <span class="kw">loop </span>{
+            values.push(<span class="self">self</span>.parse_int_literal()<span class="question-mark">?</span>);
+
+            <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::RightBracket) {
+                <span class="self">self</span>.tokens.skip();
+                <span class="kw">break</span>; <span class="comment">// Array literal is finished
+            </span>} <span class="kw">else </span>{
+                <span class="self">self</span>.tokens.eat_symbol(Symbol::Comma)<span class="question-mark">?</span>;
+            }
+        }
+        <span class="prelude-val">Ok</span>(Literal::Array(values))
+    }
+
+    <span class="kw">fn </span>parse_identifier_term(<span class="kw-2">&amp;mut </span><span class="self">self</span>, identifier: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Term, CalError&gt; {
+        <span class="kw">let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.peek() <span class="kw">else </span>{
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(Term::Variable(identifier.into()));
+        };
+
+        <span class="kw">match </span>token.value {
+            TokenKind::Symbol(Symbol::LeftParen) =&gt; {
+                <span class="comment">// Parse subroutine call
+                </span><span class="self">self</span>.tokens.skip();
+                <span class="kw">let </span>expression_list = <span class="self">self</span>.parse_expression_list()<span class="question-mark">?</span>;
+                <span class="self">self</span>.tokens.eat_symbol(Symbol::RightParen)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(Term::Call(identifier.into(), expression_list))
+            }
+            TokenKind::Symbol(Symbol::LeftBracket) =&gt; {
+                <span class="comment">// Index operator
+                </span><span class="self">self</span>.tokens.skip();
+                <span class="kw">let </span>index_expr = <span class="self">self</span>.parse_expression(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.tokens.eat_symbol(Symbol::RightBracket)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(Term::Index(identifier.into(), index_expr))
+            }
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Ok</span>(Term::Variable(identifier.into())),
+        }
+    }
+
     <span class="kw">fn </span>parse_term(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Term, CalError&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
             <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
-                TokenKind::Keyword(Keyword::True) =&gt; <span class="prelude-val">Ok</span>(Term::BoolLiteral(<span class="bool-val">true</span>)),
-                TokenKind::Keyword(Keyword::False) =&gt; <span class="prelude-val">Ok</span>(Term::BoolLiteral(<span class="bool-val">false</span>)),
-                TokenKind::Integer(int) =&gt; <span class="prelude-val">Ok</span>(Term::IntLiteral(<span class="kw-2">*</span>int)),
-                TokenKind::Identifier(identifier) =&gt; {
-                    <span class="comment">// Parse subroutine call
-                    </span><span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::LeftParen) {
-                        <span class="self">self</span>.tokens.skip();
-                        <span class="kw">let </span>expression_list = <span class="self">self</span>.parse_expression_list()<span class="question-mark">?</span>;
-                        <span class="self">self</span>.tokens.eat_symbol(Symbol::RightParen)<span class="question-mark">?</span>;
-                        <span class="prelude-val">Ok</span>(Term::Call(identifier.clone(), expression_list))
-                    } <span class="kw">else </span>{
-                        <span class="prelude-val">Ok</span>(Term::Variable(identifier.clone()))
-                    }
+                TokenKind::Keyword(Keyword::True) =&gt; <span class="prelude-val">Ok</span>(Term::Literal(Literal::Bool(<span class="bool-val">true</span>))),
+                TokenKind::Keyword(Keyword::False) =&gt; <span class="prelude-val">Ok</span>(Term::Literal(Literal::Bool(<span class="bool-val">false</span>))),
+                TokenKind::Integer(int) =&gt; <span class="prelude-val">Ok</span>(Term::Literal(Literal::I16(<span class="kw-2">*</span>int))),
+                TokenKind::Symbol(Symbol::LeftBracket) =&gt; {
+                    <span class="prelude-val">Ok</span>(Term::Literal(<span class="self">self</span>.parse_array_literal()<span class="question-mark">?</span>))
                 }
+                TokenKind::Char(c) =&gt; <span class="prelude-val">Ok</span>(Term::Literal(Literal::Char(<span class="kw-2">*</span>c))),
+                TokenKind::Identifier(identifier) =&gt; <span class="self">self</span>.parse_identifier_term(identifier),
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(CalError::new(
                     <span class="macro">format!</span>(<span class="string">&quot;Failed to parse term, found {:?}&quot;</span>, token.value),
                     token.range,
@@ -548,14 +687,6 @@
         <span class="prelude-val">Ok</span>(statements)
     }
 
-    <span class="doccomment">/// Returns the number of local variables in the `statements`
-    </span><span class="kw">pub fn </span>count_local_variables(statements: <span class="kw-2">&amp;</span>[Statement]) -&gt; usize {
-        statements
-            .iter()
-            .filter(|s| <span class="macro">matches!</span>(s, Statement::Let(<span class="kw">_</span>, <span class="kw">_</span>)))
-            .count()
-    }
-
     <span class="kw">pub fn </span>parse_parameters(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Variable&gt;, CalError&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="macro">vec!</span>[];
 
@@ -593,13 +724,10 @@
         <span class="kw">let </span>body_statements = <span class="self">self</span>.parse_statements()<span class="question-mark">?</span>;
         <span class="self">self</span>.tokens.eat_symbol(Symbol::RightBrace)<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>local_count = <span class="self">Self</span>::count_local_variables(<span class="kw-2">&amp;</span>body_statements) <span class="kw">as </span>u16;
-
         <span class="prelude-val">Ok</span>(Function {
             return_type,
             name,
             parameters,
-            local_count,
             body_statements,
         })
     }

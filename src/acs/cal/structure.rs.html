@@ -94,6 +94,8 @@
 <span id="92">92</span>
 <span id="93">93</span>
 <span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -130,6 +132,9 @@
     Void,
     I16,
     Bool,
+    Char,
+    <span class="doccomment">/// An array is defined by the _type_ and the _number_ of its elements
+    </span>Array(Box&lt;Type&gt;, u16),
 }
 
 <span class="kw">impl </span>Type {
@@ -137,6 +142,7 @@
         <span class="kw">match </span>keyword {
             Keyword::I16 =&gt; <span class="prelude-val">Ok</span>(Type::I16),
             Keyword::Bool =&gt; <span class="prelude-val">Ok</span>(Type::Bool),
+            Keyword::Char =&gt; <span class="prelude-val">Ok</span>(Type::Char),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(CalError::new(
                 <span class="macro">format!</span>(<span class="string">&quot;Failed to convert keyword `{:?}` to a `Type`&quot;</span>, keyword),
                 Range::default(),
@@ -150,8 +156,6 @@
     <span class="kw">pub </span>return_type: Type,
     <span class="kw">pub </span>name: String,
     <span class="kw">pub </span>parameters: Vec&lt;Variable&gt;,
-    <span class="doccomment">/// Number of local variables
-    </span><span class="kw">pub </span>local_count: u16,
     <span class="kw">pub </span>body_statements: Vec&lt;Statement&gt;,
 }
 

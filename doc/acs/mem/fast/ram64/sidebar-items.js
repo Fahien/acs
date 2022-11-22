@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Ram64","Fast RAM which, as opposed to the other RAMs, it does not carries out the simulation with other building blocks, but it emulates it with native code."]]};

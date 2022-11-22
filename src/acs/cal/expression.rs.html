@@ -77,6 +77,17 @@
 <span id="75">75</span>
 <span id="76">76</span>
 <span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -131,13 +142,24 @@
     }
 }
 
+<span class="doccomment">/// An enum for literals will come in handy when defining arrays
+</span><span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>Literal {
+    I16(i16),
+    Bool(bool),
+    Char(char),
+    Array(Vec&lt;Literal&gt;),
+}
+
 <span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Term {
-    IntLiteral(i16),
-    BoolLiteral(bool),
+    Literal(Literal),
     <span class="doccomment">/// Call a function with a list of arguments
     </span>Call(String, Vec&lt;Expression&gt;),
     Variable(String),
+    <span class="doccomment">/// Call the index operator on a variable, where
+    /// index is the result of an expression.
+    </span>Index(String, Expression),
 }
 
 <span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]

@@ -490,6 +490,52 @@
 <span id="488">488</span>
 <span id="489">489</span>
 <span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -524,6 +570,7 @@
 </span><span class="kw">pub enum </span>Keyword {
     Function,
     I16,
+    Char,
     Return,
     Let,
     Bool,
@@ -535,9 +582,10 @@
 }
 
 <span class="kw">impl </span>Keyword {
-    <span class="kw">pub const </span>MAP: [(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, Keyword); <span class="number">10</span>] = [
+    <span class="kw">pub const </span>MAP: [(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, Keyword); <span class="number">11</span>] = [
         (<span class="string">&quot;fn &quot;</span>, Keyword::Function),
         (<span class="string">&quot;i16&quot;</span>, Keyword::I16),
+        (<span class="string">&quot;char&quot;</span>, Keyword::Char),
         (<span class="string">&quot;return&quot;</span>, Keyword::Return),
         (<span class="string">&quot;let &quot;</span>, Keyword::Let),
         (<span class="string">&quot;bool&quot;</span>, Keyword::Bool),
@@ -555,6 +603,10 @@
     </span>LeftParen,
     <span class="doccomment">/// &#39;)&#39;
     </span>RightParen,
+    <span class="doccomment">/// `[`
+    </span>LeftBracket,
+    <span class="doccomment">/// `]`
+    </span>RightBracket,
     <span class="doccomment">/// &#39;{&#39;
     </span>LeftBrace,
     <span class="doccomment">/// &#39;}&#39;
@@ -601,6 +653,7 @@
     <span class="doccomment">/// Sequence of letters, digits, and underscore, not starting with digit
     </span>Identifier(String),
     Integer(i16),
+    Char(char),
 }
 
 <span class="doccomment">/// Useful for lexical analysys, with the tokenizer we transform series of
@@ -635,6 +688,8 @@
     <span class="kw">match </span>chars.next() {
         <span class="prelude-val">Some</span>(<span class="string">&#39;(&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::LeftParen, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="prelude-val">Some</span>(<span class="string">&#39;)&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::RightParen, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
+        <span class="prelude-val">Some</span>(<span class="string">&#39;[&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::LeftBracket, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
+        <span class="prelude-val">Some</span>(<span class="string">&#39;]&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::RightBracket, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="prelude-val">Some</span>(<span class="string">&#39;{&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::LeftBrace, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="prelude-val">Some</span>(<span class="string">&#39;}&#39;</span>) =&gt; <span class="prelude-val">Some</span>((Symbol::RightBrace, <span class="kw-2">&amp;</span>input[<span class="number">1</span>..])),
         <span class="prelude-val">Some</span>(<span class="string">&#39;-&#39;</span>) =&gt; {
@@ -672,6 +727,19 @@
         <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
     }
 }
+
+<span class="doccomment">/// Tries to strip a character from the input and, if it succedes, returns
+/// the character and the new string stripped of that character
+</span><span class="kw">fn </span>strip_character(input: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;(char, <span class="kw-2">&amp;</span>str)&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>chars = input.chars();
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="string">&#39;\&#39;&#39;</span>) = chars.next() {
+        <span class="kw">let </span>character = chars.next().unwrap();
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="string">&#39;\&#39;&#39;</span>) = chars.next() {
+            <span class="kw">return </span><span class="prelude-val">Some</span>((character, <span class="kw-2">&amp;</span>input[<span class="number">3</span>..]));
+        }
+    }
+    <span class="prelude-val">None
+</span>}
 
 <span class="doccomment">/// Tries to strip an identifier from the input and, if succedes, returns
 /// the identifier and the new string stripped of that identifier
@@ -796,6 +864,12 @@
                     TokenKind::Symbol(symbol),
                     Range::from_str(input, code),
                 ));
+            } <span class="kw">else if let </span><span class="prelude-val">Some</span>((character, stripped_input)) = strip_character(input) {
+                input = stripped_input;
+                ret.push(Token::new(
+                    TokenKind::Char(character),
+                    Range::from_str(input, code),
+                ));
             } <span class="kw">else if let </span><span class="prelude-val">Some</span>((identifier, stripped_input)) = strip_identifier(input) {
                 input = stripped_input;
                 ret.push(Token::new(
@@ -895,6 +969,24 @@
         } <span class="kw">else </span>{
             <span class="prelude-val">Err</span>(CalError::new(
                 <span class="macro">format!</span>(<span class="string">&quot;Expected integer {:?}&quot;</span>, int),
+                Range::default(),
+            ))
+        }
+    }
+
+    <span class="doccomment">/// Eats a character and advances to the next token
+    </span><span class="kw">pub fn </span>eat_character(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ch: char) -&gt; <span class="prelude-ty">Result</span>&lt;(), CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
+            <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
+                TokenKind::Char(c) <span class="kw">if </span><span class="kw-2">*</span>c == ch =&gt; <span class="prelude-val">Ok</span>(()),
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(CalError::new(
+                    <span class="macro">format!</span>(<span class="string">&quot;Expected character: {:?}, found {:?}&quot;</span>, ch, token),
+                    token.range,
+                )),
+            }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(CalError::new(
+                <span class="macro">format!</span>(<span class="string">&quot;Expected character {:?}&quot;</span>, ch),
                 Range::default(),
             ))
         }
