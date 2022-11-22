@@ -124,6 +124,30 @@ impl Parser {
         Ok(Literal::Array(values))
     }
 
+    fn parse_identifier_term(&mut self, identifier: &str) -> Result<Term, CalError> {
+        let Some(token) = self.tokens.peek() else {
+            return Ok(Term::Variable(identifier.into()));
+        };
+
+        match token.value {
+            TokenKind::Symbol(Symbol::LeftParen) => {
+                // Parse subroutine call
+                self.tokens.skip();
+                let expression_list = self.parse_expression_list()?;
+                self.tokens.eat_symbol(Symbol::RightParen)?;
+                Ok(Term::Call(identifier.into(), expression_list))
+            }
+            TokenKind::Symbol(Symbol::LeftBracket) => {
+                // Index operator
+                self.tokens.skip();
+                let index_expr = self.parse_expression(false)?;
+                self.tokens.eat_symbol(Symbol::RightBracket)?;
+                Ok(Term::Index(identifier.into(), index_expr))
+            }
+            _ => Ok(Term::Variable(identifier.into())),
+        }
+    }
+
     fn parse_term(&mut self) -> Result<Term, CalError> {
         if let Some(token) = self.tokens.next() {
             match &token.value {
@@ -133,17 +157,7 @@ impl Parser {
                 TokenKind::Symbol(Symbol::LeftBracket) => {
                     Ok(Term::Literal(self.parse_array_literal()?))
                 }
-                TokenKind::Identifier(identifier) => {
-                    // Parse subroutine call
-                    if self.tokens.peek_symbol(Symbol::LeftParen) {
-                        self.tokens.skip();
-                        let expression_list = self.parse_expression_list()?;
-                        self.tokens.eat_symbol(Symbol::RightParen)?;
-                        Ok(Term::Call(identifier.clone(), expression_list))
-                    } else {
-                        Ok(Term::Variable(identifier.clone()))
-                    }
-                }
+                TokenKind::Identifier(identifier) => self.parse_identifier_term(identifier),
                 _ => Err(CalError::new(
                     format!("Failed to parse term, found {:?}", token.value),
                     token.range,

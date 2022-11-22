@@ -91,6 +91,28 @@ impl Generator {
         }
     }
 
+    fn gen_index(&self, name: &str, expr: &Expression) -> Result<Vec<VmInstruction>, CalError> {
+        if let Some(entry) = self.get_current_symbol_table().get(name) {
+            let mut ret = self.gen_expression(expr)?;
+            ret.extend(vec![
+                VmInstruction::Push(Segment::Constant, entry.offset),
+                VmInstruction::Add, // offset + expression
+                VmInstruction::Push(Segment::Constant, entry.segment.get_base_address() as u16),
+                VmInstruction::Pop(Segment::Pointer, 0),
+                VmInstruction::Push(Segment::This, 0),
+                VmInstruction::Add, // *segment + offset + expression
+                VmInstruction::Pop(Segment::Pointer, 0),
+                VmInstruction::Push(Segment::This, 0),
+            ]);
+            Ok(ret)
+        } else {
+            Err(CalError::new(
+                format!("Undefined variable `{}`", name),
+                Range::default(),
+            ))
+        }
+    }
+
     fn gen_term(&self, term: &Term) -> Result<Vec<VmInstruction>, CalError> {
         match term {
             Term::Literal(literal) => self.gen_literal(literal),
@@ -102,6 +124,7 @@ impl Generator {
                 ret.push(VmInstruction::Call(name.clone(), expressions.len() as u16));
                 Ok(ret)
             }
+            Term::Index(name, expr) => self.gen_index(name, expr),
             Term::Variable(name) => self.gen_variable(name),
         }
     }

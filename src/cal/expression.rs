@@ -66,6 +66,9 @@ pub enum Term {
     /// Call a function with a list of arguments
     Call(String, Vec<Expression>),
     Variable(String),
+    /// Call the index operator on a variable, where
+    /// index is the result of an expression.
+    Index(String, Expression),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
