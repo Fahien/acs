@@ -4,7 +4,7 @@
 
 use crate::{
     error::CalError,
-    expression::{Expression, Literal, Operator, Term},
+    expression::{Expression, Literal, Operator, Term, UnaryOperator},
     preamble::preamble,
     segment::Segment,
     statement::{IfStatement, Statement, WhileStatement},
@@ -114,6 +114,35 @@ impl Generator {
         }
     }
 
+    fn gen_unary_operator(
+        &self,
+        unary_op: UnaryOperator,
+        rhs: &Term,
+    ) -> Result<Vec<VmInstruction>, CalError> {
+        match unary_op {
+            UnaryOperator::Ref => {
+                let Term::Variable(name) = rhs else {
+                    return Err(CalError::new(
+                        format!("Expected variable after `&`, found {:?}", rhs),
+                        Range::default()));
+                };
+                let Some((segment, offset)) =
+                    self.get_current_symbol_table().get_segment_and_offset(name) else {
+                        return Err(CalError::new(
+                        format!("Undefined variable `{}`", name),
+                        Range::default()));
+                    };
+                Ok(vec![
+                    VmInstruction::Push(Segment::Constant, segment.get_base_address() as u16),
+                    VmInstruction::Pop(Segment::Pointer, 0),
+                    VmInstruction::Push(Segment::This, 0),
+                    VmInstruction::Push(Segment::Constant, offset),
+                    VmInstruction::Add,
+                ])
+            }
+        }
+    }
+
     fn gen_term(&self, term: &Term) -> Result<Vec<VmInstruction>, CalError> {
         match term {
             Term::Literal(literal) => self.gen_literal(literal),
@@ -127,7 +156,7 @@ impl Generator {
             }
             Term::Index(name, expr) => self.gen_index(name, expr),
             Term::Variable(name) => self.gen_variable(name),
-            _ => unimplemented!(),
+            Term::UnaryOp(unary_op, rhs) => self.gen_unary_operator(*unary_op, rhs.as_ref()),
         }
     }
 
@@ -158,10 +187,20 @@ impl Generator {
         offset: u16,
     ) -> Result<Vec<VmInstruction>, CalError> {
         let mut ret = vec![];
-        // We need to copy the stack backwards according to the size of the variable
-        let word_count = self.get_type_size_in_words(&variable.typ);
-        for i in 0..word_count {
-            ret.push(VmInstruction::Pop(segment, offset + word_count - i - 1));
+
+        if let Type::Ref(typ) = &variable.typ {
+            ret.push(VmInstruction::Push(segment, offset));
+            ret.push(VmInstruction::Pop(Segment::Pointer, 0));
+            let word_count = self.get_type_size_in_words(typ.as_ref());
+            for i in 0..word_count {
+                ret.push(VmInstruction::Pop(Segment::This, word_count - i - 1));
+            }
+        } else {
+            // We need to copy the stack backwards according to the size of the variable
+            let word_count = self.get_type_size_in_words(&variable.typ);
+            for i in 0..word_count {
+                ret.push(VmInstruction::Pop(segment, offset + word_count - i - 1));
+            }
         }
         Ok(ret)
     }

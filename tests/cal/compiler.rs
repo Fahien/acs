@@ -362,3 +362,27 @@ fn character() -> Result<(), CalError> {
 
     Ok(())
 }
+
+#[test]
+fn reference() -> Result<(), CalError> {
+    let asm_instructions = r#"
+    fn main() -> i16 {
+        let a: i16 = 1;
+        pass(&a);
+        a
+    }
+    fn pass(a: &i16) {
+        a = 2;
+    }
+    "#
+    .compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..512 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], 2);
+
+    Ok(())
+}
