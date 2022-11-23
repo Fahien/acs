@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 use crate::{
     error::CalError,
-    expression::{Expression, Literal, Operator, Term},
+    expression::{Expression, Literal, Operator, Term, UnaryOperator},
     statement::{IfStatement, Statement, WhileStatement},
     structure::{Function, Module, Type, Variable},
     tokenizer::*,
@@ -57,11 +57,19 @@ impl Parser {
         }
     }
 
+    fn parse_ref_type(&mut self) -> Result<Type, CalError> {
+        // Ampersend is alreay consumed at this point
+        // Type of the reference
+        let elem_type = self.parse_type()?;
+        Ok(Type::Ref(Box::new(elem_type)))
+    }
+
     fn parse_type(&mut self) -> Result<Type, CalError> {
         if let Some(token) = self.tokens.next() {
             match token.value {
                 TokenKind::Keyword(keyword) => Type::from_keyword(keyword),
                 TokenKind::Symbol(Symbol::LeftBracket) => self.parse_array_type(),
+                TokenKind::Symbol(Symbol::Ampersand) => self.parse_ref_type(),
                 _ => Err(CalError::new(
                     format!("Expected type, found {:?}", token.value),
                     token.range,
@@ -148,6 +156,12 @@ impl Parser {
         }
     }
 
+    fn parse_unary_operator(&mut self, sym: Symbol) -> Result<Term, CalError> {
+        let unary_op = UnaryOperator::from_symbol(sym)?;
+        let rhs = self.parse_term()?;
+        Ok(Term::UnaryOp(unary_op, Box::new(rhs)))
+    }
+
     fn parse_term(&mut self) -> Result<Term, CalError> {
         if let Some(token) = self.tokens.next() {
             match &token.value {
@@ -158,6 +172,9 @@ impl Parser {
                     Ok(Term::Literal(self.parse_array_literal()?))
                 }
                 TokenKind::Char(c) => Ok(Term::Literal(Literal::Char(*c))),
+                TokenKind::Symbol(Symbol::Ampersand) => {
+                    self.parse_unary_operator(Symbol::Ampersand)
+                }
                 TokenKind::Identifier(identifier) => self.parse_identifier_term(identifier),
                 _ => Err(CalError::new(
                     format!("Failed to parse term, found {:?}", token.value),

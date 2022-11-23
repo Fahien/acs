@@ -360,3 +360,58 @@ fn character() -> Result<(), CalError> {
     tokens.eat_symbol(Symbol::RightBrace)?;
     Ok(())
 }
+
+#[test]
+fn reference() -> Result<(), CalError> {
+    let mut tokens = r#"
+    fn main() -> i16 {
+        let a: i16 = 1;
+        pass(&a);
+        a
+    }
+    fn pass(a: &i16) {
+        a = 2;
+    }
+    "#
+    .tokenize()?;
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("main")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::RightArrow)?;
+    tokens.eat_keyword(Keyword::I16)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+
+    tokens.eat_keyword(Keyword::Let)?;
+    tokens.eat_identifier("a")?;
+    tokens.eat_symbol(Symbol::Colon)?;
+    tokens.eat_keyword(Keyword::I16)?;
+    tokens.eat_symbol(Symbol::Assign)?;
+    tokens.eat_integer(1)?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+
+    tokens.eat_identifier("pass")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_symbol(Symbol::Ampersand)?;
+    tokens.eat_identifier("a")?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+    tokens.eat_identifier("a")?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+
+    tokens.eat_keyword(Keyword::Function)?;
+    tokens.eat_identifier("pass")?;
+    tokens.eat_symbol(Symbol::LeftParen)?;
+    tokens.eat_identifier("a")?;
+    tokens.eat_symbol(Symbol::Colon)?;
+    tokens.eat_symbol(Symbol::Ampersand)?;
+    tokens.eat_keyword(Keyword::I16)?;
+    tokens.eat_symbol(Symbol::RightParen)?;
+    tokens.eat_symbol(Symbol::LeftBrace)?;
+    tokens.eat_identifier("a")?;
+    tokens.eat_symbol(Symbol::Assign)?;
+    tokens.eat_integer(2)?;
+    tokens.eat_symbol(Symbol::Semicolon)?;
+    tokens.eat_symbol(Symbol::RightBrace)?;
+    Ok(())
+}

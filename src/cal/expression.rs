@@ -52,6 +52,21 @@ impl Operator {
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum UnaryOperator {
+    /// `&`
+    Ref,
+}
+
+impl UnaryOperator {
+    pub fn from_symbol(sym: Symbol) -> Result<Self, CalError> {
+        match sym {
+            Symbol::Ampersand => Ok(Self::Ref),
+            _ => Err(format!("Failed to convert `{:?}` to an unary operator", sym).into()),
+        }
+    }
+}
+
 /// An enum for literals will come in handy when defining arrays
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Literal {
@@ -70,6 +85,9 @@ pub enum Term {
     /// Call the index operator on a variable, where
     /// index is the result of an expression.
     Index(String, Expression),
+
+    /// Apply an unary operator to the term to its right
+    UnaryOp(UnaryOperator, Box<Term>),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

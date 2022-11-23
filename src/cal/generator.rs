@@ -34,7 +34,7 @@ impl Generator {
     fn get_type_size(&self, typ: &Type) -> u16 {
         match typ {
             Type::Void => 0,
-            Type::I16 | Type::Bool | Type::Char => 2,
+            Type::I16 | Type::Bool | Type::Char | Type::Ref(_) => 2,
             Type::Array(elem_type, count) => self.get_type_size(elem_type.as_ref()) * count,
         }
     }
@@ -127,6 +127,7 @@ impl Generator {
             }
             Term::Index(name, expr) => self.gen_index(name, expr),
             Term::Variable(name) => self.gen_variable(name),
+            _ => unimplemented!(),
         }
     }
 

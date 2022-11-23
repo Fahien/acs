@@ -4,7 +4,7 @@
 
 use acs::{
     error::CalError,
-    expression::{Literal, Operator, Term},
+    expression::{Literal, Operator, Term, UnaryOperator},
     statement::Statement,
     structure::{Module, Type},
 };
@@ -364,6 +364,78 @@ fn character() -> Result<(), CalError> {
     assert_eq!(variable.name, "a");
     assert_eq!(variable.typ, Type::Char);
     assert_eq!(rhs.term.as_ref(), &Term::Literal(Literal::Char('a')));
+    assert!(rhs.op_and_expr.is_none());
+
+    Ok(())
+}
+
+#[test]
+fn reference() -> Result<(), CalError> {
+    let module: Module = r#"
+    fn main() -> i16 {
+        let a: i16 = 1;
+        pass(&a);
+        a
+    }
+    fn pass(a: &i16) {
+        a = 2;
+    }
+    "#
+    .parse()?;
+    let function = &module.functions[0];
+    assert_eq!(function.name, "main");
+    assert_eq!(function.parameters.len(), 0);
+    assert_eq!(function.body_statements.len(), 3);
+    assert_eq!(function.return_type, Type::I16);
+
+    let statement = &function.body_statements[0];
+    let Statement::Let(variable, rhs) = statement else {
+        panic!();
+    };
+    assert_eq!(variable.name, "a");
+    assert_eq!(variable.typ, Type::I16);
+    assert_eq!(rhs.term.as_ref(), &Term::Literal(Literal::I16(1)));
+    assert!(rhs.op_and_expr.is_none());
+
+    let statement = &function.body_statements[1];
+    let Statement::Expression(expr) = statement else {
+        panic!();
+    };
+    let Term::Call(function_name, args) = expr.term.as_ref() else {
+        panic!();
+    };
+    assert!(expr.op_and_expr.is_none());
+    assert_eq!(function_name, "pass");
+    assert_eq!(args.len(), 1);
+    let Term::UnaryOp(UnaryOperator::Ref, rhs) = args[0].term.as_ref() else {
+        panic!();
+    };
+    assert!(args[0].op_and_expr.is_none());
+    assert_eq!(rhs.as_ref(), &Term::Variable(String::from("a")));
+
+    let statement = &function.body_statements[2];
+    let Statement::Expression(expr) = statement else {
+        panic!();
+    };
+    assert_eq!(expr.term.as_ref(), &Term::Variable(String::from("a")));
+    assert!(expr.op_and_expr.is_none());
+
+    let function = &module.functions[1];
+    assert_eq!(function.name, "pass");
+    assert_eq!(function.parameters.len(), 1);
+    assert_eq!(function.body_statements.len(), 1);
+    assert_eq!(function.return_type, Type::Void);
+
+    let statement = &function.body_statements[0];
+    let Statement::Expression(expr) = statement else {
+        panic!();
+    };
+    assert_eq!(expr.term.as_ref(), &Term::Variable(String::from("a")));
+    let Some((op, rhs)) = expr.op_and_expr.as_ref() else {
+        panic!();
+    };
+    assert_eq!(*op, Operator::Assign);
+    assert_eq!(rhs.term.as_ref(), &Term::Literal(Literal::I16(2)));
     assert!(rhs.op_and_expr.is_none());
 
     Ok(())

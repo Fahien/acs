@@ -37,6 +37,9 @@ pub enum Type {
     Char,
     /// An array is defined by the _type_ and the _number_ of its elements
     Array(Box<Type>, u16),
+
+    /// A reference is actually a pointer to an object
+    Ref(Box<Type>),
 }
 
 impl Type {
