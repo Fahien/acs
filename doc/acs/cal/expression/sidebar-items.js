@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Literal","An enum for literals will come in handy when defining arrays"],["Operator",""],["Term",""],["UnaryOperator",""]],"struct":[["Expression",""]]};

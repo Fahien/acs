@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Inc16","The Inc16 chip is able to add 1 to a given number."]]};

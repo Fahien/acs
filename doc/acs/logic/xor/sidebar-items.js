@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Xor","The XOR gate is built using a NAND, an OR, and an AND gate"]]};
