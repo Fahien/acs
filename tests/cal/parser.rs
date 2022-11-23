@@ -323,11 +323,15 @@ fn or() -> Result<(), CalError> {
 
 #[test]
 fn array() -> Result<(), CalError> {
-    let module: Module = "fn main() { let a: [i16; 2] = [1, 2]; }".parse()?;
+    let module: Module = r#"fn main() {
+        let a: [i16; 2] = [1, 2];
+        a[1] = 3;
+    }"#
+    .parse()?;
     let function = &module.functions[0];
     assert_eq!(function.name, "main");
     assert_eq!(function.parameters.len(), 0);
-    assert_eq!(function.body_statements.len(), 1);
+    assert_eq!(function.body_statements.len(), 2);
     assert_eq!(function.return_type, Type::Void);
 
     let statement = &function.body_statements[0];
@@ -344,6 +348,24 @@ fn array() -> Result<(), CalError> {
     assert_eq!(array.len(), 2);
     assert_eq!(array[0], Literal::I16(1));
     assert_eq!(array[1], Literal::I16(2));
+
+    let statement = &function.body_statements[1];
+    let Statement::Expression(expr) = statement else {
+        panic!();
+    };
+    let Term::Index(var_name, index_expr) = expr.term.as_ref() else {
+        panic!();
+    };
+    assert_eq!(var_name, "a");
+    assert_eq!(index_expr.term.as_ref(), &Term::Literal(Literal::I16(1)));
+    assert!(index_expr.op_and_expr.is_none());
+
+    let Some((op, rhs)) = expr.op_and_expr.as_ref() else {
+        panic!();
+    };
+    assert_eq!(*op, Operator::Assign);
+    assert_eq!(rhs.term.as_ref(), &Term::Literal(Literal::I16(3)));
+    assert!(rhs.op_and_expr.is_none());
 
     Ok(())
 }

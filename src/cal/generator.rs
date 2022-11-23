@@ -205,32 +205,72 @@ impl Generator {
         Ok(ret)
     }
 
+    pub fn gen_assign_expression_to_variable(
+        &self,
+        name: &str,
+        rhs: &Expression,
+    ) -> Result<Vec<VmInstruction>, CalError> {
+        if let Some(entry) = self.get_current_symbol_table().get(name) {
+            let mut ret = self.gen_expression(rhs)?;
+            ret.extend(self.gen_copy_stack_into_variable(
+                &entry.variable,
+                entry.segment,
+                entry.offset,
+            )?);
+            Ok(ret)
+        } else {
+            Err(CalError::new(
+                format!("Undefined variable `{}`", name),
+                Range::default(),
+            ))
+        }
+    }
+
+    pub fn gen_assign_expression_to_index(
+        &self,
+        name: &str,
+        index_expr: &Expression,
+        rhs: &Expression,
+    ) -> Result<Vec<VmInstruction>, CalError> {
+        if let Some(entry) = self.get_current_symbol_table().get(name) {
+            // Push rhs onto the stack
+            let mut ret = self.gen_expression(rhs)?;
+            // Push index expression onto the stack
+            ret.extend(self.gen_expression(index_expr)?);
+            ret.extend(vec![
+                VmInstruction::Push(Segment::Constant, entry.offset),
+                VmInstruction::Add, // offset + index expression
+                VmInstruction::Push(Segment::Constant, entry.segment.get_base_address() as u16),
+                VmInstruction::Pop(Segment::Pointer, 0),
+                VmInstruction::Push(Segment::This, 0),
+                VmInstruction::Add, // *segment + offset + expression
+                VmInstruction::Pop(Segment::Pointer, 0),
+                VmInstruction::Pop(Segment::This, 0), // *pointer = rhs
+            ]);
+            Ok(ret)
+        } else {
+            Err(CalError::new(
+                format!("Undefined variable `{}`", name),
+                Range::default(),
+            ))
+        }
+    }
+
     pub fn gen_assign_expression(
         &self,
         term: &Term,
         rhs: &Expression,
     ) -> Result<Vec<VmInstruction>, CalError> {
         // Get variable name from previous term
-        if let Term::Variable(name) = term {
-            if let Some(entry) = self.get_current_symbol_table().get(name) {
-                let mut ret = self.gen_expression(rhs)?;
-                ret.extend(self.gen_copy_stack_into_variable(
-                    &entry.variable,
-                    entry.segment,
-                    entry.offset,
-                )?);
-                Ok(ret)
-            } else {
-                Err(CalError::new(
-                    format!("Undefined variable `{}`", name),
-                    Range::default(),
-                ))
+        match term {
+            Term::Variable(name) => self.gen_assign_expression_to_variable(name, rhs),
+            Term::Index(name, index_expr) => {
+                self.gen_assign_expression_to_index(name, index_expr, rhs)
             }
-        } else {
-            Err(CalError::new(
+            _ => Err(CalError::new(
                 format!("Expected variable to the left of `=`, found {:?}", term),
                 Range::default(),
-            ))
+            )),
         }
     }
 
