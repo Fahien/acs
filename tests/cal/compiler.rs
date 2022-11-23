@@ -394,5 +394,24 @@ fn reference() -> Result<(), CalError> {
     assert_eq!(computer.get_memory().ram[0], 257);
     assert_eq!(computer.get_memory().ram[256], 2);
 
+    let asm_instructions = r#"
+    fn main() -> i16 {
+        let a: [i16; 2] = [1, 2];
+        pass(&a);
+        a[1]
+    }
+    fn pass(a: &[i16; 2]) {
+        a[1] = 3;
+    }
+    "#
+    .compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..2048 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 257);
+    assert_eq!(computer.get_memory().ram[256], 3);
+
     Ok(())
 }

@@ -558,5 +558,86 @@ fn reference() -> Result<(), CalError> {
     assert_eq!(vm_instructions[14], VmInstruction::Pop(Segment::Pointer, 0));
     assert_eq!(vm_instructions[15], VmInstruction::Pop(Segment::This, 0));
     assert_eq!(vm_instructions[16], VmInstruction::Return(0));
+
+    let vm_instructions = r#"
+    fn main() -> i16 {
+        let a: [i16; 2] = [1, 2];
+        pass(&a);
+        a[1]
+    }
+    fn pass(a: &[i16; 2]) {
+        a[1] = 3;
+    }
+    "#
+    .generate()?;
+    assert_eq!(
+        vm_instructions[0],
+        VmInstruction::Function(String::from("main"), 2)
+    );
+    assert_eq!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    assert_eq!(
+        vm_instructions[2],
+        VmInstruction::Push(Segment::Constant, 2)
+    );
+    assert_eq!(vm_instructions[3], VmInstruction::Pop(Segment::Local, 1));
+    assert_eq!(vm_instructions[4], VmInstruction::Pop(Segment::Local, 0));
+    assert_eq!(
+        vm_instructions[5],
+        VmInstruction::Push(Segment::Constant, Segment::Local.get_base_address() as u16)
+    );
+    assert_eq!(vm_instructions[6], VmInstruction::Pop(Segment::Pointer, 0));
+    assert_eq!(vm_instructions[7], VmInstruction::Push(Segment::This, 0));
+    assert_eq!(
+        vm_instructions[8],
+        VmInstruction::Push(Segment::Constant, 0)
+    );
+    assert_eq!(vm_instructions[9], VmInstruction::Add);
+    assert_eq!(
+        vm_instructions[10],
+        VmInstruction::Call(String::from("pass"), 1)
+    );
+    assert_eq!(
+        vm_instructions[11],
+        VmInstruction::Push(Segment::Constant, 1)
+    ); // index
+    assert_eq!(
+        vm_instructions[12],
+        VmInstruction::Push(Segment::Constant, 0)
+    ); // offset
+    assert_eq!(vm_instructions[13], VmInstruction::Add);
+    assert_eq!(
+        vm_instructions[14],
+        VmInstruction::Push(Segment::Constant, Segment::Local.get_base_address() as u16)
+    );
+    assert_eq!(vm_instructions[15], VmInstruction::Pop(Segment::Pointer, 0));
+    assert_eq!(vm_instructions[16], VmInstruction::Push(Segment::This, 0));
+    assert_eq!(vm_instructions[17], VmInstruction::Add);
+    assert_eq!(vm_instructions[18], VmInstruction::Pop(Segment::Pointer, 0));
+    assert_eq!(vm_instructions[19], VmInstruction::Push(Segment::This, 0));
+    assert_eq!(vm_instructions[20], VmInstruction::Return(1));
+
+    assert_eq!(
+        vm_instructions[21],
+        VmInstruction::Function(String::from("pass"), 0)
+    );
+    assert_eq!(
+        vm_instructions[22],
+        VmInstruction::Push(Segment::Constant, 3) // rhs
+    );
+    assert_eq!(
+        vm_instructions[23],
+        VmInstruction::Push(Segment::Constant, 1) // index
+    );
+    assert_eq!(
+        vm_instructions[24],
+        VmInstruction::Push(Segment::Argument, 0)
+    );
+    assert_eq!(vm_instructions[25], VmInstruction::Add);
+    assert_eq!(vm_instructions[26], VmInstruction::Pop(Segment::Pointer, 0));
+    assert_eq!(vm_instructions[27], VmInstruction::Pop(Segment::This, 0));
+    assert_eq!(vm_instructions[28], VmInstruction::Return(0));
     Ok(())
 }

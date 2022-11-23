@@ -9,7 +9,7 @@ use crate::{
     segment::Segment,
     statement::{IfStatement, Statement, WhileStatement},
     structure::{Function, Module, Type, Variable},
-    symboltable::SymbolTable,
+    symboltable::{SymbolEntry, SymbolTable},
     tokenizer::Range,
     vm::instruction::VmInstruction,
 };
@@ -226,17 +226,23 @@ impl Generator {
         }
     }
 
-    pub fn gen_assign_expression_to_index(
+    /// Generates VM instructions to copy the stack backwards into the memory
+    /// segment representing a certain index term
+    pub fn gen_copy_stack_into_index(
         &self,
-        name: &str,
+        entry: &SymbolEntry,
         index_expr: &Expression,
-        rhs: &Expression,
     ) -> Result<Vec<VmInstruction>, CalError> {
-        if let Some(entry) = self.get_current_symbol_table().get(name) {
-            // Push rhs onto the stack
-            let mut ret = self.gen_expression(rhs)?;
-            // Push index expression onto the stack
-            ret.extend(self.gen_expression(index_expr)?);
+        // Push index expression onto the stack
+        let mut ret = self.gen_expression(index_expr)?;
+
+        if let Type::Ref(_) = &entry.variable.typ {
+            // Reference is already a pointer to the beginning of the array
+            ret.push(VmInstruction::Push(entry.segment, entry.offset));
+            ret.push(VmInstruction::Add); // pointer + index expression
+            ret.push(VmInstruction::Pop(Segment::Pointer, 0)); // put address in pointer
+            ret.push(VmInstruction::Pop(Segment::This, 0)); // put rhs in *pointer
+        } else {
             ret.extend(vec![
                 VmInstruction::Push(Segment::Constant, entry.offset),
                 VmInstruction::Add, // offset + index expression
@@ -247,6 +253,20 @@ impl Generator {
                 VmInstruction::Pop(Segment::Pointer, 0),
                 VmInstruction::Pop(Segment::This, 0), // *pointer = rhs
             ]);
+        }
+        Ok(ret)
+    }
+
+    pub fn gen_assign_expression_to_index(
+        &self,
+        name: &str,
+        index_expr: &Expression,
+        rhs: &Expression,
+    ) -> Result<Vec<VmInstruction>, CalError> {
+        if let Some(entry) = self.get_current_symbol_table().get(name) {
+            // Push rhs onto the stack
+            let mut ret = self.gen_expression(rhs)?;
+            ret.extend(self.gen_copy_stack_into_index(entry, index_expr)?);
             Ok(ret)
         } else {
             Err(CalError::new(
