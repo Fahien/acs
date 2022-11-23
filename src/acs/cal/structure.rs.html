@@ -96,6 +96,9 @@
 <span id="94">94</span>
 <span id="95">95</span>
 <span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -135,6 +138,9 @@
     Char,
     <span class="doccomment">/// An array is defined by the _type_ and the _number_ of its elements
     </span>Array(Box&lt;Type&gt;, u16),
+
+    <span class="doccomment">/// A reference is actually a pointer to an object
+    </span>Ref(Box&lt;Type&gt;),
 }
 
 <span class="kw">impl </span>Type {

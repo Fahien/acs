@@ -88,6 +88,24 @@
 <span id="86">86</span>
 <span id="87">87</span>
 <span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -142,6 +160,21 @@
     }
 }
 
+<span class="attribute">#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>UnaryOperator {
+    <span class="doccomment">/// `&amp;`
+    </span>Ref,
+}
+
+<span class="kw">impl </span>UnaryOperator {
+    <span class="kw">pub fn </span>from_symbol(sym: Symbol) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, CalError&gt; {
+        <span class="kw">match </span>sym {
+            Symbol::Ampersand =&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Ref),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Failed to convert `{:?}` to an unary operator&quot;</span>, sym).into()),
+        }
+    }
+}
+
 <span class="doccomment">/// An enum for literals will come in handy when defining arrays
 </span><span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Literal {
@@ -160,6 +193,9 @@
     <span class="doccomment">/// Call the index operator on a variable, where
     /// index is the result of an expression.
     </span>Index(String, Expression),
+
+    <span class="doccomment">/// Apply an unary operator to the term to its right
+    </span>UnaryOp(UnaryOperator, Box&lt;Term&gt;),
 }
 
 <span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]

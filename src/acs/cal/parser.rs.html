@@ -381,6 +381,23 @@
 <span id="379">379</span>
 <span id="380">380</span>
 <span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -389,7 +406,7 @@
 
 <span class="kw">use crate</span>::{
     error::CalError,
-    expression::{Expression, Literal, Operator, Term},
+    expression::{Expression, Literal, Operator, Term, UnaryOperator},
     statement::{IfStatement, Statement, WhileStatement},
     structure::{Function, Module, Type, Variable},
     tokenizer::<span class="kw-2">*</span>,
@@ -440,11 +457,19 @@
         }
     }
 
+    <span class="kw">fn </span>parse_ref_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Type, CalError&gt; {
+        <span class="comment">// Ampersend is alreay consumed at this point
+        // Type of the reference
+        </span><span class="kw">let </span>elem_type = <span class="self">self</span>.parse_type()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(Type::Ref(Box::new(elem_type)))
+    }
+
     <span class="kw">fn </span>parse_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Type, CalError&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
             <span class="kw">match </span>token.value {
                 TokenKind::Keyword(keyword) =&gt; Type::from_keyword(keyword),
                 TokenKind::Symbol(Symbol::LeftBracket) =&gt; <span class="self">self</span>.parse_array_type(),
+                TokenKind::Symbol(Symbol::Ampersand) =&gt; <span class="self">self</span>.parse_ref_type(),
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(CalError::new(
                     <span class="macro">format!</span>(<span class="string">&quot;Expected type, found {:?}&quot;</span>, token.value),
                     token.range,
@@ -531,6 +556,12 @@
         }
     }
 
+    <span class="kw">fn </span>parse_unary_operator(<span class="kw-2">&amp;mut </span><span class="self">self</span>, sym: Symbol) -&gt; <span class="prelude-ty">Result</span>&lt;Term, CalError&gt; {
+        <span class="kw">let </span>unary_op = UnaryOperator::from_symbol(sym)<span class="question-mark">?</span>;
+        <span class="kw">let </span>rhs = <span class="self">self</span>.parse_term()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(Term::UnaryOp(unary_op, Box::new(rhs)))
+    }
+
     <span class="kw">fn </span>parse_term(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Term, CalError&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
             <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
@@ -541,6 +572,9 @@
                     <span class="prelude-val">Ok</span>(Term::Literal(<span class="self">self</span>.parse_array_literal()<span class="question-mark">?</span>))
                 }
                 TokenKind::Char(c) =&gt; <span class="prelude-val">Ok</span>(Term::Literal(Literal::Char(<span class="kw-2">*</span>c))),
+                TokenKind::Symbol(Symbol::Ampersand) =&gt; {
+                    <span class="self">self</span>.parse_unary_operator(Symbol::Ampersand)
+                }
                 TokenKind::Identifier(identifier) =&gt; <span class="self">self</span>.parse_identifier_term(identifier),
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(CalError::new(
                     <span class="macro">format!</span>(<span class="string">&quot;Failed to parse term, found {:?}&quot;</span>, token.value),
