@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Or16","Similar to the Or gate, but it operates in bunches of 16 signals"]]};

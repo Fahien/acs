@@ -426,6 +426,46 @@
 <span id="424">424</span>
 <span id="425">425</span>
 <span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -633,32 +673,72 @@
         <span class="prelude-val">Ok</span>(ret)
     }
 
+    <span class="kw">pub fn </span>gen_assign_expression_to_variable(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        name: <span class="kw-2">&amp;</span>str,
+        rhs: <span class="kw-2">&amp;</span>Expression,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(entry) = <span class="self">self</span>.get_current_symbol_table().get(name) {
+            <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">self</span>.gen_expression(rhs)<span class="question-mark">?</span>;
+            ret.extend(<span class="self">self</span>.gen_copy_stack_into_variable(
+                <span class="kw-2">&amp;</span>entry.variable,
+                entry.segment,
+                entry.offset,
+            )<span class="question-mark">?</span>);
+            <span class="prelude-val">Ok</span>(ret)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(CalError::new(
+                <span class="macro">format!</span>(<span class="string">&quot;Undefined variable `{}`&quot;</span>, name),
+                Range::default(),
+            ))
+        }
+    }
+
+    <span class="kw">pub fn </span>gen_assign_expression_to_index(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        name: <span class="kw-2">&amp;</span>str,
+        index_expr: <span class="kw-2">&amp;</span>Expression,
+        rhs: <span class="kw-2">&amp;</span>Expression,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(entry) = <span class="self">self</span>.get_current_symbol_table().get(name) {
+            <span class="comment">// Push rhs onto the stack
+            </span><span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">self</span>.gen_expression(rhs)<span class="question-mark">?</span>;
+            <span class="comment">// Push index expression onto the stack
+            </span>ret.extend(<span class="self">self</span>.gen_expression(index_expr)<span class="question-mark">?</span>);
+            ret.extend(<span class="macro">vec!</span>[
+                VmInstruction::Push(Segment::Constant, entry.offset),
+                VmInstruction::Add, <span class="comment">// offset + index expression
+                </span>VmInstruction::Push(Segment::Constant, entry.segment.get_base_address() <span class="kw">as </span>u16),
+                VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>),
+                VmInstruction::Push(Segment::This, <span class="number">0</span>),
+                VmInstruction::Add, <span class="comment">// *segment + offset + expression
+                </span>VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>),
+                VmInstruction::Pop(Segment::This, <span class="number">0</span>), <span class="comment">// *pointer = rhs
+            </span>]);
+            <span class="prelude-val">Ok</span>(ret)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(CalError::new(
+                <span class="macro">format!</span>(<span class="string">&quot;Undefined variable `{}`&quot;</span>, name),
+                Range::default(),
+            ))
+        }
+    }
+
     <span class="kw">pub fn </span>gen_assign_expression(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         term: <span class="kw-2">&amp;</span>Term,
         rhs: <span class="kw-2">&amp;</span>Expression,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
         <span class="comment">// Get variable name from previous term
-        </span><span class="kw">if let </span>Term::Variable(name) = term {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(entry) = <span class="self">self</span>.get_current_symbol_table().get(name) {
-                <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">self</span>.gen_expression(rhs)<span class="question-mark">?</span>;
-                ret.extend(<span class="self">self</span>.gen_copy_stack_into_variable(
-                    <span class="kw-2">&amp;</span>entry.variable,
-                    entry.segment,
-                    entry.offset,
-                )<span class="question-mark">?</span>);
-                <span class="prelude-val">Ok</span>(ret)
-            } <span class="kw">else </span>{
-                <span class="prelude-val">Err</span>(CalError::new(
-                    <span class="macro">format!</span>(<span class="string">&quot;Undefined variable `{}`&quot;</span>, name),
-                    Range::default(),
-                ))
+        </span><span class="kw">match </span>term {
+            Term::Variable(name) =&gt; <span class="self">self</span>.gen_assign_expression_to_variable(name, rhs),
+            Term::Index(name, index_expr) =&gt; {
+                <span class="self">self</span>.gen_assign_expression_to_index(name, index_expr, rhs)
             }
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(CalError::new(
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(CalError::new(
                 <span class="macro">format!</span>(<span class="string">&quot;Expected variable to the left of `=`, found {:?}&quot;</span>, term),
                 Range::default(),
-            ))
+            )),
         }
     }
 

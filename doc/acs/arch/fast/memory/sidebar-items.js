@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Memory","Fast package of three 16-bit chip parts: `Ram16k`, `Screen`, and `Keyboard`"]]};
