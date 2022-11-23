@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Bit","Single-bit register, storing `0` or `1` over time."]]};

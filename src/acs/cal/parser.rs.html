@@ -488,13 +488,13 @@
         <span class="comment">// Left bracket is already consumed at this point
         </span><span class="kw">let </span><span class="kw-2">mut </span>values = <span class="macro">vec!</span>[];
 
-        <span class="comment">// Check whether array literal is finished
-        </span><span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::RightBracket) {
-            <span class="self">self</span>.tokens.skip();
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(Literal::Array(values));
-        }
-
         <span class="kw">loop </span>{
+            <span class="comment">// Check whether array literal is finished
+            </span><span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::RightBracket) {
+                <span class="self">self</span>.tokens.skip();
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(Literal::Array(values));
+            }
+
             values.push(<span class="self">self</span>.parse_int_literal()<span class="question-mark">?</span>);
 
             <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::RightBracket) {

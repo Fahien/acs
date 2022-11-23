@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Register16","16-bit register, behaving exactly like a 1-bit register, but with 16-bit values"]]};
