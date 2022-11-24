@@ -398,6 +398,24 @@
 <span id="396">396</span>
 <span id="397">397</span>
 <span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -509,6 +527,24 @@
         }
     }
 
+    <span class="kw">fn </span>parse_literal(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Literal, CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="self">self</span>.tokens.next() {
+            <span class="kw">match </span><span class="kw-2">&amp;</span>token.value {
+                TokenKind::Keyword(Keyword::True) =&gt; <span class="prelude-val">Ok</span>(Literal::Bool(<span class="bool-val">true</span>)),
+                TokenKind::Keyword(Keyword::False) =&gt; <span class="prelude-val">Ok</span>(Literal::Bool(<span class="bool-val">false</span>)),
+                TokenKind::Integer(int) =&gt; <span class="prelude-val">Ok</span>(Literal::I16(<span class="kw-2">*</span>int)),
+                TokenKind::Symbol(Symbol::LeftBracket) =&gt; <span class="prelude-val">Ok</span>(<span class="self">self</span>.parse_array_literal()<span class="question-mark">?</span>),
+                TokenKind::Char(c) =&gt; <span class="prelude-val">Ok</span>(Literal::Char(<span class="kw-2">*</span>c)),
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(CalError::new(
+                    <span class="macro">format!</span>(<span class="string">&quot;Expected literal, found {:?}&quot;</span>, token),
+                    Range::default(),
+                )),
+            }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(CalError::new(<span class="string">&quot;Expected literal&quot;</span>.into(), Range::default()))
+        }
+    }
+
     <span class="kw">fn </span>parse_array_literal(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Literal, CalError&gt; {
         <span class="comment">// Left bracket is already consumed at this point
         </span><span class="kw">let </span><span class="kw-2">mut </span>values = <span class="macro">vec!</span>[];
@@ -520,7 +556,7 @@
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(Literal::Array(values));
             }
 
-            values.push(<span class="self">self</span>.parse_int_literal()<span class="question-mark">?</span>);
+            values.push(<span class="self">self</span>.parse_literal()<span class="question-mark">?</span>);
 
             <span class="kw">if </span><span class="self">self</span>.tokens.peek_symbol(Symbol::RightBracket) {
                 <span class="self">self</span>.tokens.skip();

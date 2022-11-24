@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["FullAdder","By means of two Half-adders, the Full-adder is able to add three bits. The result is a `sum` and a `carry` bit."]]};

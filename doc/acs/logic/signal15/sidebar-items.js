@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Signal15","15 signals into one"]]};

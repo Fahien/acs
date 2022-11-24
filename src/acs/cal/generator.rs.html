@@ -486,6 +486,61 @@
 <span id="484">484</span>
 <span id="485">485</span>
 <span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -580,20 +635,87 @@
         }
     }
 
-    <span class="kw">fn </span>gen_index(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, expr: <span class="kw-2">&amp;</span>Expression) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(entry) = <span class="self">self</span>.get_current_symbol_table().get(name) {
-            <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">self</span>.gen_expression(expr)<span class="question-mark">?</span>;
+    <span class="doccomment">/// Generates VM Instruction needed to index into an array, after the
+    /// index expression has been already generated
+    </span><span class="kw">fn </span>gen_index_ref_impl(
+        entry: <span class="kw-2">&amp;</span>SymbolEntry,
+        elem_size: u16,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="macro">vec!</span>[];
+
+        <span class="kw">if </span>elem_size &gt; <span class="number">1 </span>{
             ret.extend(<span class="macro">vec!</span>[
-                VmInstruction::Push(Segment::Constant, entry.offset),
-                VmInstruction::Add, <span class="comment">// offset + expression
-                </span>VmInstruction::Push(Segment::Constant, entry.segment.get_base_address() <span class="kw">as </span>u16),
+                VmInstruction::Push(Segment::Constant, elem_size),
+                VmInstruction::Call(<span class="string">&quot;mul&quot;</span>.into(), <span class="number">2</span>),
+            ]);
+        }
+
+        ret.extend(<span class="macro">vec!</span>[
+            VmInstruction::Push(Segment::Constant, entry.offset),
+            VmInstruction::Add, <span class="comment">// offset + index expression
+            </span>VmInstruction::Push(Segment::Constant, entry.segment.get_base_address() <span class="kw">as </span>u16),
+            VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>),
+            VmInstruction::Push(Segment::This, <span class="number">0</span>),
+            VmInstruction::Add, <span class="comment">// *segment + offset + index expression
+        </span>]);
+
+        <span class="prelude-val">Ok</span>(ret)
+    }
+
+    <span class="doccomment">/// Generate VM instructions to index into an array.
+    /// - `reference`:
+    ///   - `true`: Pushes onto the stack the pointer to the element we are accessing
+    ///   - `false`: Pushes onto the stack the element we are accessing
+    </span><span class="kw">fn </span>gen_index(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        name: <span class="kw-2">&amp;</span>str,
+        index_expr: <span class="kw-2">&amp;</span>Expression,
+        reference: bool,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(entry) = <span class="self">self</span>.get_current_symbol_table().get(name) {
+            <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">self</span>.gen_expression(index_expr)<span class="question-mark">?</span>;
+            <span class="comment">// At this point the index is at the top of the stack
+            // It should be multiplied by the size of the element of the array
+            </span><span class="kw">if let </span>Type::Array(elem_type, <span class="kw">_</span>) = <span class="kw-2">&amp;</span>entry.variable.typ {
+                <span class="kw">let </span>elem_size = <span class="self">self</span>.get_type_size_in_words(elem_type.as_ref());
+                ret.extend(<span class="self">Self</span>::gen_index_ref_impl(entry, elem_size)<span class="question-mark">?</span>);
+
+                <span class="kw">if </span>!reference {
+                    <span class="comment">// Put array pointer into the pointer segment for accessing it
+                    </span>ret.push(VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>));
+                    <span class="comment">// Push onto the stack all the words of the element we are indexing
+                    </span><span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..elem_size {
+                        ret.push(VmInstruction::Push(Segment::This, i));
+                    }
+                }
+
+                <span class="prelude-val">Ok</span>(ret)
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(CalError::new(
+                    <span class="macro">format!</span>(<span class="string">&quot;Expected array, found {:?}&quot;</span>, entry.variable.typ),
+                    Range::default(),
+                ))
+            }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(CalError::new(
+                <span class="macro">format!</span>(<span class="string">&quot;Undefined variable `{}`&quot;</span>, name),
+                Range::default(),
+            ))
+        }
+    }
+
+    <span class="doccomment">/// Generate VM instructions to push the address of a variable onto the stack
+    </span><span class="kw">fn </span>gen_variable_ref(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((segment, offset)) =
+            <span class="self">self</span>.get_current_symbol_table().get_segment_and_offset(name)
+        {
+            <span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[
+                VmInstruction::Push(Segment::Constant, segment.get_base_address() <span class="kw">as </span>u16),
                 VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>),
                 VmInstruction::Push(Segment::This, <span class="number">0</span>),
-                VmInstruction::Add, <span class="comment">// *segment + offset + expression
-                </span>VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>),
-                VmInstruction::Push(Segment::This, <span class="number">0</span>),
-            ]);
-            <span class="prelude-val">Ok</span>(ret)
+                VmInstruction::Push(Segment::Constant, offset),
+                VmInstruction::Add,
+            ])
         } <span class="kw">else </span>{
             <span class="prelude-val">Err</span>(CalError::new(
                 <span class="macro">format!</span>(<span class="string">&quot;Undefined variable `{}`&quot;</span>, name),
@@ -608,26 +730,14 @@
         rhs: <span class="kw-2">&amp;</span>Term,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
         <span class="kw">match </span>unary_op {
-            UnaryOperator::Ref =&gt; {
-                <span class="kw">let </span>Term::Variable(name) = rhs <span class="kw">else </span>{
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(CalError::new(
-                        <span class="macro">format!</span>(<span class="string">&quot;Expected variable after `&amp;`, found {:?}&quot;</span>, rhs),
-                        Range::default()));
-                };
-                <span class="kw">let </span><span class="prelude-val">Some</span>((segment, offset)) =
-                    <span class="self">self</span>.get_current_symbol_table().get_segment_and_offset(name) <span class="kw">else </span>{
-                        <span class="kw">return </span><span class="prelude-val">Err</span>(CalError::new(
-                        <span class="macro">format!</span>(<span class="string">&quot;Undefined variable `{}`&quot;</span>, name),
-                        Range::default()));
-                    };
-                <span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[
-                    VmInstruction::Push(Segment::Constant, segment.get_base_address() <span class="kw">as </span>u16),
-                    VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>),
-                    VmInstruction::Push(Segment::This, <span class="number">0</span>),
-                    VmInstruction::Push(Segment::Constant, offset),
-                    VmInstruction::Add,
-                ])
-            }
+            UnaryOperator::Ref =&gt; <span class="kw">match </span>rhs {
+                Term::Variable(name) =&gt; <span class="self">self</span>.gen_variable_ref(name),
+                Term::Index(name, index_expr) =&gt; <span class="self">self</span>.gen_index(name, index_expr, <span class="bool-val">true</span>),
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(CalError::new(
+                    <span class="macro">format!</span>(<span class="string">&quot;Expected variable after `&amp;`, found {:?}&quot;</span>, rhs),
+                    Range::default(),
+                )),
+            },
         }
     }
 
@@ -642,7 +752,7 @@
                 ret.push(VmInstruction::Call(name.clone(), expressions.len() <span class="kw">as </span>u16));
                 <span class="prelude-val">Ok</span>(ret)
             }
-            Term::Index(name, expr) =&gt; <span class="self">self</span>.gen_index(name, expr),
+            Term::Index(name, expr) =&gt; <span class="self">self</span>.gen_index(name, expr, <span class="bool-val">false</span>),
             Term::Variable(name) =&gt; <span class="self">self</span>.gen_variable(name),
             Term::UnaryOp(unary_op, rhs) =&gt; <span class="self">self</span>.gen_unary_operator(<span class="kw-2">*</span>unary_op, rhs.as_ref()),
         }

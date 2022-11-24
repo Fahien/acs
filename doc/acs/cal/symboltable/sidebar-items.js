@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["SymbolEntry",""],["SymbolTable","Each scope has its own symbol table, with its own number of local variables"]]};
