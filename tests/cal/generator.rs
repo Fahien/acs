@@ -641,3 +641,67 @@ fn reference() -> Result<(), CalError> {
     assert_eq!(vm_instructions[28], VmInstruction::Return(0));
     Ok(())
 }
+
+#[test]
+fn array_of_array() -> Result<(), CalError> {
+    let vm_instructions = r#"
+    fn main() -> [i16; 2] {
+        let a: [[i16; 2]; 2] = [[1, 2], [3, 4]];
+        a[1]
+    }"#
+    .generate()?;
+    let VmInstruction::Function(name, 4) = &vm_instructions[0] else {
+        panic!();
+    };
+    assert_eq!(name, "main");
+    assert_eq!(
+        vm_instructions[1],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    assert_eq!(
+        vm_instructions[2],
+        VmInstruction::Push(Segment::Constant, 2)
+    );
+    assert_eq!(
+        vm_instructions[3],
+        VmInstruction::Push(Segment::Constant, 3)
+    );
+    assert_eq!(
+        vm_instructions[4],
+        VmInstruction::Push(Segment::Constant, 4)
+    );
+    assert_eq!(vm_instructions[5], VmInstruction::Pop(Segment::Local, 3));
+    assert_eq!(vm_instructions[6], VmInstruction::Pop(Segment::Local, 2));
+    assert_eq!(vm_instructions[7], VmInstruction::Pop(Segment::Local, 1));
+    assert_eq!(vm_instructions[8], VmInstruction::Pop(Segment::Local, 0));
+    // Index
+    assert_eq!(
+        vm_instructions[9],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    // Size of element
+    assert_eq!(
+        vm_instructions[10],
+        VmInstruction::Push(Segment::Constant, 2)
+    );
+    assert_eq!(vm_instructions[11], VmInstruction::Call("mul".into(), 2));
+    // Variable offset
+    assert_eq!(
+        vm_instructions[12],
+        VmInstruction::Push(Segment::Constant, 0)
+    );
+    assert_eq!(vm_instructions[13], VmInstruction::Add);
+    // Local segment base address
+    assert_eq!(
+        vm_instructions[14],
+        VmInstruction::Push(Segment::Constant, 1)
+    );
+    assert_eq!(vm_instructions[15], VmInstruction::Pop(Segment::Pointer, 0));
+    assert_eq!(vm_instructions[16], VmInstruction::Push(Segment::This, 0));
+    assert_eq!(vm_instructions[17], VmInstruction::Add); // *segment + offset + index expression
+    assert_eq!(vm_instructions[18], VmInstruction::Pop(Segment::Pointer, 0));
+    assert_eq!(vm_instructions[19], VmInstruction::Push(Segment::This, 0));
+    assert_eq!(vm_instructions[20], VmInstruction::Push(Segment::This, 1));
+    assert_eq!(vm_instructions[21], VmInstruction::Return(2));
+    Ok(())
+}

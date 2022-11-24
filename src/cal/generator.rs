@@ -92,20 +92,39 @@ impl Generator {
         }
     }
 
-    fn gen_index(&self, name: &str, expr: &Expression) -> Result<Vec<VmInstruction>, CalError> {
+    fn gen_index(
+        &self,
+        name: &str,
+        index_expr: &Expression,
+    ) -> Result<Vec<VmInstruction>, CalError> {
         if let Some(entry) = self.get_current_symbol_table().get(name) {
-            let mut ret = self.gen_expression(expr)?;
-            ret.extend(vec![
-                VmInstruction::Push(Segment::Constant, entry.offset),
-                VmInstruction::Add, // offset + expression
-                VmInstruction::Push(Segment::Constant, entry.segment.get_base_address() as u16),
-                VmInstruction::Pop(Segment::Pointer, 0),
-                VmInstruction::Push(Segment::This, 0),
-                VmInstruction::Add, // *segment + offset + expression
-                VmInstruction::Pop(Segment::Pointer, 0),
-                VmInstruction::Push(Segment::This, 0),
-            ]);
-            Ok(ret)
+            let mut ret = self.gen_expression(index_expr)?;
+            // At this point the index is at the top of the stack
+            // It should be multiplied by the size of the element of the array
+            if let Type::Array(elem_type, _) = &entry.variable.typ {
+                let elem_size = self.get_type_size_in_words(elem_type.as_ref());
+                ret.extend(vec![
+                    VmInstruction::Push(Segment::Constant, elem_size),
+                    VmInstruction::Call("mul".into(), 2),
+                    VmInstruction::Push(Segment::Constant, entry.offset),
+                    VmInstruction::Add, // offset + index expression
+                    VmInstruction::Push(Segment::Constant, entry.segment.get_base_address() as u16),
+                    VmInstruction::Pop(Segment::Pointer, 0),
+                    VmInstruction::Push(Segment::This, 0),
+                    VmInstruction::Add, // *segment + offset + index expression
+                    VmInstruction::Pop(Segment::Pointer, 0),
+                ]);
+                // Push onto the stack all the words of the element we are indexing
+                for i in 0..elem_size {
+                    ret.push(VmInstruction::Push(Segment::This, i));
+                }
+                Ok(ret)
+            } else {
+                Err(CalError::new(
+                    format!("Expected array, found {:?}", entry.variable.typ),
+                    Range::default(),
+                ))
+            }
         } else {
             Err(CalError::new(
                 format!("Undefined variable `{}`", name),

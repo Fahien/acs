@@ -415,3 +415,31 @@ fn reference() -> Result<(), CalError> {
 
     Ok(())
 }
+
+#[test]
+fn array_of_array() -> Result<(), CalError> {
+    let asm_instructions =
+        "fn main() -> [[i16; 2]; 2] { let a: [[i16; 2]; 2] = [[1, 2], [3,4]]; a }".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..512 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 260);
+    assert_eq!(computer.get_memory().ram[256], 1);
+    assert_eq!(computer.get_memory().ram[257], 2);
+    assert_eq!(computer.get_memory().ram[258], 3);
+    assert_eq!(computer.get_memory().ram[259], 4);
+
+    let asm_instructions =
+        "fn main() -> [i16; 2] { let a: [[i16; 2]; 2] = [[1, 2], [3, 4]]; a[1] }".compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..1024 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 258);
+    assert_eq!(computer.get_memory().ram[256], 3);
+    assert_eq!(computer.get_memory().ram[257], 4);
+    Ok(())
+}

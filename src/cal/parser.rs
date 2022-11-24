@@ -109,6 +109,24 @@ impl Parser {
         }
     }
 
+    fn parse_literal(&mut self) -> Result<Literal, CalError> {
+        if let Some(token) = self.tokens.next() {
+            match &token.value {
+                TokenKind::Keyword(Keyword::True) => Ok(Literal::Bool(true)),
+                TokenKind::Keyword(Keyword::False) => Ok(Literal::Bool(false)),
+                TokenKind::Integer(int) => Ok(Literal::I16(*int)),
+                TokenKind::Symbol(Symbol::LeftBracket) => Ok(self.parse_array_literal()?),
+                TokenKind::Char(c) => Ok(Literal::Char(*c)),
+                _ => Err(CalError::new(
+                    format!("Expected literal, found {:?}", token),
+                    Range::default(),
+                )),
+            }
+        } else {
+            Err(CalError::new("Expected literal".into(), Range::default()))
+        }
+    }
+
     fn parse_array_literal(&mut self) -> Result<Literal, CalError> {
         // Left bracket is already consumed at this point
         let mut values = vec![];
@@ -120,7 +138,7 @@ impl Parser {
                 return Ok(Literal::Array(values));
             }
 
-            values.push(self.parse_int_literal()?);
+            values.push(self.parse_literal()?);
 
             if self.tokens.peek_symbol(Symbol::RightBracket) {
                 self.tokens.skip();
