@@ -92,9 +92,10 @@ impl Generator {
         }
     }
 
-    /// Generates VM Instruction needed to index into an array, after the
-    /// index expression has been already generated
-    fn gen_index_ref_impl(
+    /// Generates VM Instruction needed to push the address of an element of an
+    /// array, at the specified index, after the index expression has been
+    /// already generated
+    fn gen_ref_index_impl(
         entry: &SymbolEntry,
         elem_size: u16,
     ) -> Result<Vec<VmInstruction>, CalError> {
@@ -119,7 +120,66 @@ impl Generator {
         Ok(ret)
     }
 
-    /// Generate VM instructions to index into an array.
+    /// Generates VM instructions to index into an array.
+    /// - `reference`:
+    ///   - `true`: Pushes onto the stack the pointer to the element we are accessing
+    ///   - `false`: Pushes onto the stack the element we are accessing
+    fn gen_index_impl(
+        &self,
+        entry: &SymbolEntry,
+        elem_type: &Type,
+        reference: bool,
+    ) -> Result<Vec<VmInstruction>, CalError> {
+        let elem_size = self.get_type_size_in_words(elem_type);
+        let mut ret = Self::gen_ref_index_impl(entry, elem_size)?;
+
+        if !reference {
+            // Put element address into the pointer segment for accessing it
+            ret.push(VmInstruction::Pop(Segment::Pointer, 0));
+            // Push onto the stack all the words of the element we are indexing
+            for i in 0..elem_size {
+                ret.push(VmInstruction::Push(Segment::This, i));
+            }
+        }
+
+        Ok(ret)
+    }
+
+    /// Generates VM instructions to index into a reference to an array.
+    fn gen_index_of_ref_impl(
+        &self,
+        entry: &SymbolEntry,
+        ref_type: &Type,
+    ) -> Result<Vec<VmInstruction>, CalError> {
+        let mut ret = vec![];
+
+        let Type::Array(elem_type, _) = ref_type else {
+            unreachable!()
+        };
+        let elem_size = self.get_type_size_in_words(elem_type.as_ref());
+        if elem_size > 1 {
+            ret.extend(vec![
+                VmInstruction::Push(Segment::Constant, elem_size),
+                VmInstruction::Call("mul".into(), 2),
+            ]);
+        }
+        // Reference is already a pointer to the beginning of the array
+        ret.extend(vec![
+            VmInstruction::Push(entry.segment, entry.offset),
+            VmInstruction::Add,                      // pointer + index expression
+            VmInstruction::Pop(Segment::Pointer, 0), // put address in pointer
+        ]);
+
+        // Push onto the stack all the words of the element we are indexing
+        for i in 0..elem_size {
+            ret.push(VmInstruction::Push(Segment::This, i));
+        }
+
+        Ok(ret)
+    }
+
+    /// Generate VM instructions to index into an array. The array can be
+    /// either an array or a reference to an array.
     /// - `reference`:
     ///   - `true`: Pushes onto the stack the pointer to the element we are accessing
     ///   - `false`: Pushes onto the stack the element we are accessing
@@ -133,25 +193,19 @@ impl Generator {
             let mut ret = self.gen_expression(index_expr)?;
             // At this point the index is at the top of the stack
             // It should be multiplied by the size of the element of the array
-            if let Type::Array(elem_type, _) = &entry.variable.typ {
-                let elem_size = self.get_type_size_in_words(elem_type.as_ref());
-                ret.extend(Self::gen_index_ref_impl(entry, elem_size)?);
-
-                if !reference {
-                    // Put array pointer into the pointer segment for accessing it
-                    ret.push(VmInstruction::Pop(Segment::Pointer, 0));
-                    // Push onto the stack all the words of the element we are indexing
-                    for i in 0..elem_size {
-                        ret.push(VmInstruction::Push(Segment::This, i));
-                    }
+            match &entry.variable.typ {
+                Type::Array(elem_type, _) => {
+                    ret.extend(self.gen_index_impl(entry, elem_type, reference)?);
+                    Ok(ret)
                 }
-
-                Ok(ret)
-            } else {
-                Err(CalError::new(
+                Type::Ref(ref_type) if matches!(ref_type.as_ref(), Type::Array(_, _)) => {
+                    ret.extend(self.gen_index_of_ref_impl(entry, ref_type)?);
+                    Ok(ret)
+                }
+                _ => Err(CalError::new(
                     format!("Expected array, found {:?}", entry.variable.typ),
                     Range::default(),
-                ))
+                )),
             }
         } else {
             Err(CalError::new(
