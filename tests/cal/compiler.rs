@@ -443,3 +443,26 @@ fn array_of_array() -> Result<(), CalError> {
     assert_eq!(computer.get_memory().ram[257], 4);
     Ok(())
 }
+
+#[test]
+fn array_of_array_reference() -> Result<(), CalError> {
+    let asm_instructions = r#"fn edit(e: &[i16; 2]) {
+            e[1] = 5;
+        }
+
+        fn main() -> [i16; 2] {
+            let a: [[i16; 2]; 2] = [[1, 2], [3, 4]];
+            edit(&a[1]);
+            a[1]
+        }"#
+    .compile()?;
+    let mut computer = Computer::default();
+    computer.set_instructions(asm_instructions);
+    for _ in 0..2048 {
+        computer.ticktock();
+    }
+    assert_eq!(computer.get_memory().ram[0], 258);
+    assert_eq!(computer.get_memory().ram[256], 3);
+    assert_eq!(computer.get_memory().ram[257], 5);
+    Ok(())
+}

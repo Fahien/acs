@@ -92,10 +92,42 @@ impl Generator {
         }
     }
 
+    /// Generates VM Instruction needed to index into an array, after the
+    /// index expression has been already generated
+    fn gen_index_ref_impl(
+        entry: &SymbolEntry,
+        elem_size: u16,
+    ) -> Result<Vec<VmInstruction>, CalError> {
+        let mut ret = vec![];
+
+        if elem_size > 1 {
+            ret.extend(vec![
+                VmInstruction::Push(Segment::Constant, elem_size),
+                VmInstruction::Call("mul".into(), 2),
+            ]);
+        }
+
+        ret.extend(vec![
+            VmInstruction::Push(Segment::Constant, entry.offset),
+            VmInstruction::Add, // offset + index expression
+            VmInstruction::Push(Segment::Constant, entry.segment.get_base_address() as u16),
+            VmInstruction::Pop(Segment::Pointer, 0),
+            VmInstruction::Push(Segment::This, 0),
+            VmInstruction::Add, // *segment + offset + index expression
+        ]);
+
+        Ok(ret)
+    }
+
+    /// Generate VM instructions to index into an array.
+    /// - `reference`:
+    ///   - `true`: Pushes onto the stack the pointer to the element we are accessing
+    ///   - `false`: Pushes onto the stack the element we are accessing
     fn gen_index(
         &self,
         name: &str,
         index_expr: &Expression,
+        reference: bool,
     ) -> Result<Vec<VmInstruction>, CalError> {
         if let Some(entry) = self.get_current_symbol_table().get(name) {
             let mut ret = self.gen_expression(index_expr)?;
@@ -103,21 +135,17 @@ impl Generator {
             // It should be multiplied by the size of the element of the array
             if let Type::Array(elem_type, _) = &entry.variable.typ {
                 let elem_size = self.get_type_size_in_words(elem_type.as_ref());
-                ret.extend(vec![
-                    VmInstruction::Push(Segment::Constant, elem_size),
-                    VmInstruction::Call("mul".into(), 2),
-                    VmInstruction::Push(Segment::Constant, entry.offset),
-                    VmInstruction::Add, // offset + index expression
-                    VmInstruction::Push(Segment::Constant, entry.segment.get_base_address() as u16),
-                    VmInstruction::Pop(Segment::Pointer, 0),
-                    VmInstruction::Push(Segment::This, 0),
-                    VmInstruction::Add, // *segment + offset + index expression
-                    VmInstruction::Pop(Segment::Pointer, 0),
-                ]);
-                // Push onto the stack all the words of the element we are indexing
-                for i in 0..elem_size {
-                    ret.push(VmInstruction::Push(Segment::This, i));
+                ret.extend(Self::gen_index_ref_impl(entry, elem_size)?);
+
+                if !reference {
+                    // Put array pointer into the pointer segment for accessing it
+                    ret.push(VmInstruction::Pop(Segment::Pointer, 0));
+                    // Push onto the stack all the words of the element we are indexing
+                    for i in 0..elem_size {
+                        ret.push(VmInstruction::Push(Segment::This, i));
+                    }
                 }
+
                 Ok(ret)
             } else {
                 Err(CalError::new(
@@ -133,32 +161,40 @@ impl Generator {
         }
     }
 
+    /// Generate VM instructions to push the address of a variable onto the stack
+    fn gen_variable_ref(&self, name: &str) -> Result<Vec<VmInstruction>, CalError> {
+        if let Some((segment, offset)) =
+            self.get_current_symbol_table().get_segment_and_offset(name)
+        {
+            Ok(vec![
+                VmInstruction::Push(Segment::Constant, segment.get_base_address() as u16),
+                VmInstruction::Pop(Segment::Pointer, 0),
+                VmInstruction::Push(Segment::This, 0),
+                VmInstruction::Push(Segment::Constant, offset),
+                VmInstruction::Add,
+            ])
+        } else {
+            Err(CalError::new(
+                format!("Undefined variable `{}`", name),
+                Range::default(),
+            ))
+        }
+    }
+
     fn gen_unary_operator(
         &self,
         unary_op: UnaryOperator,
         rhs: &Term,
     ) -> Result<Vec<VmInstruction>, CalError> {
         match unary_op {
-            UnaryOperator::Ref => {
-                let Term::Variable(name) = rhs else {
-                    return Err(CalError::new(
-                        format!("Expected variable after `&`, found {:?}", rhs),
-                        Range::default()));
-                };
-                let Some((segment, offset)) =
-                    self.get_current_symbol_table().get_segment_and_offset(name) else {
-                        return Err(CalError::new(
-                        format!("Undefined variable `{}`", name),
-                        Range::default()));
-                    };
-                Ok(vec![
-                    VmInstruction::Push(Segment::Constant, segment.get_base_address() as u16),
-                    VmInstruction::Pop(Segment::Pointer, 0),
-                    VmInstruction::Push(Segment::This, 0),
-                    VmInstruction::Push(Segment::Constant, offset),
-                    VmInstruction::Add,
-                ])
-            }
+            UnaryOperator::Ref => match rhs {
+                Term::Variable(name) => self.gen_variable_ref(name),
+                Term::Index(name, index_expr) => self.gen_index(name, index_expr, true),
+                _ => Err(CalError::new(
+                    format!("Expected variable after `&`, found {:?}", rhs),
+                    Range::default(),
+                )),
+            },
         }
     }
 
@@ -173,7 +209,7 @@ impl Generator {
                 ret.push(VmInstruction::Call(name.clone(), expressions.len() as u16));
                 Ok(ret)
             }
-            Term::Index(name, expr) => self.gen_index(name, expr),
+            Term::Index(name, expr) => self.gen_index(name, expr, false),
             Term::Variable(name) => self.gen_variable(name),
             Term::UnaryOp(unary_op, rhs) => self.gen_unary_operator(*unary_op, rhs.as_ref()),
         }

@@ -4,7 +4,7 @@
 
 use acs::{
     error::CalError,
-    expression::{Literal, Operator, Term, UnaryOperator},
+    expression::{Expression, Literal, Operator, Term, UnaryOperator},
     statement::Statement,
     structure::{Module, Type},
 };
@@ -458,6 +458,89 @@ fn reference() -> Result<(), CalError> {
     };
     assert_eq!(*op, Operator::Assign);
     assert_eq!(rhs.term.as_ref(), &Term::Literal(Literal::I16(2)));
+    assert!(rhs.op_and_expr.is_none());
+
+    Ok(())
+}
+
+#[test]
+fn array_of_array_reference() -> Result<(), CalError> {
+    let module: Module = r#"fn main() -> [i16; 2] {
+            let a: [[i16; 2]; 2] = [[1, 2], [3, 4]];
+            pass(&a[1]);
+            a[1]
+        }
+
+        fn pass(a: &[i16; 2]) {
+            a[1] = 5;
+        }"#
+    .parse()?;
+
+    let function = &module.functions[0];
+    assert_eq!(function.name, "main");
+    assert_eq!(function.parameters.len(), 0);
+    assert_eq!(function.body_statements.len(), 3);
+    let array_i16_2 = Type::Array(Box::new(Type::I16), 2);
+    assert_eq!(function.return_type, array_i16_2);
+
+    let statement = &function.body_statements[0];
+    let Statement::Let(variable, rhs) = statement else {
+        panic!();
+    };
+    assert_eq!(variable.name, "a");
+    assert_eq!(variable.typ, Type::Array(Box::new(array_i16_2), 2));
+    assert_eq!(
+        rhs.term.as_ref(),
+        &Term::Literal(Literal::Array(vec![
+            Literal::Array(vec![Literal::I16(1), Literal::I16(2)]),
+            Literal::Array(vec![Literal::I16(3), Literal::I16(4)]),
+        ]))
+    );
+    assert!(rhs.op_and_expr.is_none());
+
+    let statement = &function.body_statements[1];
+    let Statement::Expression(expr) = statement else {
+        panic!();
+    };
+    let Term::Call(function_name, args) = expr.term.as_ref() else {
+        panic!();
+    };
+    assert!(expr.op_and_expr.is_none());
+    assert_eq!(function_name, "pass");
+    assert_eq!(args.len(), 1);
+    let Term::UnaryOp(UnaryOperator::Ref, rhs) = args[0].term.as_ref() else {
+        panic!();
+    };
+    assert!(args[0].op_and_expr.is_none());
+    let a_index_1 = Term::Index(
+        "a".into(),
+        Expression::new(Box::new(Term::Literal(Literal::I16(1))), None),
+    );
+    assert_eq!(rhs.as_ref(), &a_index_1);
+
+    let statement = &function.body_statements[2];
+    let Statement::Expression(expr) = statement else {
+        panic!();
+    };
+    assert_eq!(expr.term.as_ref(), &a_index_1);
+    assert!(expr.op_and_expr.is_none());
+
+    let function = &module.functions[1];
+    assert_eq!(function.name, "pass");
+    assert_eq!(function.parameters.len(), 1);
+    assert_eq!(function.body_statements.len(), 1);
+    assert_eq!(function.return_type, Type::Void);
+
+    let statement = &function.body_statements[0];
+    let Statement::Expression(expr) = statement else {
+        panic!();
+    };
+    assert_eq!(expr.term.as_ref(), &a_index_1);
+    let Some((op, rhs)) = expr.op_and_expr.as_ref() else {
+        panic!();
+    };
+    assert_eq!(*op, Operator::Assign);
+    assert_eq!(rhs.term.as_ref(), &Term::Literal(Literal::I16(5)));
     assert!(rhs.op_and_expr.is_none());
 
     Ok(())
