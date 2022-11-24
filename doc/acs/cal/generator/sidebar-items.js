@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["generate",""]],"struct":[["Generator","Generates VM instructions from parsed code."]],"trait":[["Generate",""]]};
