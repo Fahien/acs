@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Computer","The computer consists of three parts:"]]};

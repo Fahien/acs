@@ -541,6 +541,60 @@
 <span id="539">539</span>
 <span id="540">540</span>
 <span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright © 2022
 // Author: Antonio Caggiano &lt;info@antoniocaggiano.eu&gt;
 // SPDX-License-Identifier: MIT
@@ -635,9 +689,10 @@
         }
     }
 
-    <span class="doccomment">/// Generates VM Instruction needed to index into an array, after the
-    /// index expression has been already generated
-    </span><span class="kw">fn </span>gen_index_ref_impl(
+    <span class="doccomment">/// Generates VM Instruction needed to push the address of an element of an
+    /// array, at the specified index, after the index expression has been
+    /// already generated
+    </span><span class="kw">fn </span>gen_ref_index_impl(
         entry: <span class="kw-2">&amp;</span>SymbolEntry,
         elem_size: u16,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
@@ -662,7 +717,66 @@
         <span class="prelude-val">Ok</span>(ret)
     }
 
-    <span class="doccomment">/// Generate VM instructions to index into an array.
+    <span class="doccomment">/// Generates VM instructions to index into an array.
+    /// - `reference`:
+    ///   - `true`: Pushes onto the stack the pointer to the element we are accessing
+    ///   - `false`: Pushes onto the stack the element we are accessing
+    </span><span class="kw">fn </span>gen_index_impl(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        entry: <span class="kw-2">&amp;</span>SymbolEntry,
+        elem_type: <span class="kw-2">&amp;</span>Type,
+        reference: bool,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
+        <span class="kw">let </span>elem_size = <span class="self">self</span>.get_type_size_in_words(elem_type);
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">Self</span>::gen_ref_index_impl(entry, elem_size)<span class="question-mark">?</span>;
+
+        <span class="kw">if </span>!reference {
+            <span class="comment">// Put element address into the pointer segment for accessing it
+            </span>ret.push(VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>));
+            <span class="comment">// Push onto the stack all the words of the element we are indexing
+            </span><span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..elem_size {
+                ret.push(VmInstruction::Push(Segment::This, i));
+            }
+        }
+
+        <span class="prelude-val">Ok</span>(ret)
+    }
+
+    <span class="doccomment">/// Generates VM instructions to index into a reference to an array.
+    </span><span class="kw">fn </span>gen_index_of_ref_impl(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        entry: <span class="kw-2">&amp;</span>SymbolEntry,
+        ref_type: <span class="kw-2">&amp;</span>Type,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VmInstruction&gt;, CalError&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="macro">vec!</span>[];
+
+        <span class="kw">let </span>Type::Array(elem_type, <span class="kw">_</span>) = ref_type <span class="kw">else </span>{
+            <span class="macro">unreachable!</span>()
+        };
+        <span class="kw">let </span>elem_size = <span class="self">self</span>.get_type_size_in_words(elem_type.as_ref());
+        <span class="kw">if </span>elem_size &gt; <span class="number">1 </span>{
+            ret.extend(<span class="macro">vec!</span>[
+                VmInstruction::Push(Segment::Constant, elem_size),
+                VmInstruction::Call(<span class="string">&quot;mul&quot;</span>.into(), <span class="number">2</span>),
+            ]);
+        }
+        <span class="comment">// Reference is already a pointer to the beginning of the array
+        </span>ret.extend(<span class="macro">vec!</span>[
+            VmInstruction::Push(entry.segment, entry.offset),
+            VmInstruction::Add,                      <span class="comment">// pointer + index expression
+            </span>VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>), <span class="comment">// put address in pointer
+        </span>]);
+
+        <span class="comment">// Push onto the stack all the words of the element we are indexing
+        </span><span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..elem_size {
+            ret.push(VmInstruction::Push(Segment::This, i));
+        }
+
+        <span class="prelude-val">Ok</span>(ret)
+    }
+
+    <span class="doccomment">/// Generate VM instructions to index into an array. The array can be
+    /// either an array or a reference to an array.
     /// - `reference`:
     ///   - `true`: Pushes onto the stack the pointer to the element we are accessing
     ///   - `false`: Pushes onto the stack the element we are accessing
@@ -676,25 +790,19 @@
             <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">self</span>.gen_expression(index_expr)<span class="question-mark">?</span>;
             <span class="comment">// At this point the index is at the top of the stack
             // It should be multiplied by the size of the element of the array
-            </span><span class="kw">if let </span>Type::Array(elem_type, <span class="kw">_</span>) = <span class="kw-2">&amp;</span>entry.variable.typ {
-                <span class="kw">let </span>elem_size = <span class="self">self</span>.get_type_size_in_words(elem_type.as_ref());
-                ret.extend(<span class="self">Self</span>::gen_index_ref_impl(entry, elem_size)<span class="question-mark">?</span>);
-
-                <span class="kw">if </span>!reference {
-                    <span class="comment">// Put array pointer into the pointer segment for accessing it
-                    </span>ret.push(VmInstruction::Pop(Segment::Pointer, <span class="number">0</span>));
-                    <span class="comment">// Push onto the stack all the words of the element we are indexing
-                    </span><span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..elem_size {
-                        ret.push(VmInstruction::Push(Segment::This, i));
-                    }
+            </span><span class="kw">match </span><span class="kw-2">&amp;</span>entry.variable.typ {
+                Type::Array(elem_type, <span class="kw">_</span>) =&gt; {
+                    ret.extend(<span class="self">self</span>.gen_index_impl(entry, elem_type, reference)<span class="question-mark">?</span>);
+                    <span class="prelude-val">Ok</span>(ret)
                 }
-
-                <span class="prelude-val">Ok</span>(ret)
-            } <span class="kw">else </span>{
-                <span class="prelude-val">Err</span>(CalError::new(
+                Type::Ref(ref_type) <span class="kw">if </span><span class="macro">matches!</span>(ref_type.as_ref(), Type::Array(<span class="kw">_</span>, <span class="kw">_</span>)) =&gt; {
+                    ret.extend(<span class="self">self</span>.gen_index_of_ref_impl(entry, ref_type)<span class="question-mark">?</span>);
+                    <span class="prelude-val">Ok</span>(ret)
+                }
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(CalError::new(
                     <span class="macro">format!</span>(<span class="string">&quot;Expected array, found {:?}&quot;</span>, entry.variable.typ),
                     Range::default(),
-                ))
+                )),
             }
         } <span class="kw">else </span>{
             <span class="prelude-val">Err</span>(CalError::new(
